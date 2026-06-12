@@ -1,0 +1,59 @@
+{
+  "page": 0,
+  "size": 50,
+  "totalPages": 1,
+  "totalElements": 1,
+  "content": [
+    {
+      "shipmentPackageId": 99001,
+      "orderNumber": "TY-TEST-001",
+      "orderDate": "2026-06-12T10:00:00+03:00",
+      "status": "Created",
+      "grossAmount": 299.90,
+      "totalDiscount": 0.00,
+      "totalPrice": 299.90,
+      "micro": false,
+      "fastDelivery": false,
+      "estimatedDeliveryEndDate": "2026-06-15T23:59:59+03:00",
+      "cargoProviderInfo": {
+        "cargoProviderName": "Yurtiçi Kargo",
+        "cargoTrackingNumber": null,
+        "cargoTrackingLink": null
+      },
+      "customerInfo": {
+        "firstName": "Test",
+        "lastName": "Müşteri",
+        "email": "test@example.com"
+      },
+      "shipmentAddress": {
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "fullAddress": "Test Mah. Test Sk. No:1",
+        "postalCode": "34710",
+        "countryCode": "TR"
+      },
+      "invoiceAddress": {
+        "city": "İstanbul",
+        "district": "Kadıköy",
+        "fullAddress": "Test Mah. Test Sk. No:1",
+        "postalCode": "34710",
+        "countryCode": "TR"
+      },
+      "lines": [
+        {
+          "lineId": 1001,
+          "quantity": 1,
+          "price": 299.90,
+          "discount": 0.00,
+          "barcode": "TEST-BARCODE-001",
+          "merchantSku": "TEST-SKU-001",
+          "productName": "Test Ürün",
+          "productColor": "Mavi",
+          "productSize": "M",
+          "merchantId": 123456,
+          "vatRate": 10
+        }
+      ]
+    }
+  ]
+}

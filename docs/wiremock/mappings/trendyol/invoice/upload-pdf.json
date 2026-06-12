@@ -1,0 +1,12 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/integration/order/sellers/[0-9]+/shipment-packages/[0-9]+/invoice$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {}
+  }
+}

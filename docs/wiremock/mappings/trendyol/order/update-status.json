@@ -1,0 +1,15 @@
+{
+  "priority": 5,
+  "scenarioName": "order-lifecycle",
+  "requiredScenarioState": "order-invoiced",
+  "newScenarioState": "order-shipped",
+  "request": {
+    "method": "PUT",
+    "urlPathPattern": "/integration/order/sellers/[0-9]+/shipment-packages/[0-9]+$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {}
+  }
+}

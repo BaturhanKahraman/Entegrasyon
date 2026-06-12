@@ -1,0 +1,14 @@
+{
+  "priority": 5,
+  "scenarioName": "order-lifecycle",
+  "newScenarioState": "order-invoiced",
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/integration/order/sellers/[0-9]+/seller-invoice-links$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/invoice/link-response.json"
+  }
+}

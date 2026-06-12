@@ -1,0 +1,12 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "DELETE",
+    "urlPathPattern": "/integration/order/sellers/[0-9]+/seller-invoice-links/[^/]+/customers/[0-9]+$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {}
+  }
+}
