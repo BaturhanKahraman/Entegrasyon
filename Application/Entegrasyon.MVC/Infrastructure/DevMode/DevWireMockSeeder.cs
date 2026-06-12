@@ -38,6 +38,7 @@ public static class DevWireMockSeeder
 
         // Gercek API'ye gitmesi istenen marketplace'ler — seeder bunlara dokunmaz
         var realApiMarketplaces = configuration.GetSection("DevMode:RealApiMarketplaces").Get<string[]>() ?? [];
+        var testSellerId = configuration["DevMode:TrendyolSellerId"];
 
         try
         {
@@ -69,6 +70,15 @@ public static class DevWireMockSeeder
                     logger.LogInformation(
                         "DevWireMockSeeder: {Marketplace} BaseUrl {Previous} → {New}",
                         mp.Name, previous, wireMockUrl);
+                }
+
+                if (!string.IsNullOrEmpty(testSellerId) &&
+                    string.Equals(mp.Name, "Trendyol", StringComparison.OrdinalIgnoreCase) &&
+                    mp.SellerId != testSellerId)
+                {
+                    mp.SellerId = testSellerId;
+                    updated++;
+                    logger.LogInformation("DevWireMockSeeder: Trendyol SellerId → {SellerId}", testSellerId);
                 }
             }
 
