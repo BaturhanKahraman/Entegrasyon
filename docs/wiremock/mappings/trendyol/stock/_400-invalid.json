@@ -1,11 +1,8 @@
 {
-  "priority": 3,
+  "priority": 4,
   "request": {
     "method": "POST",
-    "urlPathPattern": "/integration/inventory/sellers/[0-9]+/products/price-and-inventory$",
-    "bodyPatterns": [
-      { "matchesJsonPath": "$.items[0]", "absent": true }
-    ]
+    "urlPathPattern": "/integration/inventory/sellers/[0-9]+/products/price-and-inventory$"
   },
   "response": {
     "status": 400,

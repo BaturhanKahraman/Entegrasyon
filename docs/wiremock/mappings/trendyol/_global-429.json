@@ -1,5 +1,5 @@
 {
-  "priority": 99,
+  "priority": 1,
   "request": {
     "method": "ANY",
     "urlPathPattern": "/integration/.*",

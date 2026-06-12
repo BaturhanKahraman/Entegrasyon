@@ -1,11 +1,8 @@
 {
-  "priority": 3,
+  "priority": 4,
   "request": {
     "method": "POST",
-    "urlPathPattern": "/integration/product/sellers/[0-9]+/v2/products$",
-    "bodyPatterns": [
-      { "matchesJsonPath": "$.items[0]", "absent": true }
-    ]
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/v2/products$"
   },
   "response": {
     "status": 400,
