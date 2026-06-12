@@ -1,89 +1,259 @@
 @model Entegrasyon.Entity.Dtos.Reports.InventoryReportDto
+@using Entegrasyon.Entity.Dtos.Reports
+@using Entegrasyon.MVC.Infrastructure.Extensions
+@{
+    var summary = Model.Summary;
 
-        <!-- Summary Cards -->
-        <div class="row row-deck row-cards mb-3">
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="subheader">Toplam Ürün</div>
-                        <div class="h1 mb-0">@Model.Summary.TotalProducts</div>
+    // Aktif filtreler (ViewBag controller'dan gelir). Form state'ini korumak için.
+    var selectedBranchId = ViewBag.BranchOfficeId as int?;
+    var selectedFilter = (ViewBag.StockFilter as StockFilter?) ?? StockFilter.All;
+    var branches = ViewBag.Branches as IEnumerable<Entegrasyon.Entity.BranchOffice>
+                   ?? Enumerable.Empty<Entegrasyon.Entity.BranchOffice>();
+    var startDate = ViewBag.StartDate as DateOnly?;
+    var endDate = ViewBag.EndDate as DateOnly?;
+    var unsoldOnly = (ViewBag.UnsoldOnly as bool?) ?? false;
+
+    // Stok değeri (TL) — backend aggregate. Henüz wire edilmediyse null gelir → kart "–" gösterir.
+    var stockValue = summary.GetType().GetProperty("StockValue")?.GetValue(summary) as decimal?;
+
+    // "Ölü stok" eşiği — son stok girişinden bu yana geçen gün. Bebe giyimde sezonluk: 90 gün.
+    const int staleDays = 90;
+    var today = DateOnly.FromDateTime(DateTime.Today);
+}
+
+<!-- KPI özet -->
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar"><i class="ti ti-package"></i></span>
                     </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="subheader">Toplam Stok</div>
-                        <div class="h1 mb-0">@Model.Summary.TotalStock</div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Ürün</div>
+                        <div class="text-secondary">Varyant kalemi</div>
                     </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="subheader">Düşük Stok</div>
-                        <div class="h1 mb-0 text-yellow">@Model.Summary.LowStockCount</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="subheader">Stok Bitmiş</div>
-                        <div class="h1 mb-0 text-red">@Model.Summary.OutOfStockCount</div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0">@summary.TotalProducts</span>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Table -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Envanter Listesi</h3>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-cyan-lt avatar"><i class="ti ti-stack-2"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Stok</div>
+                        <div class="text-secondary">Tüm şubeler</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0">@summary.TotalStock</span>
+                    </div>
+                </div>
             </div>
-            @if (Model.Items.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Ürün</th>
-                                <th>Varyant</th>
-                                <th>Barkod</th>
-                                <th>Sube</th>
-                                <th>Mevcut Stok</th>
-                                <th>Satilan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var item in Model.Items)
-                            {
-                                <tr>
-                                    <td>@item.ProductTitle</td>
-                                    <td class="text-secondary">@item.VariantTitle</td>
-                                    <td class="text-secondary"><code>@(item.Barcode ?? "-")</code></td>
-                                    <td class="text-secondary">@item.BranchOfficeName</td>
-                                    <td>
-                                        <span class="badge @(item.CurrentStock <= 0 ? "bg-red-lt" : "bg-green-lt")">
-                                            @item.CurrentStock
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-green text-green-fg"><i class="ti ti-cash"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Stok Değeri</div>
+                        <div class="text-secondary">Maliyet × adet</div>
+                    </div>
+                    <div class="col-auto">
+                        @if (stockValue.HasValue)
+                        {
+                            <span class="h1 mb-0 text-green">@stockValue.Value.ToMoney()</span>
+                        }
+                        else
+                        {
+                            <span class="h1 mb-0 text-secondary" title="Maliyet verisi hesaplanıyor">–</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-yellow text-yellow-fg"><i class="ti ti-alert-triangle"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Stok Sorunu</div>
+                        <div class="text-secondary">Düşük @summary.LowStockCount · Tükendi @summary.OutOfStockCount</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0 text-yellow">@(summary.LowStockCount + summary.OutOfStockCount)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtre -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" action="/reports/inventory" class="row g-2 align-items-end">
+            <div class="col-12 col-sm-auto">
+                <label class="form-label" for="filter-branch">Şube</label>
+                <select id="filter-branch" name="branchOfficeId" class="form-select" style="min-width: 13rem;">
+                    <option value="">Tüm şubeler</option>
+                    @foreach (var branch in branches)
+                    {
+                        <option value="@branch.Id" selected="@(selectedBranchId == branch.Id)">@branch.Name</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-sm-auto">
+                <label class="form-label" for="filter-stock">Stok durumu</label>
+                <select id="filter-stock" name="stockFilter" class="form-select" style="min-width: 12rem;">
+                    <option value="All" selected="@(selectedFilter == StockFilter.All)">Tümü</option>
+                    <option value="LowStock" selected="@(selectedFilter == StockFilter.LowStock)">Düşük stok</option>
+                    <option value="OutOfStock" selected="@(selectedFilter == StockFilter.OutOfStock)">Tükenen</option>
+                </select>
+            </div>
+            <div class="col-6 col-sm-auto">
+                <label class="form-label" for="filter-start">Dönem başlangıç</label>
+                <input type="date" id="filter-start" name="startDate" class="form-control"
+                       value="@(startDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-6 col-sm-auto">
+                <label class="form-label" for="filter-end">Dönem bitiş</label>
+                <input type="date" id="filter-end" name="endDate" class="form-control"
+                       value="@(endDate?.ToString("yyyy-MM-dd"))" />
+            </div>
+            <div class="col-12 col-sm-auto">
+                <label class="form-check mb-2">
+                    <input class="form-check-input" type="checkbox" name="unsoldOnly" value="true"
+                           checked="@unsoldOnly" />
+                    <span class="form-check-label">Dönemde satılmayan stok</span>
+                </label>
+            </div>
+            <div class="col-12 col-sm-auto">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="ti ti-filter me-1"></i>Filtrele
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tablo -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Envanter Listesi</h3>
+            <p class="text-secondary m-0">Varyant bazında mevcut stok, değer ve hareketsizlik</p>
+        </div>
+    </div>
+    @if (Model.Items.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Ürün</th>
+                        <th>Barkod</th>
+                        <th>Şube</th>
+                        <th class="text-end">Mevcut Stok</th>
+                        <th class="text-end">Satılan</th>
+                        <th class="text-end">Stok Değeri</th>
+                        <th>Son Stok Girişi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Items)
+                    {
+                        var stockBadge = item.CurrentStock <= 0
+                            ? "bg-red-lt"
+                            : item.CurrentStock <= 5 ? "bg-yellow-lt" : "bg-green-lt";
+
+                        // Satır maliyeti + son stok girişi backend'den (null-safe — wire edilmeden de derlenir).
+                        var lineValue = item.GetType().GetProperty("StockValue")?.GetValue(item) as decimal?;
+                        var lastEntry = item.GetType().GetProperty("LastStockEntryDate")?.GetValue(item) as DateOnly?;
+
+                        <tr>
+                            <td>
+                                <div class="fw-medium">@item.ProductTitle</div>
+                                @if (!string.IsNullOrEmpty(item.VariantTitle) && item.VariantTitle != item.ProductTitle)
+                                {
+                                    <div class="text-secondary small">@item.VariantTitle</div>
+                                }
+                            </td>
+                            <td class="text-secondary"><code>@(item.Barcode ?? "-")</code></td>
+                            <td class="text-secondary">@item.BranchOfficeName</td>
+                            <td class="text-end">
+                                <span class="badge @stockBadge">@item.CurrentStock</span>
+                            </td>
+                            <td class="text-end">
+                                @if (item.SoldQuantity <= 0)
+                                {
+                                    <span class="text-secondary">0</span>
+                                }
+                                else
+                                {
+                                    @item.SoldQuantity
+                                }
+                            </td>
+                            <td class="text-end">
+                                @if (lineValue.HasValue)
+                                {
+                                    @lineValue.Value.ToMoney()
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">–</span>
+                                }
+                            </td>
+                            <td>
+                                @if (lastEntry.HasValue)
+                                {
+                                    var ageDays = today.DayNumber - lastEntry.Value.DayNumber;
+                                    var isStale = ageDays >= staleDays && item.CurrentStock > 0;
+                                    <span class="@(isStale ? "text-orange fw-medium" : "text-secondary")">
+                                        @lastEntry.Value.ToString("dd.MM.yyyy")
+                                    </span>
+                                    if (isStale)
+                                    {
+                                        <span class="badge bg-orange-lt ms-1" title="@ageDays gündür hareketsiz">
+                                            <i class="ti ti-clock-pause me-1"></i>@ageDays gün
                                         </span>
-                                    </td>
-                                    <td>@item.SoldQuantity</td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="card-body">
-                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
-                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
-                             {
-                                 Title = "Envanter verisi yok",
-                                 Subtitle = "Henüz envanter kaydi bulunmuyor."
-                             }'/>
-                </div>
-            }
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-secondary">–</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Envanter verisi yok",
+                         Subtitle = "Seçilen filtrelere uyan stok kaydı bulunmuyor."
+                     }'/>
+        </div>
+    }
+</div>

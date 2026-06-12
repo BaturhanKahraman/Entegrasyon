@@ -157,24 +157,77 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             ProductTitle = x.p.Title ?? "",
             x.pv.Name,
             Barcode = x.pv.Barcode,
+            x.bos.BranchOfficeId,
             x.bos.CurrentStock,
-            x.bos.SoldQuantity,
+            CumulativeSold = x.bos.SoldQuantity,
+            // Stok değeri kaynağı: ProductVariant.CostPrice (birim maliyet, money kolonu) × adet.
+            CostPrice = x.pv.CostPrice,
             BranchName = x.bo.Name ?? "",
             RawAttrs = x.pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
         }).ToListAsync();
 
-        var data = raw.Select(r => new StockItemDto(
-            r.VariantId,
-            r.ProductTitle,
-            VariantNameExtensions.ResolveDisplayName(
-                r.Name,
-                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
-                r.ProductTitle),
-            r.Barcode,
-            r.CurrentStock,
-            r.SoldQuantity,
-            r.BranchName
-        )).ToList();
+        // LastStockEntryDate — varyant+şube başına son stok GİRİŞİ (pozitif hareket: initial/return/inbound transfer).
+        // Tek grouped aggregate (N+1 yok). Kapsayıcı index (BranchOfficeId, ProductVariantId, CreatedAt DESC)
+        // WHERE NOT IsDeleted → index-tabanlı grouped MAX. StockAlert raporundaki ispatlı desenle aynı.
+        var lastEntryQuery = dbContext.Set<Entity.Products.StockMovement>()
+            .Where(m => !m.IsDeleted && m.Quantity > 0);
+        if (filter.BranchOfficeId.HasValue)
+            lastEntryQuery = lastEntryQuery.Where(m => m.BranchOfficeId == filter.BranchOfficeId.Value);
+
+        var lastEntries = (await lastEntryQuery
+                .GroupBy(m => new { m.BranchOfficeId, m.ProductVariantId })
+                .Select(g => new { g.Key.BranchOfficeId, g.Key.ProductVariantId, LastAt = g.Max(m => m.CreatedAt) })
+                .ToListAsync())
+            .ToDictionary(x => (x.BranchOfficeId, x.ProductVariantId), x => DateOnly.FromDateTime(x.LastAt.UtcDateTime));
+
+        // Dönem-bazlı SoldQuantity: dönem verildiyse satış hareketlerinden (Sale/MarketplaceSale) topla;
+        // verilmediyse BranchOfficeStock.SoldQuantity kümülatif sayacı kullanılır.
+        var hasPeriod = filter.StartDate.HasValue && filter.EndDate.HasValue;
+        Dictionary<(int, Guid), int> periodSold = new();
+        if (hasPeriod)
+        {
+            var startUtc = filter.StartDate!.Value.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var endExclusiveUtc = filter.EndDate!.Value.AddDays(1).ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+            var soldQuery = dbContext.Set<Entity.Products.StockMovement>()
+                .Where(m => !m.IsDeleted
+                            && (m.Type == Entity.Products.StockMovementType.Sale
+                                || m.Type == Entity.Products.StockMovementType.MarketplaceSale)
+                            && m.CreatedAt >= startUtc
+                            && m.CreatedAt < endExclusiveUtc);
+            if (filter.BranchOfficeId.HasValue)
+                soldQuery = soldQuery.Where(m => m.BranchOfficeId == filter.BranchOfficeId.Value);
+
+            periodSold = (await soldQuery
+                    .GroupBy(m => new { m.BranchOfficeId, m.ProductVariantId })
+                    // Satış hareketi Quantity negatif (azalış) → satılan adet = |Σ Quantity|.
+                    .Select(g => new { g.Key.BranchOfficeId, g.Key.ProductVariantId, Sold = g.Sum(m => m.Quantity) })
+                    .ToListAsync())
+                .ToDictionary(x => (x.BranchOfficeId, x.ProductVariantId), x => Math.Abs(x.Sold));
+        }
+
+        var data = raw.Select(r =>
+        {
+            var key = (r.BranchOfficeId, r.VariantId);
+            var sold = hasPeriod
+                ? (periodSold.TryGetValue(key, out var ps) ? ps : 0)
+                : r.CumulativeSold;
+            var lastEntry = lastEntries.TryGetValue(key, out var le) ? (DateOnly?)le : null;
+
+            return new StockItemDto(
+                r.VariantId,
+                r.ProductTitle,
+                VariantNameExtensions.ResolveDisplayName(
+                    r.Name,
+                    r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    r.ProductTitle),
+                r.Barcode,
+                r.CurrentStock,
+                sold,
+                r.BranchName,
+                StockValue: r.CostPrice * r.CurrentStock,
+                LastStockEntryDate: lastEntry);
+        }).ToList();
 
         var filtered = filter.StockFilter switch
         {
@@ -183,11 +236,16 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             _ => data
         };
 
+        // Satılmayan stok tespiti: dönemde (veya kümülatif) SoldQuantity == 0 olan satırlar.
+        if (filter.UnsoldOnly)
+            filtered = filtered.Where(x => x.SoldQuantity == 0).ToList();
+
         var summary = new InventoryReportSummaryDto(
             TotalProducts: data.Count,
             TotalStock: data.Sum(x => x.CurrentStock),
             LowStockCount: data.Count(x => x.CurrentStock > 0 && x.CurrentStock <= 5),
-            OutOfStockCount: data.Count(x => x.CurrentStock <= 0));
+            OutOfStockCount: data.Count(x => x.CurrentStock <= 0),
+            StockValue: data.Sum(x => x.StockValue));
 
         return new InventoryReportDto(summary, filtered);
     }

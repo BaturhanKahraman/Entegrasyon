@@ -175,14 +175,30 @@ public class ReportController(
     }
 
     [HttpGet("/reports/inventory")]
-    public async Task<IActionResult> Inventory(int? branchOfficeId = null, StockFilter stockFilter = StockFilter.All)
+    public async Task<IActionResult> Inventory(
+        int? branchOfficeId = null,
+        StockFilter stockFilter = StockFilter.All,
+        DateOnly? startDate = null,
+        DateOnly? endDate = null,
+        bool unsoldOnly = false)
     {
         ViewData.SetPageTitle("Envanter Raporu");
         ViewData.SetActiveNav("reports-inventory");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Envanter", null));
 
         var report = await reportManager.GetInventoryReportAsync(
-            new InventoryReportFilterDto(branchOfficeId, stockFilter));
+            new InventoryReportFilterDto(branchOfficeId, stockFilter, startDate, endDate, unsoldOnly));
+
+        // Form state'ini koru: view bu ViewBag anahtarlarını okuyup filtre alanlarını işaretler.
+        ViewBag.BranchOfficeId = branchOfficeId;
+        ViewBag.StockFilter = stockFilter;
+        ViewBag.StartDate = startDate;
+        ViewBag.EndDate = endDate;
+        ViewBag.UnsoldOnly = unsoldOnly;
+
+        // Şube filtresi dropdown'u için şube listesi (StockAlerts ile aynı desen).
+        var branches = await branchOfficeManager.GetBranchList();
+        ViewBag.Branches = branches.Data ?? [];
 
         return View(report);
     }
