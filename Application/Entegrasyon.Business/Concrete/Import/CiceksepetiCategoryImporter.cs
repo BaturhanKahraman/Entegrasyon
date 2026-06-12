@@ -13,7 +13,7 @@ namespace Entegrasyon.Business.Concrete.Import;
 /// <summary>
 /// Çiçeksepeti pazaryerinden kategori ve kategori özelliklerini import eder.
 /// API recursive ağaç yapısında döner (SubCategories listeli).
-///</summary>
+/// </summary>
 public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICiceksepetiCategoryImporter
 {
     private readonly ICiceksepetiCategoryService _categoryService;
