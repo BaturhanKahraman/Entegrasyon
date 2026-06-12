@@ -90,11 +90,12 @@
             if (el.tomselect) return;
 
             var attributeId = el.getAttribute('data-attribute-id');
-            var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
 
             new TomSelect(el, {
                 allowEmptyOption: true,
                 create: function (input, callback) {
+                    // Antiforgery token'ı istek anında oku (HTMX swap sonrası tazelenmiş olabilir).
+                    var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
                     fetch('/attributes/values/create', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },

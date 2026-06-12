@@ -34,6 +34,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 name: "CustomValue",
                 table: "AttributeKeyValues");
 
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "CategoryAttributeValues",
+                type: "character varying(256)",
+                maxLength: 256,
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "text",
+                oldNullable: true);
+
             migrationBuilder.AddColumn<string>(
                 name: "NormalizedName",
                 table: "CategoryAttributeValues",
@@ -96,7 +106,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 column: "AttributeValueId",
                 principalTable: "CategoryAttributeValues",
                 principalColumn: "Id",
-                onDelete: ReferentialAction.Cascade);
+                onDelete: ReferentialAction.Restrict);
         }
 
         /// <inheritdoc />
@@ -126,6 +136,16 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                 table: "ProductVariantAttributes",
                 type: "text",
                 nullable: true);
+
+            migrationBuilder.AlterColumn<string>(
+                name: "Name",
+                table: "CategoryAttributeValues",
+                type: "text",
+                nullable: true,
+                oldClrType: typeof(string),
+                oldType: "character varying(256)",
+                oldMaxLength: 256,
+                oldNullable: true);
 
             migrationBuilder.AddColumn<bool>(
                 name: "AllowCustom",

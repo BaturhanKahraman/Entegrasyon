@@ -8,6 +8,9 @@ public sealed class CategoryAttributeValueEntityConfiguration : IEntityTypeConfi
 {
     public void Configure(EntityTypeBuilder<CategoryAttributeValue> builder)
     {
+        builder.Property(x => x.Name)
+            .HasMaxLength(256);
+
         builder.Property(x => x.NormalizedName)
             .HasMaxLength(256)
             .IsRequired();

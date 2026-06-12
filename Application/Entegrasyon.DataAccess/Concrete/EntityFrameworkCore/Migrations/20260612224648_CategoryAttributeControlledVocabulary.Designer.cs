@@ -13,7 +13,7 @@ using NpgsqlTypes;
 namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
 {
     [DbContext(typeof(IntegrationDbContext))]
-    [Migration("20260612222502_CategoryAttributeControlledVocabulary")]
+    [Migration("20260612224648_CategoryAttributeControlledVocabulary")]
     partial class CategoryAttributeControlledVocabulary
     {
         /// <inheritdoc />
@@ -892,7 +892,8 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                         .HasColumnType("boolean");
 
                     b.Property<string>("Name")
-                        .HasColumnType("text");
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
 
                     b.Property<string>("NormalizedName")
                         .IsRequired()
@@ -8298,7 +8299,7 @@ namespace Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Migrations
                     b.HasOne("Entegrasyon.Entity.Categories.CategoryAttributeValue", "AttributeValue")
                         .WithMany()
                         .HasForeignKey("AttributeValueId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("Entegrasyon.Entity.Categories.CategoryAttribute", "CategoryAttribute")

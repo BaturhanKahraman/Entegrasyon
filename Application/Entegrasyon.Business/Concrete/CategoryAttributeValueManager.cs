@@ -10,6 +10,10 @@ namespace Entegrasyon.Business.Concrete;
 
 public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManager
 {
+    // NormalizedName kolonu varchar(256). Normalize (upper) çok-baytlı karakterde büyüyebilir;
+    // 256 altında headroom bırak ki DB hatası (500) yerine temiz validasyon mesajı dönsün.
+    private const int MaxNameLength = 200;
+
     private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly ILogger<CategoryAttributeValueManager> _logger;
@@ -43,6 +47,8 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         var normalized = AttributeValueNormalizer.Normalize(rawName);
         if (normalized.Length == 0)
             throw new ArgumentException("Değer boş olamaz.", nameof(rawName));
+        if (rawName.Trim().Length > MaxNameLength)
+            throw new ArgumentException($"Değer adı en fazla {MaxNameLength} karakter olabilir.", nameof(rawName));
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
 
@@ -76,11 +82,13 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         }
     }
 
-    public async Task UpdateName(int id, string newName)
+    public async Task<bool> UpdateName(int id, int categoryAttributeId, string newName)
     {
         var trimmed = newName?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
             throw new ArgumentException("Değer adı boş olamaz.", nameof(newName));
+        if (trimmed.Length > MaxNameLength)
+            throw new ArgumentException($"Değer adı en fazla {MaxNameLength} karakter olabilir.", nameof(newName));
 
         var normalized = AttributeValueNormalizer.Normalize(trimmed);
 
@@ -88,14 +96,15 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         _logger.LogInformation("Updating CategoryAttributeValue {ValueId} to name '{Name}'", id, trimmed);
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
+        // IDOR koruması: değer hem id hem categoryAttributeId ile eşleşmeli.
         var entity = await dbContext.CategoryAttributeValues
             .AsTracking()
-            .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted);
+            .FirstOrDefaultAsync(v => v.Id == id && v.CategoryAttributeId == categoryAttributeId && !v.IsDeleted);
 
         if (entity is null)
         {
-            _logger.LogWarning("CategoryAttributeValue {ValueId} not found for rename", id);
-            return;
+            _logger.LogWarning("CategoryAttributeValue {ValueId} (attr {AttrId}) not found for rename", id, categoryAttributeId);
+            return false;
         }
 
         entity.Name = trimmed;
@@ -104,22 +113,24 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
 
         await _applicationLogManager.AddLog($"Özellik değeri güncellendi: '{trimmed}' (Id: {id})", LogType.Category, LogAction.Update);
         _logger.LogInformation("CategoryAttributeValue {ValueId} renamed successfully", id);
+        return true;
     }
 
-    public async Task SoftDelete(int id)
+    public async Task<bool> SoftDelete(int id, int categoryAttributeId)
     {
         await _applicationLogManager.AddLog($"Özellik değeri siliniyor (Id: {id})", LogType.Category, LogAction.Delete);
         _logger.LogInformation("Soft-deleting CategoryAttributeValue {ValueId}", id);
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
+        // IDOR koruması: değer hem id hem categoryAttributeId ile eşleşmeli.
         var entity = await dbContext.CategoryAttributeValues
             .AsTracking()
-            .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted);
+            .FirstOrDefaultAsync(v => v.Id == id && v.CategoryAttributeId == categoryAttributeId && !v.IsDeleted);
 
         if (entity is null)
         {
-            _logger.LogWarning("CategoryAttributeValue {ValueId} not found or already deleted", id);
-            return;
+            _logger.LogWarning("CategoryAttributeValue {ValueId} (attr {AttrId}) not found or already deleted", id, categoryAttributeId);
+            return false;
         }
 
         entity.IsDeleted = true;
@@ -128,5 +139,6 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
 
         await _applicationLogManager.AddLog($"Özellik değeri silindi (Id: {id})", LogType.Category, LogAction.Delete);
         _logger.LogInformation("CategoryAttributeValue {ValueId} soft-deleted", id);
+        return true;
     }
 }

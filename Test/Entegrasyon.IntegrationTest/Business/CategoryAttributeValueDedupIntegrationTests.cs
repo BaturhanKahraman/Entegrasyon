@@ -78,7 +78,7 @@ public class CategoryAttributeValueDedupIntegrationTests : IntegrationTestBase
         var valId = await manager.GetOrCreate(attrId, "Sari");
 
         // Act
-        await manager.UpdateName(valId, "Sarı");
+        await manager.UpdateName(valId, attrId, "Sarı");
 
         // Assert — persist + NormalizedName yeniden hesaplanmış (no-tracking footgun testi)
         using var db2 = CreateDbContext();
@@ -110,7 +110,7 @@ public class CategoryAttributeValueDedupIntegrationTests : IntegrationTestBase
         var firstId = await manager.GetOrCreate(attrId, "Sarı");
 
         // Act — soft-delete, sonra aynı kanonik tekrar eklenebilmeli (filtreli unique index IsDeleted=false)
-        await manager.SoftDelete(firstId);
+        await manager.SoftDelete(firstId, attrId);
         var secondId = await manager.GetOrCreate(attrId, "Sarı");
 
         // Assert

@@ -182,9 +182,15 @@ public class AttributeController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ValuesCreate(int attributeId, [FromForm] string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        name = name?.Trim() ?? string.Empty;
+        if (name.Length == 0)
         {
             TempData.SetError("Değer adı boş olamaz.");
+            return RedirectToAction(nameof(Values), new { attributeId });
+        }
+        if (name.Length > MaxValueNameLength)
+        {
+            TempData.SetError($"Değer adı en fazla {MaxValueNameLength} karakter olabilir.");
             return RedirectToAction(nameof(Values), new { attributeId });
         }
 
@@ -192,17 +198,9 @@ public class AttributeController(
         if (!attrResult.Success)
             return NotFound();
 
-        var allBefore = await categoryAttributeValueManager.GetValuesByCategoryAttributeId(attributeId);
-        var normalizedInput = Entegrasyon.Business.Helpers.AttributeValueNormalizer.Normalize(name);
-        var alreadyExists = allBefore.Any(v => !v.IsDeleted && v.NormalizedName == normalizedInput);
-
+        // GetOrCreate idempotent: aynı kanonik değer zaten varsa mevcut id'yi döner (ekstra precheck gerekmez).
         await categoryAttributeValueManager.GetOrCreate(attributeId, name);
-
-        if (alreadyExists)
-            TempData.SetSuccess("Bu değer zaten mevcut, mevcut kayıt kullanıldı.");
-        else
-            TempData.SetSuccess("Değer eklendi.");
-
+        TempData.SetSuccess("Değer kaydedildi.");
         return RedirectToAction(nameof(Values), new { attributeId });
     }
 
@@ -210,14 +208,22 @@ public class AttributeController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ValueEdit(int id, [FromForm] int attributeId, [FromForm] string name)
     {
-        if (string.IsNullOrWhiteSpace(name))
+        name = name?.Trim() ?? string.Empty;
+        if (name.Length == 0)
         {
             TempData.SetError("Değer adı boş olamaz.");
             return RedirectToAction(nameof(Values), new { attributeId });
         }
+        if (name.Length > MaxValueNameLength)
+        {
+            TempData.SetError($"Değer adı en fazla {MaxValueNameLength} karakter olabilir.");
+            return RedirectToAction(nameof(Values), new { attributeId });
+        }
 
-        await categoryAttributeValueManager.UpdateName(id, name);
-        TempData.SetSuccess("Değer güncellendi.");
+        // attributeId scope = IDOR koruması (değer başka attribute'a aitse güncellenmez).
+        var ok = await categoryAttributeValueManager.UpdateName(id, attributeId, name);
+        if (ok) TempData.SetSuccess("Değer güncellendi.");
+        else TempData.SetError("Değer bulunamadı.");
         return RedirectToAction(nameof(Values), new { attributeId });
     }
 
@@ -225,8 +231,10 @@ public class AttributeController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ValueDelete(int id, [FromForm] int attributeId)
     {
-        await categoryAttributeValueManager.SoftDelete(id);
-        TempData.SetSuccess("Değer silindi.");
+        // attributeId scope = IDOR koruması.
+        var ok = await categoryAttributeValueManager.SoftDelete(id, attributeId);
+        if (ok) TempData.SetSuccess("Değer silindi.");
+        else TempData.SetError("Değer bulunamadı.");
         return RedirectToAction(nameof(Values), new { attributeId });
     }
 
@@ -236,10 +244,15 @@ public class AttributeController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ValueCreate([FromForm] int categoryAttributeId, [FromForm] string name)
     {
-        if (string.IsNullOrWhiteSpace(name) || categoryAttributeId <= 0)
-            return BadRequest();
+        name = name?.Trim() ?? string.Empty;
+        if (name.Length == 0 || categoryAttributeId <= 0)
+            return BadRequest("Geçersiz değer.");
+        if (name.Length > MaxValueNameLength)
+            return BadRequest($"Değer adı en fazla {MaxValueNameLength} karakter olabilir.");
 
-        var id = await categoryAttributeValueManager.GetOrCreate(categoryAttributeId, name.Trim());
-        return Json(new { id, name = name.Trim() });
+        var id = await categoryAttributeValueManager.GetOrCreate(categoryAttributeId, name);
+        return Json(new { id, name });
     }
+
+    private const int MaxValueNameLength = 200;
 }
