@@ -1,32 +1,46 @@
 @using Entegrasyon.Entity.Invoicing
 
-<div class="d-flex justify-content-end mb-3">
-    <a href="/invoicing" class="btn btn-outline-secondary">Geri Don</a>
-</div>
+@{
+    ViewData.SetPageSubtitle("e-Fatura veya e-Arşiv faturası oluştur. Kalemleri ekleyip toplamları hazırla.");
+}
 
-        <div class="card">
-            <div class="card-body">
-                <form method="post" action="/invoicing/create">
-                    @Html.AntiForgeryToken()
+@section PageActions {
+    <a href="/invoicing" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i>
+        Geri Dön
+    </a>
+}
+
+<form method="post" action="/invoicing/create">
+    @Html.AntiForgeryToken()
+
+    <div class="row row-cards">
+        @* ── Fatura Başlığı ── *@
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Fatura Bilgileri</h3>
+                </div>
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Fatura Tipi</label>
+                            <label class="form-label required">Fatura Tipi</label>
                             <select name="InvoiceType" class="form-select" required>
                                 <option value="@((int)EInvoiceType.EFatura)">e-Fatura</option>
-                                <option value="@((int)EInvoiceType.EArsiv)">e-Arsiv</option>
+                                <option value="@((int)EInvoiceType.EArsiv)">e-Arşiv</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Entegrator</label>
+                            <label class="form-label required">Entegratör</label>
                             <select name="IntegratorProvider" class="form-select" required>
-                                <option value="@((int)IntegratorProvider.Custom)">Custom</option>
-                                <option value="@((int)IntegratorProvider.Parasut)">Parasut</option>
+                                <option value="@((int)IntegratorProvider.Custom)">Özel</option>
+                                <option value="@((int)IntegratorProvider.Parasut)">Paraşüt</option>
                                 <option value="@((int)IntegratorProvider.ForIba)">ForIba</option>
                                 <option value="@((int)IntegratorProvider.Logo)">Logo</option>
                             </select>
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Düzenleme Tarihi</label>
+                            <label class="form-label required">Düzenleme Tarihi</label>
                             <input type="date" name="IssueDate" class="form-control"
                                    value="@DateTime.Today.ToString("yyyy-MM-dd")" required />
                         </div>
@@ -34,12 +48,12 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Müşteri Vergi / TC No</label>
-                            <input type="text" name="CustomerTaxId" class="form-control" required />
+                            <label class="form-label required">Müşteri Vergi / TC No</label>
+                            <input type="text" name="CustomerTaxId" class="form-control" autocomplete="off" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Müşteri Ünvanı</label>
-                            <input type="text" name="CustomerTitle" class="form-control" required />
+                            <label class="form-label required">Müşteri Ünvanı</label>
+                            <input type="text" name="CustomerTitle" class="form-control" autocomplete="off" required />
                         </div>
                     </div>
 
@@ -47,18 +61,25 @@
                     {
                         <input type="hidden" name="SaleId" value="@ViewBag.SaleId" />
                     }
+                </div>
+            </div>
+        </div>
 
-                    <hr class="my-3" />
-
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h3 class="card-title mb-0">Fatura Satırları</h3>
+        @* ── Fatura Satırları ── *@
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Fatura Satırları</h3>
+                    <div class="card-actions">
                         <button type="button" id="add-line" class="btn btn-outline-primary btn-sm">
-                            + Satır Ekle
+                            <i class="ti ti-plus icon"></i>
+                            Satır Ekle
                         </button>
                     </div>
-
+                </div>
+                <div class="card-body">
                     <div id="invoice-lines">
-                        <div class="row g-2 mb-1 d-none d-md-flex text-muted small">
+                        <div class="row g-2 mb-1 d-none d-md-flex text-secondary small">
                             <div class="col-md-4">Ürün Adı</div>
                             <div class="col-md-2">Miktar</div>
                             <div class="col-md-2">Birim Fiyat</div>
@@ -66,54 +87,65 @@
                             <div class="col-md-2"></div>
                         </div>
                     </div>
-
-                    <div class="text-end mt-4">
-                        <a href="/invoicing" class="btn btn-link me-2">Iptal</a>
-                        <button type="submit" class="btn btn-primary">Fatura Olustur</button>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    let lineIndex = 0;
+    @* ── Form aksiyonları ── *@
+    <div class="d-flex justify-content-end gap-2 mt-3">
+        <a href="/invoicing" class="btn btn-link link-secondary">İptal</a>
+        <button type="submit" class="btn btn-primary">
+            <i class="ti ti-file-invoice icon"></i>
+            Fatura Oluştur
+        </button>
+    </div>
+</form>
 
-    function addInvoiceLine() {
-        const container = document.getElementById('invoice-lines');
-        const html = `<div class="row g-2 mb-2 invoice-line">
-            <div class="col-md-4">
-                <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Ürün Adı" required>
-            </div>
-            <div class="col-md-2">
-                <input name="Lines[${lineIndex}].Quantity" type="number" class="form-control form-control-sm" value="1" min="1" required>
-            </div>
-            <div class="col-md-2">
-                <input name="Lines[${lineIndex}].UnitPrice" type="number" step="0.01" class="form-control form-control-sm" placeholder="Birim Fiyat" required>
-            </div>
-            <div class="col-md-2">
-                <select name="Lines[${lineIndex}].TaxRate" class="form-select form-select-sm">
-                    <option value="20">%20</option>
-                    <option value="10">%10</option>
-                    <option value="1">%1</option>
-                    <option value="0">%0</option>
-                </select>
-            <div class="col-md-2">
-                <button type="button" class="btn btn-outline-danger btn-sm remove-line">Sil</button>
-        </div>`;
-        container.insertAdjacentHTML('beforeend', html);
-        lineIndex++;
-    }
+@section Scripts {
+    <script>
+        let lineIndex = 0;
 
-    document.getElementById('add-line').addEventListener('click', addInvoiceLine);
-
-    document.addEventListener('click', function (e) {
-        if (e.target.classList.contains('remove-line')) {
-            e.target.closest('.invoice-line').remove();
+        function addInvoiceLine() {
+            const container = document.getElementById('invoice-lines');
+            const html = `<div class="row g-2 mb-2 invoice-line">
+                <div class="col-md-4">
+                    <input name="Lines[${lineIndex}].ProductName" class="form-control form-control-sm" placeholder="Ürün Adı" required>
+                </div>
+                <div class="col-md-2">
+                    <input name="Lines[${lineIndex}].Quantity" type="number" class="form-control form-control-sm" value="1" min="1" required>
+                </div>
+                <div class="col-md-2">
+                    <input name="Lines[${lineIndex}].UnitPrice" type="number" step="0.01" class="form-control form-control-sm" placeholder="Birim Fiyat" required>
+                </div>
+                <div class="col-md-2">
+                    <select name="Lines[${lineIndex}].TaxRate" class="form-select form-select-sm">
+                        <option value="20">%20</option>
+                        <option value="10">%10</option>
+                        <option value="1">%1</option>
+                        <option value="0">%0</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-icon btn-outline-danger btn-sm remove-line" aria-label="Satırı sil">
+                        <i class="ti ti-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+            container.insertAdjacentHTML('beforeend', html);
+            lineIndex++;
         }
-    });
 
-    // Start with one empty line
-    addInvoiceLine();
-</script>
+        document.getElementById('add-line').addEventListener('click', addInvoiceLine);
+
+        document.addEventListener('click', function (e) {
+            const btn = e.target.closest('.remove-line');
+            if (btn) {
+                btn.closest('.invoice-line').remove();
+            }
+        });
+
+        // İlk boş satırla başla
+        addInvoiceLine();
+    </script>
+}

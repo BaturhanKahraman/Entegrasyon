@@ -2,31 +2,40 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Invoicing.EInvoiceListDto>?
 
 @{
+    var tr = new System.Globalization.CultureInfo("tr-TR");
+
     string StatusBadge(EInvoiceStatus status) => status switch
     {
-        EInvoiceStatus.Draft => "bg-secondary-lt",
-        EInvoiceStatus.Sent => "bg-blue-lt",
-        EInvoiceStatus.Accepted => "bg-green-lt",
-        EInvoiceStatus.Rejected => "bg-red-lt",
+        EInvoiceStatus.Draft     => "bg-secondary-lt",
+        EInvoiceStatus.Sent      => "bg-azure-lt",
+        EInvoiceStatus.Accepted  => "bg-green-lt",
+        EInvoiceStatus.Rejected  => "bg-red-lt",
         EInvoiceStatus.Cancelled => "bg-orange-lt",
         _ => "bg-secondary-lt"
     };
 
     string StatusText(EInvoiceStatus status) => status switch
     {
-        EInvoiceStatus.Draft => "Taslak",
-        EInvoiceStatus.Sent => "Gonderildi",
-        EInvoiceStatus.Accepted => "Onaylandı",
-        EInvoiceStatus.Rejected => "Reddedildi",
-        EInvoiceStatus.Cancelled => "Iptal",
+        EInvoiceStatus.Draft     => "Taslak",
+        EInvoiceStatus.Sent      => "Gönderildi",
+        EInvoiceStatus.Accepted  => "Onaylandı",
+        EInvoiceStatus.Rejected  => "Reddedildi",
+        EInvoiceStatus.Cancelled => "İptal",
         _ => status.ToString()
     };
 
     string TypeText(EInvoiceType type) => type switch
     {
         EInvoiceType.EFatura => "e-Fatura",
-        EInvoiceType.EArsiv => "e-Arsiv",
+        EInvoiceType.EArsiv  => "e-Arşiv",
         _ => type.ToString()
+    };
+
+    string TypeBadge(EInvoiceType type) => type switch
+    {
+        EInvoiceType.EFatura => "bg-blue-lt",
+        EInvoiceType.EArsiv  => "bg-purple-lt",
+        _ => "bg-secondary-lt"
     };
 }
 
@@ -41,27 +50,29 @@
                         <th>Tip</th>
                         <th>Müşteri</th>
                         <th>Tarih</th>
-                        <th>Tutar</th>
+                        <th class="text-end">Tutar</th>
                         <th>Durum</th>
-                        <th>Entegrator</th>
+                        <th>Entegratör</th>
                         <th class="w-1"></th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var invoice in Model.Items)
                     {
-                        <tr>
+                        <tr class="table-row-clickable" data-href="/invoicing/@invoice.Id" role="link" tabindex="0">
                             <td>
-                                <a href="/invoicing/@invoice.Id" class="text-reset">
-                                    @invoice.InvoiceNumber
-                                </a>
+                                <span class="fw-medium">@invoice.InvoiceNumber</span>
                             </td>
-                            <td class="text-secondary">@TypeText(invoice.InvoiceType)</td>
-                            <td class="text-secondary">@invoice.CustomerTitle</td>
+                            <td>
+                                <span class="badge @TypeBadge(invoice.InvoiceType)">@TypeText(invoice.InvoiceType)</span>
+                            </td>
+                            <td class="text-secondary text-truncate" style="max-width: 16rem;">@invoice.CustomerTitle</td>
                             <td class="text-secondary">
                                 @invoice.IssueDate.ToLocalTime().ToString("dd.MM.yyyy")
                             </td>
-                            <td>@invoice.GrandTotal.ToString("N2") TL</td>
+                            <td class="text-end fw-medium">
+                                @invoice.GrandTotal.ToString("C2", tr)
+                            </td>
                             <td>
                                 <span class="badge @StatusBadge(invoice.Status)">
                                     @StatusText(invoice.Status)
@@ -69,9 +80,27 @@
                             </td>
                             <td class="text-secondary">@invoice.IntegratorProvider</td>
                             <td>
-                                <a href="/invoicing/@invoice.Id" class="btn btn-sm btn-outline-primary">
-                                    Detay
-                                </a>
+                                <div class="dropdown">
+                                    <button class="btn btn-icon btn-ghost-secondary"
+                                            data-bs-toggle="dropdown"
+                                            aria-expanded="false"
+                                            aria-label="Fatura işlemleri">
+                                        <i class="ti ti-dots-vertical"></i>
+                                    </button>
+                                    <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
+                                        <a class="dropdown-item" href="/invoicing/@invoice.Id">
+                                            <i class="ti ti-eye dropdown-item-icon"></i>
+                                            Görüntüle
+                                        </a>
+                                        @if (invoice.Status != EInvoiceStatus.Draft)
+                                        {
+                                            <a class="dropdown-item" href="/invoicing/@invoice.Id/pdf">
+                                                <i class="ti ti-file-download dropdown-item-icon"></i>
+                                                PDF İndir
+                                            </a>
+                                        }
+                                    </div>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -101,7 +130,7 @@
                          Title = "Fatura bulunamadı",
                          Subtitle = "Henüz fatura bulunmuyor veya arama kriterinize uygun fatura yok.",
                          ActionUrl = "/invoicing/create",
-                         ActionText = "Yeni Fatura Olustur"
+                         ActionText = "Yeni Fatura Oluştur"
                      }'/>
         </div>
     }

@@ -102,6 +102,56 @@ public sealed class EInvoiceManager(
             new Pageable<EInvoiceListDto>(items, filter.PageIndex, filter.PageSize, total));
     }
 
+    public async Task<IDataResult<EInvoiceSummaryDto>> GetInvoiceSummary(EInvoiceFilterDto filter)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        // Liste sayfasiyla ayni filtre (Status haric — KPI kartlari status'a gore sabit
+        // sayim yapar; status filtresi sadece tablo gorunumunu daraltir, ozet kartlari degil).
+        var query = dbContext.EInvoices.AsQueryable();
+
+        if (filter.InvoiceType.HasValue)
+            query = query.Where(x => x.InvoiceType == filter.InvoiceType.Value);
+        if (filter.StartDate.HasValue)
+            query = query.Where(x => x.IssueDate >= filter.StartDate.Value);
+        if (filter.EndDate.HasValue)
+            query = query.Where(x => x.IssueDate <= filter.EndDate.Value);
+        if (!string.IsNullOrWhiteSpace(filter.SearchTerm))
+            query = query.Where(x =>
+                x.InvoiceNumber.Contains(filter.SearchTerm) ||
+                x.CustomerTitle.Contains(filter.SearchTerm));
+
+        // Tek round-trip: Draft + Sent sayilarini conditional-count ile cek (no-tracking,
+        // entity materialize edilmez — scalar projeksiyon, IX_EInvoices_Status uzerinden).
+        var counts = await query
+            .GroupBy(_ => 1)
+            .Select(g => new
+            {
+                DraftCount = g.Count(x => x.Status == EInvoiceStatus.Draft),
+                SentCount = g.Count(x => x.Status == EInvoiceStatus.Sent)
+            })
+            .FirstOrDefaultAsync();
+
+        // Bu ay kesilen (iptal haric) genel toplam — IssueDate ay penceresi,
+        // IX_EInvoices_IssueDate uzerinden range scan.
+        var now = DateTime.UtcNow;
+        var monthStart = new DateTimeOffset(now.Year, now.Month, 1, 0, 0, 0, TimeSpan.Zero);
+        var nextMonthStart = monthStart.AddMonths(1);
+
+        var monthGrandTotal = await query
+            .Where(x => x.IssueDate >= monthStart
+                        && x.IssueDate < nextMonthStart
+                        && x.Status != EInvoiceStatus.Cancelled)
+            .SumAsync(x => (decimal?)x.GrandTotal) ?? 0m;
+
+        var summary = new EInvoiceSummaryDto(
+            counts?.DraftCount ?? 0,
+            counts?.SentCount ?? 0,
+            monthGrandTotal);
+
+        return new SuccessDataResult<EInvoiceSummaryDto>(summary);
+    }
+
     public async Task<IDataResult<EInvoiceDetailDto>> GetInvoiceDetail(Guid invoiceId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();

@@ -15,6 +15,12 @@ public class EInvoiceEntityConfiguration : IEntityTypeConfiguration<EInvoice>
         builder.HasIndex(x => x.SaleId);
         builder.HasIndex(x => x.Status);
 
+        // Liste sayfasi OrderByDescending(IssueDate) + pagination ve KPI ozet
+        // (GetInvoiceSummary) bu-ay penceresi range-scan'i icin. Descending sira
+        // pagination'in dogal sirasiyla hizalanir; seq-scan'i onler.
+        builder.HasIndex(x => x.IssueDate)
+            .IsDescending();
+
         builder.HasOne(x => x.Sale)
             .WithMany()
             .HasForeignKey(x => x.SaleId)

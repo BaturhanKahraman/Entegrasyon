@@ -39,6 +39,13 @@ public class InvoiceController(IEInvoiceManager invoiceManager) : Controller
         if (Request.IsHtmx())
             return PartialView("~/Features/Invoicing/Views/Partials/_InvoiceTable.cshtml", pageable);
 
+        // Full-page render: KPI kartlari icin hafif aggregate ozet.
+        // ("Toplam Fatura" Pageable.TotalItemCount'tan gelir — burada eksik 3 metrik.)
+        var summary = await invoiceManager.GetInvoiceSummary(filter);
+        ViewBag.InvoiceDraftCount = summary.Data?.DraftCount ?? 0;
+        ViewBag.InvoiceSentCount = summary.Data?.SentCount ?? 0;
+        ViewBag.InvoiceMonthGrandTotal = summary.Data?.MonthGrandTotal ?? 0m;
+
         return View("~/Features/Invoicing/Views/Index.cshtml", pageable);
     }
 

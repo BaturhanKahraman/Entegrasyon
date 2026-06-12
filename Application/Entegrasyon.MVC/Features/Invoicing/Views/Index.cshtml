@@ -1,132 +1,247 @@
 @using Entegrasyon.Entity.Invoicing
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Invoicing.EInvoiceListDto>?
 
-<div class="d-flex justify-content-end mb-3 gap-2">
-    <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#bulk-invoice-modal">
+@{
+    // ── Header: "Ürünler" deseni — başlık _Layout'ta (SetPageTitle="Faturalar"),
+    //    burada subtitle + sağ aksiyonlar (PageActions section).
+    ViewData.SetPageSubtitle("e-Fatura ve e-Arşiv faturalarını oluştur, GİB'e gönder ve takip et.");
+
+    // ── KPI'lar ──────────────────────────────────────────────────────────────
+    // Toplam, sayfa-geneli gerçek aggregate'ten gelir (Pageable.TotalItemCount —
+    // filtreliyken o filtrenin toplamı). Durum-bazlı sayımlar backend aggregate
+    // gerektirir; henüz yok → ViewBag'den null-safe okunur, yoksa "—" gösterir
+    // (Ürünler/İade deseni). Hardcode sayı YOK; backend eklenince otomatik dolar.
+    int? totalCount     = Model?.TotalItemCount ?? ViewBag.InvoiceTotalCount as int?;
+    int? draftCount     = ViewBag.InvoiceDraftCount as int?;
+    int? sentCount      = ViewBag.InvoiceSentCount as int?;
+    decimal? monthTotal = ViewBag.InvoiceMonthGrandTotal as decimal?;
+    var tr = new System.Globalization.CultureInfo("tr-TR");
+}
+
+@section PageActions {
+    <button type="button" class="btn btn-outline-primary"
+            data-bs-toggle="modal" data-bs-target="#bulk-invoice-modal">
+        <i class="ti ti-file-stack icon"></i>
         Toplu Fatura
     </button>
     <a href="/invoicing/create" class="btn btn-primary">
-        <i class="ti ti-plus"></i>
+        <i class="ti ti-plus icon"></i>
         Yeni Fatura
     </a>
-</div>
+}
 
-        <div class="card">
-            <div class="card-header">
-                <div class="row w-100 g-2">
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
                     <div class="col-auto">
-                        <input type="text"
-                               class="form-control"
-                               name="search"
-                               placeholder="Fatura no veya müşteri ara..."
-                               value="@ViewBag.Search"
-                               hx-get="/invoicing"
-                               hx-trigger="keyup changed delay:300ms"
-                               hx-target="#invoice-table"
-                               hx-swap="outerHTML"
-                               hx-include="[name='status'],[name='type']"/>
+                        <span class="bg-blue-lt avatar avatar-lg rounded">
+                            <i class="ti ti-file-invoice fs-2"></i>
+                        </span>
                     </div>
-                    <div class="col-auto">
-                        <select class="form-select"
-                                name="status"
-                                hx-get="/invoicing"
-                                hx-trigger="change"
-                                hx-target="#invoice-table"
-                                hx-swap="outerHTML"
-                                hx-include="[name='search'],[name='type']">
-                            <option value="">Tum Durumlar</option>
-                            <option value="@((int)EInvoiceStatus.Draft)">Taslak</option>
-                            <option value="@((int)EInvoiceStatus.Sent)">Gonderildi</option>
-                            <option value="@((int)EInvoiceStatus.Accepted)">Onaylandı</option>
-                            <option value="@((int)EInvoiceStatus.Rejected)">Reddedildi</option>
-                            <option value="@((int)EInvoiceStatus.Cancelled)">Iptal</option>
-                        </select>
-                    </div>
-                    <div class="col-auto">
-                        <select class="form-select"
-                                name="type"
-                                hx-get="/invoicing"
-                                hx-trigger="change"
-                                hx-target="#invoice-table"
-                                hx-swap="outerHTML"
-                                hx-include="[name='search'],[name='status']">
-                            <option value="">Tum Tipler</option>
-                            <option value="@((int)EInvoiceType.EFatura)">e-Fatura</option>
-                            <option value="@((int)EInvoiceType.EArsiv)">e-Arsiv</option>
-                        </select>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(totalCount?.ToString("N0", tr) ?? "—")</div>
+                        <div class="text-secondary">Toplam Fatura</div>
                     </div>
                 </div>
             </div>
-            <partial name="~/Features/Invoicing/Views/Partials/_InvoiceTable.cshtml" model="Model"/>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-secondary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-file-pencil fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(draftCount?.ToString("N0", tr) ?? "—")</div>
+                        <div class="text-secondary">Taslak</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-azure-lt avatar avatar-lg rounded">
+                            <i class="ti ti-send fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(sentCount?.ToString("N0", tr) ?? "—")</div>
+                        <div class="text-secondary">Gönderildi</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-cash fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(monthTotal?.ToString("C0", tr) ?? "—")</div>
+                        <div class="text-secondary">Bu Ay Kesilen</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
-<!-- Bulk Invoice Modal -->
-<div class="modal modal-blur fade" id="bulk-invoice-modal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Toplu Fatura Olustur</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Fatura JSON Verisi</label>
-                    <textarea id="bulk-invoice-json" class="form-control" rows="10"
-                              placeholder='{"invoices": [{"invoiceType": 0, "customerTaxId": "...", "customerTitle": "...", "issueDate": "...", "integratorProvider": 0, "lines": [{"productName": "...", "quantity": 1, "unitPrice": 100, "taxRate": 20}]}]}'></textarea>
-                    <small class="form-hint">JSON formatinda birden fazla fatura tanimlayin.</small>
+@* ── Fatura listesi ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Faturalar</h3>
+                <div class="text-secondary mt-1 small">
+                    Gösterilen <strong>@(Model?.Items.Count ?? 0)</strong> kayıt
                 </div>
-                <div id="bulk-invoice-error" class="alert alert-danger d-none"></div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
-                <button type="button" id="bulk-invoice-submit" class="btn btn-primary">Faturalari Olustur</button>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <div class="input-icon">
+                    <span class="input-icon-addon">
+                        <i class="ti ti-search"></i>
+                    </span>
+                    <input type="search"
+                           class="form-control"
+                           name="search"
+                           placeholder="Fatura no veya müşteri ara"
+                           autocomplete="off"
+                           aria-label="Faturalarda ara"
+                           value="@(ViewBag.Search as string)"
+                           hx-get="/invoicing"
+                           hx-trigger="keyup changed delay:300ms, search"
+                           hx-target="#invoice-table"
+                           hx-swap="outerHTML"
+                           hx-include="[name='status'],[name='type']" />
+                </div>
+            </div>
+            <div class="col-6 col-md-auto">
+                <select class="form-select" name="status"
+                        aria-label="Duruma göre filtrele"
+                        hx-get="/invoicing" hx-trigger="change"
+                        hx-target="#invoice-table" hx-swap="outerHTML"
+                        hx-include="[name='search'],[name='type']">
+                    <option value="">Tüm Durumlar</option>
+                    <option value="@((int)EInvoiceStatus.Draft)" selected="@(ViewBag.Status?.ToString() == EInvoiceStatus.Draft.ToString())">Taslak</option>
+                    <option value="@((int)EInvoiceStatus.Sent)" selected="@(ViewBag.Status?.ToString() == EInvoiceStatus.Sent.ToString())">Gönderildi</option>
+                    <option value="@((int)EInvoiceStatus.Accepted)" selected="@(ViewBag.Status?.ToString() == EInvoiceStatus.Accepted.ToString())">Onaylandı</option>
+                    <option value="@((int)EInvoiceStatus.Rejected)" selected="@(ViewBag.Status?.ToString() == EInvoiceStatus.Rejected.ToString())">Reddedildi</option>
+                    <option value="@((int)EInvoiceStatus.Cancelled)" selected="@(ViewBag.Status?.ToString() == EInvoiceStatus.Cancelled.ToString())">İptal</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-auto">
+                <select class="form-select" name="type"
+                        aria-label="Tipe göre filtrele"
+                        hx-get="/invoicing" hx-trigger="change"
+                        hx-target="#invoice-table" hx-swap="outerHTML"
+                        hx-include="[name='search'],[name='status']">
+                    <option value="">Tüm Tipler</option>
+                    <option value="@((int)EInvoiceType.EFatura)" selected="@(ViewBag.InvoiceType?.ToString() == EInvoiceType.EFatura.ToString())">e-Fatura</option>
+                    <option value="@((int)EInvoiceType.EArsiv)" selected="@(ViewBag.InvoiceType?.ToString() == EInvoiceType.EArsiv.ToString())">e-Arşiv</option>
+                </select>
             </div>
         </div>
+    </div>
+    <partial name="~/Features/Invoicing/Views/Partials/_InvoiceTable.cshtml" model="Model"/>
+</div>
 
-<script>
-    document.getElementById('bulk-invoice-submit').addEventListener('click', async function () {
-        const errorEl = document.getElementById('bulk-invoice-error');
-        errorEl.classList.add('d-none');
+@* ── Toplu Fatura Modalı ── *@
+<div class="modal modal-blur fade" id="bulk-invoice-modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Toplu Fatura Oluştur</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Kapat"></button>
+            </div>
+            <div class="modal-body">
+                <p class="text-secondary">
+                    JSON formatında birden fazla faturayı tek seferde oluştur. Her fatura için
+                    müşteri bilgileri ve kalemleri belirt.
+                </p>
+                <div class="mb-3">
+                    <label class="form-label" for="bulk-invoice-json">Fatura JSON Verisi</label>
+                    <textarea id="bulk-invoice-json" class="form-control font-monospace" rows="10"
+                              spellcheck="false"
+                              placeholder='{"invoices": [{"invoiceType": 0, "customerTaxId": "...", "customerTitle": "...", "issueDate": "...", "integratorProvider": 0, "lines": [{"productName": "...", "quantity": 1, "unitPrice": 100, "taxRate": 20}]}]}'></textarea>
+                    <small class="form-hint">JSON formatında birden fazla fatura tanımlayın.</small>
+                </div>
+                <div id="bulk-invoice-error" class="alert alert-danger d-none" role="alert"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-link link-secondary" data-bs-dismiss="modal">İptal</button>
+                <button type="button" id="bulk-invoice-submit" class="btn btn-primary ms-auto">
+                    <i class="ti ti-file-stack icon"></i>
+                    Faturaları Oluştur
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        let payload;
-        try {
-            payload = JSON.parse(document.getElementById('bulk-invoice-json').value);
-        } catch (e) {
-            errorEl.textContent = 'Gecersiz JSON formati.';
-            errorEl.classList.remove('d-none');
-            return;
-        }
+@section Scripts {
+    <script>
+        document.getElementById('bulk-invoice-submit').addEventListener('click', async function () {
+            const errorEl = document.getElementById('bulk-invoice-error');
+            errorEl.classList.add('d-none');
 
-        const btn = this;
-        btn.disabled = true;
-        btn.textContent = 'Gonderiliyor...';
-
-        try {
-            const response = await fetch('/invoicing/bulk', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                errorEl.textContent = data.message || 'Bir hata olustu.';
+            let payload;
+            try {
+                payload = JSON.parse(document.getElementById('bulk-invoice-json').value);
+            } catch (e) {
+                errorEl.textContent = 'Geçersiz JSON formatı.';
                 errorEl.classList.remove('d-none');
                 return;
             }
 
-            if (data.redirect) {
-                window.location.href = data.redirect;
+            const btn = this;
+            const originalHtml = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status"></span>Gönderiliyor...';
+
+            try {
+                const response = await fetch('/invoicing/bulk', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    errorEl.textContent = data.message || 'Bir hata oluştu.';
+                    errorEl.classList.remove('d-none');
+                    return;
+                }
+
+                if (data.redirect) {
+                    window.location.href = data.redirect;
+                }
+            } catch (e) {
+                errorEl.textContent = 'İstek gönderilemedi.';
+                errorEl.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalHtml;
             }
-        } catch (e) {
-            errorEl.textContent = 'Istek gonderilemedi.';
-            errorEl.classList.remove('d-none');
-        } finally {
-            btn.disabled = false;
-            btn.textContent = 'Faturalari Olustur';
-        }
-    });
-</script>
+        });
+    </script>
+}
