@@ -1436,8 +1436,8 @@
   {
     "task": "Vergi Raporu - PDF Export (Muhasebeye Gonderilecek Format)",
     "description": "Vergi raporuna PDF export ekle. Donem, firma bilgisi, KDV ozet tablosu, e-fatura/e-arsiv ayrimi dahil. Muhasebeciye hazir format olmali.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "/reports/tax/print standalone view (Layout=null, A4 muhasebe format, auto window.print -> tarayici PDF). KDV oran tablosu + fatura turu ozeti + imza alani. Yeni paket YOK. Tax sayfasina PDF/Yazdir butonu. Test edilmis GetVatDeclarationAsync reuse.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [],

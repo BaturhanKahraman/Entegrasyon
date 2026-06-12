@@ -1,0 +1,130 @@
+@using Entegrasyon.Entity.Dtos.Reports
+@model VatDeclarationDto
+@{
+    Layout = null;
+    var start = (DateOnly)ViewBag.StartDate;
+    var end = (DateOnly)ViewBag.EndDate;
+    var brk = ViewBag.InvoiceBreakdown as InvoiceTypeBreakdownDto;
+    var now = DateTime.Now;
+}
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <title>KDV Beyan Özeti — @start.ToString("dd.MM.yyyy") / @end.ToString("dd.MM.yyyy")</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { font-family: "Segoe UI", Arial, sans-serif; color: #1a1a1a; margin: 0; padding: 24px; font-size: 13px; }
+        .sheet { max-width: 720px; margin: 0 auto; }
+        .doc-head { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #1a1a1a; padding-bottom: 12px; margin-bottom: 16px; }
+        .doc-head h1 { font-size: 20px; margin: 0 0 4px; }
+        .doc-head .meta { font-size: 12px; color: #555; }
+        .doc-head .right { text-align: right; font-size: 12px; color: #555; }
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+        th, td { padding: 7px 10px; border: 1px solid #cfcfcf; text-align: left; }
+        thead th { background: #f1f3f5; font-weight: 600; }
+        td.num, th.num { text-align: right; font-variant-numeric: tabular-nums; }
+        tfoot td { font-weight: 700; background: #f8f9fa; }
+        h2 { font-size: 14px; margin: 20px 0 8px; border-left: 3px solid #1a1a1a; padding-left: 8px; }
+        .summary-row { display: flex; gap: 12px; }
+        .summary-row .box { flex: 1; border: 1px solid #cfcfcf; padding: 10px; }
+        .summary-row .box .label { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: .3px; }
+        .summary-row .box .val { font-size: 16px; font-weight: 700; margin-top: 2px; }
+        .summary-row .box .cnt { font-size: 11px; color: #888; }
+        .sign { margin-top: 48px; display: flex; justify-content: space-between; }
+        .sign .slot { width: 200px; border-top: 1px solid #1a1a1a; padding-top: 6px; font-size: 12px; color: #555; text-align: center; }
+        .empty { padding: 24px; text-align: center; color: #888; border: 1px dashed #cfcfcf; }
+        .actions { text-align: center; margin-top: 24px; }
+        .actions button { padding: 8px 18px; font-size: 13px; cursor: pointer; margin: 0 4px; }
+        @@media print { .no-print { display: none !important; } body { padding: 0; } }
+    </style>
+</head>
+<body>
+    <div class="sheet">
+        <div class="doc-head">
+            <div>
+                <h1>KDV Beyan Özeti</h1>
+                <div class="meta">Dönem: <strong>@start.ToString("dd.MM.yyyy") – @end.ToString("dd.MM.yyyy")</strong></div>
+            </div>
+            <div class="right">
+                Belge Tarihi: @now.ToString("dd.MM.yyyy HH:mm")<br />
+                Muhasebe Beyanı
+            </div>
+        </div>
+
+        <h2>KDV Oranına Göre Matrah ve KDV</h2>
+        @if (Model.Lines.Count == 0)
+        {
+            <div class="empty">Seçili dönemde kesilmiş (Gönderildi/Kabul Edildi) fatura bulunmamaktadır.</div>
+        }
+        else
+        {
+            <table>
+                <thead>
+                    <tr>
+                        <th>KDV Oranı</th>
+                        <th class="num">Matrah</th>
+                        <th class="num">KDV Tutarı</th>
+                        <th class="num">Satır Sayısı</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in Model.Lines)
+                    {
+                        <tr>
+                            <td>%@line.VatRate</td>
+                            <td class="num">@line.TaxBase.ToString("N2") TL</td>
+                            <td class="num">@line.VatAmount.ToString("N2") TL</td>
+                            <td class="num">@line.LineCount</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td>TOPLAM</td>
+                        <td class="num">@Model.TotalTaxBase.ToString("N2") TL</td>
+                        <td class="num">@Model.TotalVat.ToString("N2") TL</td>
+                        <td class="num"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        }
+
+        @if (brk is not null)
+        {
+            <h2>Fatura Türü Dağılımı</h2>
+            <div class="summary-row">
+                <div class="box">
+                    <div class="label">e-Fatura</div>
+                    <div class="val">@brk.EInvoice.Total.ToString("N2") TL</div>
+                    <div class="cnt">@brk.EInvoice.Count adet</div>
+                </div>
+                <div class="box">
+                    <div class="label">e-Arşiv</div>
+                    <div class="val">@brk.EArsiv.Total.ToString("N2") TL</div>
+                    <div class="cnt">@brk.EArsiv.Count adet</div>
+                </div>
+                <div class="box">
+                    <div class="label">Faturasız</div>
+                    <div class="val">@brk.Uninvoiced.Total.ToString("N2") TL</div>
+                    <div class="cnt">@brk.Uninvoiced.Count adet</div>
+                </div>
+            </div>
+        }
+
+        <div class="sign">
+            <div class="slot">Hazırlayan</div>
+            <div class="slot">Muhasebe / Onay</div>
+        </div>
+
+        <div class="actions no-print">
+            <button onclick="window.print()">Yazdır / PDF</button>
+            <button onclick="window.close()">Kapat</button>
+        </div>
+    </div>
+
+    <script>
+        window.addEventListener('load', () => setTimeout(() => window.print(), 400));
+    </script>
+</body>
+</html>

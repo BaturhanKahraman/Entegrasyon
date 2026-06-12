@@ -304,6 +304,23 @@ public class ReportController(
         return View(report);
     }
 
+    /// <summary>
+    /// KDV beyan özetinin muhasebeye gönderilebilir, yazdırma/PDF'e uygun çıktısı.
+    /// Standalone layout — tarayıcı "Yazdır → PDF olarak kaydet" ile PDF üretir (ek paket yok).
+    /// </summary>
+    [HttpGet("/reports/tax/print")]
+    public async Task<IActionResult> TaxPrint(DateOnly? startDate = null, DateOnly? endDate = null)
+    {
+        var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+        var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);
+
+        var vatDeclaration = await reportManager.GetVatDeclarationAsync(start, end);
+        ViewBag.InvoiceBreakdown = await reportManager.GetInvoiceTypeBreakdownAsync(start, end);
+        ViewBag.StartDate = start;
+        ViewBag.EndDate = end;
+        return View(vatDeclaration);
+    }
+
     [HttpGet("/reports/category-sales")]
     public async Task<IActionResult> CategorySales(DateOnly? startDate = null, DateOnly? endDate = null)
     {
