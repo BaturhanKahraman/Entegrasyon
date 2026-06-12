@@ -266,6 +266,22 @@ Veritabanı bu işin kalbi; **"yavaşlığa tahammül yok"**. Sorgu yazımı ile
 
 Dev'de pazaryeri API'leri WireMock ile mock'lanır (gerçek key yok). Mock'lar **resmi pazaryeri dokümantasyonunu birebir yansıtmalı:** response alanları/formatı dokümandaki gibi olmalı; **geçersiz/yanlış request gönderilirse gerçek API gibi uygun HATA mesajı/kodu dönmeli** (request validation). Yani sadece happy-path canned değil — doc-doğru + validation-error'lı. Uygulama dev'de "gerçekten gönderiyormuş gibi" davranmalı, yanlışta hatayı görmeli.
 
+### WireMock 3.9.2 — Bilinen Davranışlar ve Kurallar (2026-06-12)
+
+**Mapping yapısı:** `docs/wiremock/mappings/trendyol/` altında marketplace-per-subdir. Body dosyaları `docs/wiremock/__files/trendyol/` altında. CI (deploy-dev.yml) bu klasörleri server'a sync eder.
+
+**Priority kuralı (kritik):** WireMock'ta düşük sayı = yüksek öncelik. Diğer marketplace catch-all'lar (örn. PTT `POST .*/products.*`) priority 5 kullanıyor. Trendyol mapping'leri:
+- `priority: 1` — global header-based override (429 simülasyonu)
+- `priority: 3` — specific success stub (bodyPattern ile)
+- `priority: 4` — validation error fallback (bodyPattern yok, URL-specific)
+- `priority: 5` — genel catalog/seller GET'ler
+
+**`absent: true` bodyPattern çalışmıyor (WireMock 3.9.2 bug):** `{ "matchesJsonPath": "$.items[0]", "absent": true }` beklenenin tersini yapıyor — items varken 400, yokken 200 dönüyor. Doğru pattern: SUCCESS stub'a `bodyPatterns: [{ "matchesJsonPath": "$.items[0]" }]` ekle (items var → 200), 400 fallback stub'ı bodyPattern'siz bırak (priority 4, URL-specific).
+
+**Persistent dosya sync:** Server'da `/opt/stacks/entegrasyon-dev/wiremock/` root-owned — sadece CI (act_runner root) yazabilir. `develop` push → CI otomatik sync eder. Acil güncelleme için admin API kullan: eski mapping'leri `DELETE /__admin/mappings/{id}`, yenilerini `POST /__admin/mappings` ile yükle (bodyFileName yerine jsonBody inline). In-memory yükleme container restart'a kadar kalıcı.
+
+**Trendyol implementasyon durumu:** Tüm API endpoint'leri mock'lu (2026-06-12 itibarıyla). Catalog (brands/categories), seller addresses, product CRUD + batch lifecycle, stock/price update, order lifecycle (Created→Picking→Shipped), invoice (link/PDF), shipping label (PDF binary), 429 rate-limit simülasyonu.
+
 ## graphify
 
 This project has a knowledge graph at graphify-out/ with god nodes, community structure, and cross-file relationships.
