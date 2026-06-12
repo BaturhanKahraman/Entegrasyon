@@ -1,0 +1,12 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "PUT",
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/v2/products/unapproved-bulk-update$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/product/batch-response.json"
+  }
+}

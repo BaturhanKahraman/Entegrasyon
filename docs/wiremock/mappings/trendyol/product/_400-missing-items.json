@@ -1,0 +1,19 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "POST",
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/v2/products$",
+    "bodyPatterns": [
+      { "matchesJsonPath": "$.items[0]", "absent": true }
+    ]
+  },
+  "response": {
+    "status": 400,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": {
+      "errors": [
+        { "code": "VALIDATION_ERROR", "message": "items is required and cannot be empty" }
+      ]
+    }
+  }
+}

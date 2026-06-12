@@ -1,0 +1,10 @@
+{
+  "batchRequestId": "batch-test-001",
+  "status": "IN_PROGRESS",
+  "items": [],
+  "itemCount": 1,
+  "failedItemCount": 0,
+  "batchRequestType": "ITEM",
+  "creationDate": 1749729600000,
+  "lastModification": 1749729601000
+}

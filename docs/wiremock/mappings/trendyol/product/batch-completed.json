@@ -1,0 +1,15 @@
+{
+  "priority": 5,
+  "scenarioName": "batch-lifecycle",
+  "requiredScenarioState": "batch-polled",
+  "newScenarioState": "Started",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/products/batch-requests/[^/]+$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/product/batch-completed.json"
+  }
+}
