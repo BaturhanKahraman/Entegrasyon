@@ -287,6 +287,7 @@ public class ReportController(
 
         var report = await reportManager.GetSalesReportAsync(new SalesReportFilterDto(start, end));
         var vatDeclaration = await reportManager.GetVatDeclarationAsync(start, end);
+        ViewBag.InvoiceBreakdown = await reportManager.GetInvoiceTypeBreakdownAsync(start, end);
 
         // Dönem karşılaştırma: bu çeyrek vs geçen çeyrek (bugün referanslı, filtreden bağımsız)
         var today = DateOnly.FromDateTime(DateTime.Today);

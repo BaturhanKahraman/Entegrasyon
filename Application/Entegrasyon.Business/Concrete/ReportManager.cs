@@ -5,6 +5,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Reports;
 using Entegrasyon.Entity.Invoicing;
+using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
@@ -831,6 +832,56 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             .ToListAsync();
 
         return new VatDeclarationDto(lines, lines.Sum(l => l.TaxBase), lines.Sum(l => l.VatAmount));
+    }
+
+    public async Task<InvoiceTypeBreakdownDto> GetInvoiceTypeBreakdownAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+
+        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        // Kesilen faturalar (Sent/Accepted), dönem içi — türe göre adet + GrandTotal.
+        var invoiceGroups = await db.Set<EInvoice>()
+            .AsNoTracking()
+            .Where(i => !i.IsDeleted
+                        && (i.Status == EInvoiceStatus.Sent || i.Status == EInvoiceStatus.Accepted)
+                        && i.IssueDate >= startTs && i.IssueDate <= endTs)
+            .GroupBy(i => i.InvoiceType)
+            .Select(g => new { Type = g.Key, Count = g.Count(), Total = g.Sum(i => i.GrandTotal) })
+            .ToListAsync();
+
+        var eFatura = invoiceGroups.FirstOrDefault(g => g.Type == EInvoiceType.EFatura);
+        var eArsiv = invoiceGroups.FirstOrDefault(g => g.Type == EInvoiceType.EArsiv);
+
+        // Faturası kesilmiş (Sent/Accepted) satışların Id'leri.
+        var invoicedSaleIds = db.Set<EInvoice>()
+            .Where(i => !i.IsDeleted
+                        && (i.Status == EInvoiceStatus.Sent || i.Status == EInvoiceStatus.Accepted)
+                        && i.SaleId != null)
+            .Select(i => i.SaleId!.Value);
+
+        // Faturasız: dönem içi iptal-olmayan satışlardan faturası bulunmayanlar.
+        // Tutar = SUM(UnitPrice * Quantity * (1 - DiscountPercent/100)) — satış raporu geliriyle aynı formül.
+        var uninvoiced = await db.Set<Sale>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted
+                        && s.SaleStatus != SaleStatus.Cancelled
+                        && s.SaleDate >= startTs && s.SaleDate <= endTs
+                        && !invoicedSaleIds.Contains(s.Id))
+            .Select(s => s.SaleItems
+                .Where(si => !si.IsDeleted)
+                .Sum(si => (double)si.UnitPrice * si.Quantity * (1 - si.DiscountPercent / 100.0)))
+            .ToListAsync();
+
+        var uninvoicedSegment = new InvoiceTypeSegmentDto(
+            uninvoiced.Count,
+            Math.Round((decimal)uninvoiced.Sum(), 2));
+
+        return new InvoiceTypeBreakdownDto(
+            new InvoiceTypeSegmentDto(eFatura?.Count ?? 0, eFatura?.Total ?? 0m),
+            new InvoiceTypeSegmentDto(eArsiv?.Count ?? 0, eArsiv?.Total ?? 0m),
+            uninvoicedSegment);
     }
 
     #endregion

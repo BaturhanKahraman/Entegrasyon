@@ -15,4 +15,5 @@ public interface IReportManager
     Task<List<TopSellingProductDto>> GetTopSellingProductsAsync(DateOnly startDate, DateOnly endDate, int top = 10);
     Task<List<ProductPerformanceDto>> GetSlowMovingProductsAsync(DateOnly startDate, DateOnly endDate, int top = 10);
     Task<VatDeclarationDto> GetVatDeclarationAsync(DateOnly startDate, DateOnly endDate);
+    Task<InvoiceTypeBreakdownDto> GetInvoiceTypeBreakdownAsync(DateOnly startDate, DateOnly endDate);
 }

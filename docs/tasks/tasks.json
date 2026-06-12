@@ -1447,8 +1447,8 @@
   {
     "task": "Vergi Raporu - E-Fatura / E-Arsiv / Faturasiz Ayrimi",
     "description": "Vergi raporunda satislari fatura kanalina gore grupla: e-fatura kesilmis, e-arsiv kesilmis, faturasiz. Muhasebeci bu ayrimi standart beyan icin ister.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetInvoiceTypeBreakdownAsync: EInvoice GroupBy(InvoiceType) Sent/Accepted (count+GrandTotal); faturasiz = donem ici iptal-olmayan satislardan EInvoice.SaleId eslesmeyenler (SaleItem UnitPrice*Qty*(1-Disc%) toplami). Integration test (split/draft/cancelled/out-of-range). View: 3 segment karti + faturasiz uyarisi.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [],
