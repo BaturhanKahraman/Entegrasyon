@@ -21,6 +21,7 @@ public class ReportController(
     IShipmentTrackingManager shipmentTrackingManager,
     IBranchOfficeManager branchOfficeManager,
     ISupplierReturnNotificationManager supplierReturnNotificationManager,
+    IShipmentDelayNotificationManager shipmentDelayNotificationManager,
     IStockTransferRequestManager stockTransferRequestManager) : Controller
 {
     [HttpGet("/reports/sales")]
@@ -371,14 +372,40 @@ public class ReportController(
     }
 
     [HttpGet("/reports/shipping")]
-    public async Task<IActionResult> Shipping()
+    public async Task<IActionResult> Shipping(DateOnly? startDate = null, DateOnly? endDate = null)
     {
         ViewData.SetPageTitle("Kargo Raporu");
         ViewData.SetActiveNav("reports-shipping");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Kargo", null));
 
+        var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
+        var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);
+
         var summary = await shipmentTrackingManager.GetCargoSummaryAsync();
+
+        ViewBag.StartDate = start;
+        ViewBag.EndDate = end;
+        ViewBag.CargoPerformance = await reportManager.GetCargoCompanyPerformanceAsync(start, end);
+        ViewBag.RegionDensity = await reportManager.GetRegionDensityAsync(start, end);
+        ViewBag.DelayTrend = await reportManager.GetDelayTrendAsync(start, end);
+        ViewBag.DelayedShipments = await reportManager.GetDelayedShipmentsAsync(start, end);
         return View(summary.Data);
+    }
+
+    [HttpPost("/reports/shipping/notify-delayed")]
+    [Authorize(Policy = AppPermissions.Reports.Create)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> NotifyDelayed(
+        NotifyDelayedShipmentsDto dto, DateOnly? startDate = null, DateOnly? endDate = null, CancellationToken ct = default)
+    {
+        var result = await shipmentDelayNotificationManager.NotifyDelayedCustomersAsync(dto, GetCurrentUserId(), ct);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "Müşteriler bilgilendirildi.");
+        else
+            TempData.SetError(result.Message ?? "Bilgilendirme gönderilemedi.");
+
+        return RedirectToAction(nameof(Shipping), new { startDate, endDate });
     }
 
     private Guid? GetCurrentUserId()

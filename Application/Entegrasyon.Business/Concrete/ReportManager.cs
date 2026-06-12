@@ -7,6 +7,7 @@ using Entegrasyon.Entity.Dtos.Reports;
 using Entegrasyon.Entity.Invoicing;
 using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Sales;
+using Entegrasyon.Entity.Shipping;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
@@ -1233,6 +1234,179 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
 
         return buckets
             .Select((b, i) => new PriceRangeBucketDto(b.Label, b.Min, b.Max, agg[i].Lines, agg[i].Qty, agg[i].Revenue))
+            .ToList();
+    }
+
+    #endregion
+
+    #region Shipping Report
+    // Gecikme: teslim-geç (ActualDeliveryDate > EstimatedDeliveryDate) VEYA
+    // yolda-gecikmiş (terminal değil + EstimatedDeliveryDate < şimdi).
+
+    private static string ShipmentStatusText(ShipmentStatus status) => status switch
+    {
+        ShipmentStatus.Created => "Oluşturuldu",
+        ShipmentStatus.PickedUp => "Teslim Alındı",
+        ShipmentStatus.InTransit => "Yolda",
+        ShipmentStatus.OutForDelivery => "Dağıtımda",
+        ShipmentStatus.Delivered => "Teslim Edildi",
+        ShipmentStatus.ReturnedToSender => "İade Edildi",
+        ShipmentStatus.Failed => "Başarısız",
+        ShipmentStatus.Cancelled => "İptal",
+        _ => status.ToString()
+    };
+
+    public async Task<List<CargoCompanyPerformanceDto>> GetCargoCompanyPerformanceAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+        var now = DateTimeOffset.UtcNow;
+
+        var rows = await db.Set<ShipmentTracking>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.CreatedAt >= startTs && s.CreatedAt <= endTs)
+            .GroupBy(s => new { s.CargoCompanyId, s.CargoCompany.Name })
+            .Select(g => new
+            {
+                g.Key.CargoCompanyId,
+                g.Key.Name,
+                Total = g.Count(),
+                Delivered = g.Count(s => s.CurrentStatus == ShipmentStatus.Delivered),
+                Delayed = g.Count(s =>
+                    (s.CurrentStatus == ShipmentStatus.Delivered
+                        && s.ActualDeliveryDate != null && s.EstimatedDeliveryDate != null
+                        && s.ActualDeliveryDate > s.EstimatedDeliveryDate)
+                    || (s.CurrentStatus != ShipmentStatus.Delivered
+                        && s.CurrentStatus != ShipmentStatus.Cancelled
+                        && s.CurrentStatus != ShipmentStatus.ReturnedToSender
+                        && s.EstimatedDeliveryDate != null && s.EstimatedDeliveryDate < now))
+            })
+            .ToListAsync();
+
+        return rows
+            .Select(r => new CargoCompanyPerformanceDto(
+                r.CargoCompanyId, r.Name, r.Total, r.Delivered, r.Delayed,
+                r.Total > 0 ? Math.Round(r.Delivered * 100.0 / r.Total, 1) : 0,
+                r.Total > 0 ? Math.Round(r.Delayed * 100.0 / r.Total, 1) : 0))
+            .OrderByDescending(c => c.TotalShipments)
+            .ToList();
+    }
+
+    public async Task<List<RegionDensityDto>> GetRegionDensityAsync(DateOnly startDate, DateOnly endDate, int top = 20)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+
+        var rows = await db.Set<ShipmentTracking>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.CreatedAt >= startTs && s.CreatedAt <= endTs)
+            .GroupBy(s => s.Order != null && s.Order.ShippingAddress.City != null
+                ? s.Order.ShippingAddress.City
+                : "Bilinmeyen")
+            .Select(g => new
+            {
+                City = g.Key,
+                Count = g.Count(),
+                Delivered = g.Count(s => s.CurrentStatus == ShipmentStatus.Delivered)
+            })
+            .ToListAsync();
+
+        return rows
+            .Select(r => new RegionDensityDto(r.City ?? "Bilinmeyen", r.Count, r.Delivered))
+            .OrderByDescending(r => r.ShipmentCount)
+            .Take(top)
+            .ToList();
+    }
+
+    public async Task<List<DelayTrendPointDto>> GetDelayTrendAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+        var now = DateTimeOffset.UtcNow;
+
+        var rows = await db.Set<ShipmentTracking>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.EstimatedDeliveryDate != null
+                        && s.EstimatedDeliveryDate >= startTs && s.EstimatedDeliveryDate <= endTs)
+            .Select(s => new
+            {
+                s.EstimatedDeliveryDate!.Value.Year,
+                s.EstimatedDeliveryDate.Value.Month,
+                IsDelayed =
+                    (s.CurrentStatus == ShipmentStatus.Delivered
+                        && s.ActualDeliveryDate != null && s.ActualDeliveryDate > s.EstimatedDeliveryDate)
+                    || (s.CurrentStatus != ShipmentStatus.Delivered
+                        && s.CurrentStatus != ShipmentStatus.Cancelled
+                        && s.CurrentStatus != ShipmentStatus.ReturnedToSender
+                        && s.EstimatedDeliveryDate < now)
+            })
+            .ToListAsync();
+
+        var months = new List<(int Year, int Month)>();
+        var cursor = new DateOnly(startDate.Year, startDate.Month, 1);
+        var last = new DateOnly(endDate.Year, endDate.Month, 1);
+        while (cursor <= last)
+        {
+            months.Add((cursor.Year, cursor.Month));
+            cursor = cursor.AddMonths(1);
+        }
+
+        return months
+            .Select(m =>
+            {
+                var inMonth = rows.Where(r => r.Year == m.Year && r.Month == m.Month).ToList();
+                return new DelayTrendPointDto($"{m.Month:D2}.{m.Year}", inMonth.Count(r => r.IsDelayed), inMonth.Count);
+            })
+            .ToList();
+    }
+
+    public async Task<List<DelayedShipmentDto>> GetDelayedShipmentsAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+        var now = DateTimeOffset.UtcNow;
+
+        var raw = await db.Set<ShipmentTracking>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.CreatedAt >= startTs && s.CreatedAt <= endTs
+                && ((s.CurrentStatus == ShipmentStatus.Delivered
+                        && s.ActualDeliveryDate != null && s.EstimatedDeliveryDate != null
+                        && s.ActualDeliveryDate > s.EstimatedDeliveryDate)
+                    || (s.CurrentStatus != ShipmentStatus.Delivered
+                        && s.CurrentStatus != ShipmentStatus.Cancelled
+                        && s.CurrentStatus != ShipmentStatus.ReturnedToSender
+                        && s.EstimatedDeliveryDate != null && s.EstimatedDeliveryDate < now)))
+            .Select(s => new
+            {
+                s.Id,
+                s.TrackingNumber,
+                CargoName = s.CargoCompany.Name,
+                s.RecipientName,
+                City = s.Order != null ? s.Order.ShippingAddress.City : null,
+                s.EstimatedDeliveryDate,
+                s.ActualDeliveryDate,
+                s.CurrentStatus,
+                Email = s.Order != null ? s.Order.CustomerEmail : null
+            })
+            .ToListAsync();
+
+        return raw
+            .Select(r =>
+            {
+                var refDate = r.ActualDeliveryDate ?? now;
+                var daysLate = r.EstimatedDeliveryDate.HasValue
+                    ? (int)(refDate - r.EstimatedDeliveryDate.Value).TotalDays
+                    : 0;
+                return new DelayedShipmentDto(
+                    r.Id, r.TrackingNumber, r.CargoName, r.RecipientName, r.City,
+                    r.EstimatedDeliveryDate.HasValue
+                        ? DateOnly.FromDateTime(r.EstimatedDeliveryDate.Value.UtcDateTime)
+                        : null,
+                    Math.Max(0, daysLate),
+                    ShipmentStatusText(r.CurrentStatus),
+                    !string.IsNullOrWhiteSpace(r.Email));
+            })
+            .OrderByDescending(d => d.DaysLate)
             .ToList();
     }
 

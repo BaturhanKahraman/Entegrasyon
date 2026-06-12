@@ -26,4 +26,9 @@ public interface IReportManager
     Task<List<CategorySeasonalDto>> GetCategorySeasonalComparisonAsync(DateOnly startDate, DateOnly endDate);
     Task<List<SlowMovingCategoryDto>> GetSlowMovingCategoriesAsync(int staleDays = 30);
     Task<List<PriceRangeBucketDto>> GetCategoryPriceDistributionAsync(DateOnly startDate, DateOnly endDate);
+
+    Task<List<CargoCompanyPerformanceDto>> GetCargoCompanyPerformanceAsync(DateOnly startDate, DateOnly endDate);
+    Task<List<RegionDensityDto>> GetRegionDensityAsync(DateOnly startDate, DateOnly endDate, int top = 20);
+    Task<List<DelayTrendPointDto>> GetDelayTrendAsync(DateOnly startDate, DateOnly endDate);
+    Task<List<DelayedShipmentDto>> GetDelayedShipmentsAsync(DateOnly startDate, DateOnly endDate);
 }

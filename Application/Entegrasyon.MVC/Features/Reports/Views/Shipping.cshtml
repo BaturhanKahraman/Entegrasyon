@@ -1,4 +1,31 @@
 @model Entegrasyon.Entity.Dtos.Shipping.CargoSummaryDto
+@{
+    var startDate = (DateOnly)ViewBag.StartDate;
+    var endDate = (DateOnly)ViewBag.EndDate;
+    var perf = ViewBag.CargoPerformance as List<Entegrasyon.Entity.Dtos.Reports.CargoCompanyPerformanceDto> ?? new();
+    var region = ViewBag.RegionDensity as List<Entegrasyon.Entity.Dtos.Reports.RegionDensityDto> ?? new();
+    var delayTrend = ViewBag.DelayTrend as List<Entegrasyon.Entity.Dtos.Reports.DelayTrendPointDto> ?? new();
+    var delayed = ViewBag.DelayedShipments as List<Entegrasyon.Entity.Dtos.Reports.DelayedShipmentDto> ?? new();
+    var maxRegion = region.Count > 0 ? region.Max(r => r.ShipmentCount) : 1;
+}
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/shipping" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Başlangıç</label>
+                        <input type="date" class="form-control" name="startDate" value="@startDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitiş</label>
+                        <input type="date" class="form-control" name="endDate" value="@endDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div class="row row-deck row-cards mb-3">
             <div class="col-sm-6 col-lg-3">
@@ -60,4 +87,210 @@
                     <span><i class="ti ti-circle-filled text-danger"></i> başarısız</span>
                 </div>
             </div>
+        </div>
+
+        <div class="row row-cards mt-3 mb-3">
+            <div class="col-lg-7">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Kargo Firması Performansı</h3>
+                            <p class="text-secondary m-0">Teslimat ve gecikme oranları (seçili dönem)</p>
+                        </div>
+                    </div>
+                    @if (perf.Count == 0)
+                    {
+                        <div class="empty"><p class="empty-title">Bu dönemde gönderi yok</p></div>
+                    }
+                    else
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Firma</th>
+                                        <th class="text-end">Gönderi</th>
+                                        <th class="text-end">Teslim</th>
+                                        <th class="text-end">Teslim %</th>
+                                        <th class="text-end">Gecikme</th>
+                                        <th class="text-end">Gecikme %</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var c in perf)
+                                    {
+                                        <tr>
+                                            <td>@c.CargoCompanyName</td>
+                                            <td class="text-end">@c.TotalShipments</td>
+                                            <td class="text-end">@c.DeliveredCount</td>
+                                            <td class="text-end text-green">%@c.DeliveryRatePercent.ToString("F1")</td>
+                                            <td class="text-end">@c.DelayedCount</td>
+                                            <td class="text-end @(c.DelayRatePercent >= 20 ? "text-red fw-bold" : "text-secondary")">%@c.DelayRatePercent.ToString("F1")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="col-lg-5">
+                <div class="card h-100">
+                    <div class="card-header">
+                        <div>
+                            <h3 class="card-title">Bölge Bazlı Teslimat Yoğunluğu</h3>
+                            <p class="text-secondary m-0">İl bazında gönderi adedi</p>
+                        </div>
+                    </div>
+                    @if (region.Count == 0)
+                    {
+                        <div class="empty"><p class="empty-title">Veri yok</p></div>
+                    }
+                    else
+                    {
+                        <div class="card-body">
+                            @foreach (var r in region)
+                            {
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span>@r.City</span>
+                                        <span class="text-secondary">@r.ShipmentCount</span>
+                                    </div>
+                                    <div class="progress" style="height: 6px;">
+                                        <div class="progress-bar bg-primary" style="width: @(r.ShipmentCount * 100.0 / maxRegion)%"></div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        @if (delayTrend.Any(t => t.TotalCount > 0))
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Gecikme Trendi</h3>
+                        <p class="text-secondary m-0">Aylık gecikmiş gönderi adedi</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="delay-trend-chart" data-apex-chart style="height: 300px;"></div>
+                    <script>
+                        (function () {
+                            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                            var textColor = isDark ? '#a0aec0' : '#666';
+                            var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+                            var css = getComputedStyle(document.documentElement);
+                            var redColor = css.getPropertyValue('--tblr-red').trim() || '#d63939';
+                            var options = {
+                                chart: { type: 'line', height: 300, toolbar: { show: false }, fontFamily: 'inherit', background: 'transparent' },
+                                theme: { mode: isDark ? 'dark' : 'light' },
+                                stroke: { curve: 'smooth', width: 3 },
+                                markers: { size: 4 },
+                                series: [
+                                    { name: 'Gecikmiş', data: [@Html.Raw(string.Join(",", delayTrend.Select(t => t.DelayedCount)))] },
+                                    { name: 'Toplam', data: [@Html.Raw(string.Join(",", delayTrend.Select(t => t.TotalCount)))] }
+                                ],
+                                colors: [redColor, '#94a3b8'],
+                                xaxis: {
+                                    categories: [@Html.Raw(string.Join(",", delayTrend.Select(t => "'" + t.Month + "'")))],
+                                    labels: { style: { colors: textColor } }
+                                },
+                                yaxis: { labels: { style: { colors: textColor }, formatter: function (v) { return Math.round(v); } } },
+                                legend: { labels: { colors: textColor } },
+                                grid: { borderColor: gridColor },
+                                dataLabels: { enabled: false }
+                            };
+                            new ApexCharts(document.querySelector('#delay-trend-chart'), options).render();
+                        })();
+                    </script>
+                </div>
+            </div>
+        }
+
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">Gecikmiş Gönderiler</h3>
+                    <p class="text-secondary m-0">Tahmini teslim tarihi geçmiş veya geç teslim edilmiş gönderiler</p>
+                </div>
+                @if (delayed.Any(d => d.HasCustomerEmail))
+                {
+                    <div class="card-actions">
+                        <button type="submit" form="notify-delayed-form" class="btn btn-red"
+                                onclick="return confirm('Seçili gecikmiş gönderilerin müşterilerine bilgilendirme e-postası gönderilsin mi?');">
+                            Seçili Müşterileri Bilgilendir
+                        </button>
+                    </div>
+                }
+            </div>
+            @if (delayed.Count == 0)
+            {
+                <div class="empty">
+                    <p class="empty-title">Gecikmiş gönderi yok</p>
+                    <p class="empty-subtitle text-secondary">Seçili dönemde tahmini teslim tarihi aşılmış gönderi bulunmuyor.</p>
+                </div>
+            }
+            else
+            {
+                <form method="post" action="/reports/shipping/notify-delayed" id="notify-delayed-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="startDate" value="@startDate.ToString("yyyy-MM-dd")" />
+                    <input type="hidden" name="endDate" value="@endDate.ToString("yyyy-MM-dd")" />
+                    <div class="table-responsive">
+                        <table class="table table-vcenter card-table table-hover">
+                            <thead>
+                                <tr>
+                                    <th class="w-1">
+                                        <input type="checkbox" class="form-check-input m-0" id="check-all-delayed" />
+                                    </th>
+                                    <th>Takip No</th>
+                                    <th>Kargo</th>
+                                    <th>Alıcı</th>
+                                    <th>İl</th>
+                                    <th>Tahmini Teslim</th>
+                                    <th class="text-end">Gecikme</th>
+                                    <th>Durum</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var d in delayed)
+                                {
+                                    <tr>
+                                        <td>
+                                            @if (d.HasCustomerEmail)
+                                            {
+                                                <input type="checkbox" class="form-check-input m-0 delayed-check" name="ShipmentTrackingIds" value="@d.ShipmentTrackingId" />
+                                            }
+                                            else
+                                            {
+                                                <span class="text-secondary" title="Müşteri e-postası yok"><i class="ti ti-mail-off"></i></span>
+                                            }
+                                        </td>
+                                        <td><span class="text-secondary">@d.TrackingNumber</span></td>
+                                        <td>@d.CargoCompanyName</td>
+                                        <td>@(d.RecipientName ?? "-")</td>
+                                        <td>@(d.City ?? "-")</td>
+                                        <td>@(d.EstimatedDeliveryDate?.ToString("dd.MM.yyyy") ?? "-")</td>
+                                        <td class="text-end"><span class="badge bg-red-lt">@d.DaysLate gün</span></td>
+                                        <td><span class="badge bg-yellow-lt">@d.StatusText</span></td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </form>
+                <script>
+                    (function () {
+                        var all = document.getElementById('check-all-delayed');
+                        if (all) all.addEventListener('change', function () {
+                            document.querySelectorAll('.delayed-check').forEach(function (c) { c.checked = all.checked; });
+                        });
+                    })();
+                </script>
+            }
         </div>

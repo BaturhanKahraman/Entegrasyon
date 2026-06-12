@@ -1506,8 +1506,8 @@
   {
     "task": "Kargo Raporu - Kargo Firmasi Performans Karsilastirmasi",
     "description": "Kargo raporuna firma bazli performans tablosu ekle. Kolonlar: firma adi, toplam gonderi, ortalama teslim suresi, basarili teslim orani, kayip/hasar orani. Esnaf en iyi firmay veriyle secsin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetCargoCompanyPerformanceAsync: firma bazinda gonderi/teslim/gecikme adedi+oranlari (SQL conditional count GroupBy).",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [
@@ -1521,8 +1521,8 @@
   {
     "task": "Kargo Raporu - Bolge Bazli Teslimat Yogunlugu",
     "description": "Kargo raporuna il bazli gonderi yogunluk gorunumu ekle. Hangi sehre en cok gonderi gidiyor? Basit tablo ile baslanir, harita sonra. Depo konumu / kargo anlasma planlamasi icin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12. Basit tablo ile baslanabilir, harita sonra.",
+    "status": "done",
+    "notes": "GetRegionDensityAsync: Order.ShippingAddress.City bazinda gonderi yogunlugu (top N).",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],
@@ -1532,8 +1532,8 @@
   {
     "task": "Kargo Raporu - Gecikme Trend Grafigi",
     "description": "Kargo raporuna haftalik gecikme trendi ekle. Bu hafta gecikmeler artti mi? Firma bazli gecikme degisimini goster. Operasyonel alarm icin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetDelayTrendAsync: aylik gecikmis/toplam gonderi (EstimatedDeliveryDate penceresi); ApexCharts line.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [],
@@ -1543,8 +1543,8 @@
   {
     "task": "Kargo Raporu - Gecikme Listesi + Toplu Musteri Bilgilendirme",
     "description": "Kargo raporuna Acil sekmesi ekle: tahmini teslim tarihi gecmis ama teslim edilmemis gonderiler. Secili musterilere toplu SMS/e-posta bilgilendirme aksiyonu. Musteri memnuniyeti icin proaktif iletisim.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "MUTASYON: IShipmentDelayNotificationManager.NotifyDelayedCustomersAsync (validation+rule+cift log). Gecikmis gonderi listesi + checkbox toplu secim -> Order.CustomerEmail olanlara IStorefrontEmailService.SendAsync. Gecikme=teslim-gec VEYA yolda-gecikmis. 2 integration test. ReportController ctor mock fix.",
     "priority": "high",
     "plan": false,
     "manual_test_steps": [
