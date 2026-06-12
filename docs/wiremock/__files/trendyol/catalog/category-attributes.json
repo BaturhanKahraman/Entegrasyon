@@ -1,0 +1,46 @@
+{
+  "id": 388,
+  "name": "Çocuk Giyim",
+  "displayName": "Çocuk Giyim",
+  "categoryAttributes": [
+    {
+      "allowCustom": false,
+      "required": true,
+      "varianter": false,
+      "slicer": true,
+      "categoryId": 388,
+      "attribute": { "id": 348, "name": "Renk" },
+      "attributeValues": [
+        { "id": 1001, "name": "Mavi" },
+        { "id": 1002, "name": "Kırmızı" },
+        { "id": 1003, "name": "Beyaz" }
+      ]
+    },
+    {
+      "allowCustom": false,
+      "required": true,
+      "varianter": true,
+      "slicer": false,
+      "categoryId": 388,
+      "attribute": { "id": 338, "name": "Beden" },
+      "attributeValues": [
+        { "id": 2001, "name": "2-3 Yaş" },
+        { "id": 2002, "name": "4-5 Yaş" },
+        { "id": 2003, "name": "6-7 Yaş" }
+      ]
+    },
+    {
+      "allowCustom": true,
+      "required": false,
+      "varianter": false,
+      "slicer": false,
+      "categoryId": 388,
+      "attribute": { "id": 122, "name": "Cinsiyet" },
+      "attributeValues": [
+        { "id": 3001, "name": "Erkek" },
+        { "id": 3002, "name": "Kız" },
+        { "id": 3003, "name": "Unisex" }
+      ]
+    }
+  ]
+}

@@ -2,11 +2,11 @@
   "priority": 5,
   "request": {
     "method": "GET",
-    "urlPathPattern": "/product/brands/by-name.*"
+    "urlPathPattern": "/product/brands/by-name"
   },
   "response": {
     "status": 200,
     "headers": { "Content-Type": "application/json" },
-    "bodyFileName": "trendyol/brand-search.json"
+    "bodyFileName": "trendyol/catalog/brands-by-name.json"
   }
 }

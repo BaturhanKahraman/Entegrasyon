@@ -1,0 +1,9 @@
+{
+  "brands": [
+    { "id": 7651, "name": "Nike" },
+    { "id": 7652, "name": "Adidas" },
+    { "id": 7653, "name": "Zara" },
+    { "id": 7654, "name": "H&M" },
+    { "id": 7655, "name": "LC Waikiki" }
+  ]
+}

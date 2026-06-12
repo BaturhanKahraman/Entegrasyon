@@ -1,0 +1,15 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "GET",
+    "urlPath": "/product/brands",
+    "queryParameters": {
+      "page": { "equalTo": "-1" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/catalog/brands-page-first.json"
+  }
+}

@@ -1,12 +1,12 @@
 {
   "priority": 5,
   "request": {
-    "method": "POST",
-    "urlPathPattern": "/suppliers/[0-9]+/invoice-link"
+    "method": "GET",
+    "urlPathPattern": "/product/brands"
   },
   "response": {
     "status": 200,
     "headers": { "Content-Type": "application/json" },
-    "bodyFileName": "trendyol/invoice-link.json"
+    "bodyFileName": "trendyol/catalog/brands-page-empty.json"
   }
 }
