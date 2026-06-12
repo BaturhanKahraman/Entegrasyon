@@ -34,4 +34,12 @@ public class AttributeValueNormalizerTests
     {
         Assert.Equal(string.Empty, AttributeValueNormalizer.Normalize(raw));
     }
+
+    [Fact]
+    public void Normalize_TrAware_LowerAndUpper_MatchAsCanonicalKey()
+    {
+        Assert.Equal(
+            AttributeValueNormalizer.Normalize("iğne"),
+            AttributeValueNormalizer.Normalize("İĞNE"));
+    }
 }
