@@ -193,30 +193,23 @@
                     </div>
                 </li>
 
-                @* ── Sohbetler ── *@
-                <li class="nav-item mt-2">
+
+            </ul>
+
+            @* ── Alta sabit: Sohbetler + Yardım ── *@
+            <ul class="navbar-nav mt-auto">
+                <li class="nav-item">
                     <a class="nav-link @(activeNav == "chat" ? "active" : "")" href="/chat">
                         <span class="nav-link-icon"><i class="ti ti-messages"></i></span>
                         <span class="nav-link-title">Sohbetler</span>
                     </a>
                 </li>
-
-                @* ── Yardım ── *@
                 <li class="nav-item">
                     <a class="nav-link @(activeNav == "help" ? "active" : "")" href="/help/new">
                         <span class="nav-link-icon"><i class="ti ti-help-circle"></i></span>
                         <span class="nav-link-title">Yardım</span>
                     </a>
                 </li>
-
-                @* ── Yardım Talepleri (admin) ── *@
-                <li class="nav-item">
-                    <a class="nav-link @(activeNav == "help-admin" ? "active" : "")" require-permission="Permissions.Settings.View" href="/help">
-                        <span class="nav-link-icon"><i class="ti ti-lifebuoy"></i></span>
-                        <span class="nav-link-title">Yardım Talepleri</span>
-                    </a>
-                </li>
-
             </ul>
         </div>
     </div>
