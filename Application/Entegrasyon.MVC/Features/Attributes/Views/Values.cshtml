@@ -1,0 +1,47 @@
+@model Entegrasyon.MVC.Features.Attributes.ViewModels.AttributeValuesVm
+
+<div class="row">
+    <div class="col-12">
+
+        <!-- Yeni Değer Ekle -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">Yeni Değer Ekle</h3>
+            </div>
+            <div class="card-body">
+                <form method="post" action="/attributes/@Model.AttributeId/values">
+                    @Html.AntiForgeryToken()
+                    <div class="row g-2 align-items-end">
+                        <div class="col">
+                            <label class="form-label">Değer Adı</label>
+                            <input type="text" name="name" class="form-control"
+                                   placeholder="Örn: Kırmızı, XL, Pamuk..." required autocomplete="off" />
+                        </div>
+                        <div class="col-auto">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="ti ti-plus me-1"></i>Ekle
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Değer Listesi -->
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">@Model.AttributeName — Tanımlı Değerler</h3>
+                    <p class="text-secondary m-0">Bu özelliğe ait kapalı değer listesi</p>
+                </div>
+                <div class="card-actions">
+                    <a href="/attributes" class="btn btn-ghost-secondary btn-sm">
+                        <i class="ti ti-arrow-left me-1"></i>Özelliklere Dön
+                    </a>
+                </div>
+            </div>
+            <partial name="Partials/_AttributeValueTable" model="Model" />
+        </div>
+
+    </div>
+</div>

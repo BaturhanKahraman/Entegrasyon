@@ -1,0 +1,74 @@
+@model Entegrasyon.MVC.Features.Attributes.ViewModels.AttributeValuesVm
+@using Entegrasyon.MVC.Shared.ViewModels
+
+@if (Model.Values.Count == 0)
+{
+    <div class="card-body">
+        <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                 model='new EmptyStateVm
+                 {
+                     Title = "Henüz değer eklenmemiş",
+                     Subtitle = "Yukarıdaki formu kullanarak bu özelliğe ilk değeri ekleyin."
+                 }' />
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-vcenter card-table table-hover">
+            <thead>
+                <tr>
+                    <th>Değer Adı</th>
+                    <th class="w-1"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var row in Model.Values)
+                {
+                    <tr>
+                        <td>
+                            <span class="badge bg-azure-lt">@row.Name</span>
+                        </td>
+                        <td>
+                            <div class="btn-list flex-nowrap">
+                                <!-- Düzenle: inline form with small input -->
+                                <button type="button"
+                                        class="btn btn-ghost-secondary btn-sm"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#edit-row-@row.Id"
+                                        aria-expanded="false">
+                                    <i class="ti ti-pencil icon"></i>
+                                    Düzenle
+                                </button>
+                                <form method="post" action="/attributes/values/@row.Id/delete"
+                                      onsubmit="return confirm('Bu değeri silmek istediğinizden emin misiniz?');">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="attributeId" value="@Model.AttributeId" />
+                                    <button type="submit" class="btn btn-ghost-danger btn-sm">
+                                        <i class="ti ti-trash icon"></i>
+                                        Sil
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="collapse" id="edit-row-@row.Id">
+                        <td colspan="2" class="bg-light">
+                            <form method="post" action="/attributes/values/@row.Id/edit" class="d-flex gap-2 align-items-end py-1">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="attributeId" value="@Model.AttributeId" />
+                                <div class="flex-grow-1">
+                                    <label class="form-label">Yeni Ad</label>
+                                    <input type="text" name="name" value="@row.Name" class="form-control" required />
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-primary btn-sm">Kaydet</button>
+                                </div>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

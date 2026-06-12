@@ -7,4 +7,6 @@ public interface ICategoryAttributeValueManager
     Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeId(int id);
     Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeIds(IEnumerable<int> categoryAttributeIds);
     Task<int> GetOrCreate(int categoryAttributeId, string rawName);
+    Task UpdateName(int id, string newName);
+    Task SoftDelete(int id);
 }

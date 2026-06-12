@@ -45,7 +45,9 @@
                             <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
                             <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@attr.IsRequired" />
 
-                            <select name="CategoryAttributes[@i].ValueId" class="form-select"
+                            <select name="CategoryAttributes[@i].ValueId"
+                                    class="form-select attr-value-select"
+                                    data-attribute-id="@attr.Id"
                                     @(attr.IsRequired ? "required" : "")>
                                 <option value="">Seçin...</option>
                                 @foreach (var val in attr.CategoryAttributeValues)
@@ -72,3 +74,65 @@
     </div>
 </form>
 </div>
+
+<script>
+(function () {
+    'use strict';
+
+    function initStep2TomSelects() {
+        if (typeof TomSelect === 'undefined') {
+            setTimeout(initStep2TomSelects, 50);
+            return;
+        }
+
+        document.querySelectorAll('.attr-value-select').forEach(function (el) {
+            // Skip already-initialized elements (HTMX re-swap guard)
+            if (el.tomselect) return;
+
+            var attributeId = el.getAttribute('data-attribute-id');
+            var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
+
+            new TomSelect(el, {
+                allowEmptyOption: true,
+                create: function (input, callback) {
+                    fetch('/attributes/values/create', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                        body: new URLSearchParams({
+                            categoryAttributeId: attributeId,
+                            name: input,
+                            __RequestVerificationToken: token
+                        })
+                    })
+                    .then(function (res) {
+                        if (!res.ok) throw new Error('Değer eklenemedi.');
+                        return res.json();
+                    })
+                    .then(function (data) {
+                        callback({ value: data.id, text: data.name });
+                    })
+                    .catch(function () {
+                        if (typeof window.showNotify === 'function') {
+                            window.showNotify('Değer eklenemedi. Lütfen tekrar deneyin.', 'error');
+                        }
+                        callback();
+                    });
+                },
+                createFilter: function (input) {
+                    return input.trim().length > 0;
+                },
+                placeholder: 'Seçin veya yeni değer yazın...',
+                maxOptions: null
+            });
+        });
+    }
+
+    // Run on direct load
+    initStep2TomSelects();
+
+    // Re-run after HTMX swaps this partial back in (wizard navigation)
+    document.addEventListener('htmx:afterSwap', function () {
+        initStep2TomSelects();
+    });
+})();
+</script>

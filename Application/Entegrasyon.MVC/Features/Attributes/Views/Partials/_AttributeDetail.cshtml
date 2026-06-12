@@ -11,6 +11,10 @@
         <h3 class="card-title">@(Model.CategoryAttributeHumanized ?? Model.CategoryAttributeKey)</h3>
         <div class="card-actions">
             <div class="btn-list">
+                <a href="/attributes/@Model.Id/values" class="btn btn-outline-secondary btn-sm">
+                    <i class="ti ti-list icon"></i>
+                    Değerler
+                </a>
                 <button class="btn btn-outline-primary btn-sm"
                         hx-get="/attributes/@Model.Id/edit"
                         hx-target="#attribute-detail"
@@ -22,7 +26,7 @@
                         hx-post="/attributes/@Model.Id/delete"
                         hx-target="#attribute-detail"
                         hx-swap="innerHTML"
-                        hx-confirm="Bu ozelligi silmek istediginizden emin misiniz?">
+                        hx-confirm="Bu özellği silmek istediğinizden emin misiniz?">
                     <i class="ti ti-trash icon"></i>
                     Sil
                 </button>

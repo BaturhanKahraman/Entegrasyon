@@ -1,7 +1,9 @@
 ﻿using Entegrasyon.Business.Helpers;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Categories;
+using Entegrasyon.Entity.Logs;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Entegrasyon.Business.Abstract;
 
 namespace Entegrasyon.Business.Concrete;
@@ -9,9 +11,17 @@ namespace Entegrasyon.Business.Concrete;
 public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManager
 {
     private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
-    public CategoryAttributeValueManager(IDbContextFactory<IntegrationDbContext> contextFactory)
+    private readonly IApplicationLogManager _applicationLogManager;
+    private readonly ILogger<CategoryAttributeValueManager> _logger;
+
+    public CategoryAttributeValueManager(
+        IDbContextFactory<IntegrationDbContext> contextFactory,
+        IApplicationLogManager applicationLogManager,
+        ILogger<CategoryAttributeValueManager> logger)
     {
         _contextFactory = contextFactory;
+        _applicationLogManager = applicationLogManager;
+        _logger = logger;
     }
 
     public async Task<IEnumerable<CategoryAttributeValue>> GetValuesByCategoryAttributeId(int id)
@@ -64,5 +74,59 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
                 .Select(v => v.Id)
                 .FirstAsync();
         }
+    }
+
+    public async Task UpdateName(int id, string newName)
+    {
+        var trimmed = newName?.Trim() ?? string.Empty;
+        if (trimmed.Length == 0)
+            throw new ArgumentException("Değer adı boş olamaz.", nameof(newName));
+
+        var normalized = AttributeValueNormalizer.Normalize(trimmed);
+
+        await _applicationLogManager.AddLog($"Özellik değeri güncelleniyor (Id: {id})", LogType.Category, LogAction.Update);
+        _logger.LogInformation("Updating CategoryAttributeValue {ValueId} to name '{Name}'", id, trimmed);
+
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
+        var entity = await dbContext.CategoryAttributeValues
+            .AsTracking()
+            .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted);
+
+        if (entity is null)
+        {
+            _logger.LogWarning("CategoryAttributeValue {ValueId} not found for rename", id);
+            return;
+        }
+
+        entity.Name = trimmed;
+        entity.NormalizedName = normalized;
+        await dbContext.SaveChangesAsync();
+
+        await _applicationLogManager.AddLog($"Özellik değeri güncellendi: '{trimmed}' (Id: {id})", LogType.Category, LogAction.Update);
+        _logger.LogInformation("CategoryAttributeValue {ValueId} renamed successfully", id);
+    }
+
+    public async Task SoftDelete(int id)
+    {
+        await _applicationLogManager.AddLog($"Özellik değeri siliniyor (Id: {id})", LogType.Category, LogAction.Delete);
+        _logger.LogInformation("Soft-deleting CategoryAttributeValue {ValueId}", id);
+
+        await using var dbContext = await _contextFactory.CreateDbContextAsync();
+        var entity = await dbContext.CategoryAttributeValues
+            .AsTracking()
+            .FirstOrDefaultAsync(v => v.Id == id && !v.IsDeleted);
+
+        if (entity is null)
+        {
+            _logger.LogWarning("CategoryAttributeValue {ValueId} not found or already deleted", id);
+            return;
+        }
+
+        entity.IsDeleted = true;
+        entity.DeletedAt = DateTimeOffset.UtcNow;
+        await dbContext.SaveChangesAsync();
+
+        await _applicationLogManager.AddLog($"Özellik değeri silindi (Id: {id})", LogType.Category, LogAction.Delete);
+        _logger.LogInformation("CategoryAttributeValue {ValueId} soft-deleted", id);
     }
 }
