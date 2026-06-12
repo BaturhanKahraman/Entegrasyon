@@ -1290,5 +1290,270 @@
     ],
     "addOrUpdateUnitTests": false,
     "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Musteri Raporu - RFM Segmentasyon (VIP / Risk / Yeni etiketleri)",
+    "description": "Musteri raporuna RFM (Recency-Frequency-Monetary) bazli segment etiketleri ekle. Satin alma sikligi, son satis tarihi ve toplam harcamaya gore otomatik VIP, Risk Altinda, Yeni Musteri etiketleri. Tabloda filtre olarak da kullanilabilmeli.",
+    "status": "done",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "Musteri raporunu ac.",
+      "VIP etiketli musteriler: son 30 gunde alisveris yapmis ve toplam harcama ust yuzde20 olanlar.",
+      "Risk altinda: 90+ gun alisveris yapmamis.",
+      "Yeni: son 30 gun icinde kayit olmus.",
+      "Segmente gore filtre calismali."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Musteri Raporu - Cohort Analizi (Aylik musteri tutma orani)",
+    "description": "Musteri raporuna cohort gorunumu ekle. Hangi ay kazanilan musterilerin ne kadari sonraki aylarda tekrar alisveris yapti? Esnafin musteri sadakati trendini gormesi icin.",
+    "status": "done",
+    "notes": "PA onerisi - 2026-06-12. Orta-uzun vade; veri birikimi gerektirir.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [
+      "1. Müşteri raporunu aç",
+      "2. Cohort tablosunun göründüğünü doğrula",
+      "3. En az 2 sipariş olan müşteri varsa cohort satırının Size > 0 ve RetentionPct[0]=100 olduğunu kontrol et"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Musteri Raporu - Rapordan Direkt Indirim Kodu Gonder",
+    "description": "Musteri raporu tablosunda musteri(ler) secip Indirim Kodu Gonder aksiyonu. Mevcut kupon altyapisina baglanacak. Dormant musterileri kampanyayla geri kazanmak icin.",
+    "status": "done",
+    "notes": "PA onerisi - 2026-06-12. Kupon modulu hazir oldugunda uygulanacak.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [
+      "1. Müşteri raporunu aç",
+      "2. Tablodan en az bir müşteri seç",
+      "3. Kupon dropdown'undan aktif kupon seç",
+      "4. 'İndirim Kodu Gönder'e tıkla",
+      "5. Başarı toast'ının göründüğünü doğrula",
+      "6. DiscountVouchers tablosunda o müşteriye bağlı yeni kupon kaydının oluştuğunu doğrula"
+    ],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Musteri Raporu - Dormant Musteri Listesi (90+ gun gelmemis)",
+    "description": "Musteri raporuna Dormant sekmesi ekle: son 90+ gun alisveris yapmamis musterilerin listesi. Toplam harcama + son satis tarihi ile siralanmis. Yuksek degerli dormant musterilere oncelik verilmeli.",
+    "status": "done",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "Musteri raporunu ac.",
+      "Dormant sekmesine gec.",
+      "Son 90+ gun alisveris yapmamis musteriler listelenmeli.",
+      "Toplam harcamaya gore siralama calismali."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Iade Raporu - Nedensel Trend Grafigi",
+    "description": "Iade raporuna iade nedeni x zaman grafigi ekle. Beden uymadi nedeni bu ay onceki aya gore artti mi? Bebe giyimde sezon gecislerinde beden iade artisini onceden gormek kritik.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Iade Raporu - Urun Bazli Iade Orani Uyarisi",
+    "description": "Iade raporuna urun bazli iade orani sutunu ekle. Yuzde15 uzeri iade oranina sahip urunler kirmizi badge ile isaretlensin. Sorunlu urunleri erken tespit icin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "Iade raporunu ac.",
+      "Urun bazli iade orani sutunu gorunmeli.",
+      "Yuzde15+ olan urunler kirmizi badge ile isaretlenmeli.",
+      "Urune tiklaninca urun detayina gitmeli."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Iade Raporu - Iade Maliyet Hesabi (Kargo + Surec)",
+    "description": "Iade raporuna KPI karti ekle: toplam iade maliyeti = iade kargo bedeli + islem sureci maliyeti. Esnafin gercek iade maliyetini gormesi icin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12. Kargo bedeli manuel girilebilir veya kargo firmasi tarifesinden cekilir.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Iade Raporu - Tedarikciye Yuksek Iadeli Urun Bildirimi",
+    "description": "Iade raporundaki yuksek iade oranli urunleri secip tedarikciye bildirim gonder. E-posta veya platform ici mesaj. Urun kalitesi sorunlarini tedarik zincirine iletmek icin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12. Tedarikci iletisim altyapisi hazir oldugunda uygulanacak.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Vergi Raporu - KDV Beyani Ozeti (KDV Orani Bazli Tablo)",
+    "description": "Vergi raporunu yeniden tasarla. Satislari KDV oranina gore grupla (yuzde1, yuzde10, yuzde20). Her oran icin: matrah, KDV tutari, toplam. Mevcut sabit yuzde20 hesabi kaldirilacak, VatRate entity kullanilacak. Bebe giyimi icin yuzde1 orani kritik.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12. Mevcut sayfada yanlis manager cagrisi var; VatRate entity hazir ama kullanilmiyor.",
+    "priority": "high",
+    "plan": false,
+    "manual_test_steps": [
+      "Vergi raporunu ac.",
+      "KDV orani bazli ozet tablo gorunmeli: yuzde1, yuzde10, yuzde20.",
+      "Her satirda matrah, KDV ve toplam tutari dogru gosterilmeli.",
+      "Toplam satiri tum oranlarin toplamini gostermeli."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true
+  },
+  {
+    "task": "Vergi Raporu - Donem Karsilastirmasi (Bu Ceyrek vs Gecen Ceyrek)",
+    "description": "Vergi raporuna ceyreklik donem karsilastirmasi ekle. Matrah ve KDV tutarlarinda onceki doneme gore yuzde degisim goster. Muhasebeciye donem trendi icin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Vergi Raporu - PDF Export (Muhasebeye Gonderilecek Format)",
+    "description": "Vergi raporuna PDF export ekle. Donem, firma bilgisi, KDV ozet tablosu, e-fatura/e-arsiv ayrimi dahil. Muhasebeciye hazir format olmali.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Vergi Raporu - E-Fatura / E-Arsiv / Faturasiz Ayrimi",
+    "description": "Vergi raporunda satislari fatura kanalina gore grupla: e-fatura kesilmis, e-arsiv kesilmis, faturasiz. Muhasebeci bu ayrimi standart beyan icin ister.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kategori Satislari - Sezonsal Trend (Gecen Yil Ayni Donem Karsilastirmasi)",
+    "description": "Kategori satis raporuna yil karsilastirmasi ekle. Bu Ocak vs Gecen Yil Ocak bazli kategori performansi. Bebe giyimde sezonsal talep cok belirgin; esnafin stok planlamasi icin kritik.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kategori Satislari - Kanal Bazli Karsilastirma (Trendyol vs Storefront vs Magaza)",
+    "description": "Kategori raporuna kanal kirilimi ekle. Her kategori icin Trendyol, Pazarama, Storefront, Magaza ici satis dagilimi. Esnaf hangi kategorisini nerede sattigini gorebilsin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12. CategoryPerformanceDto.MarketplaceBreakdown zaten modellenenmis.",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "Kategori raporunu ac.",
+      "Her kategori satirinda kanal bazli dagilim gorunmeli.",
+      "Kanal filtresine gore filtreleme calismali."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kategori Satislari - Yavas Hareket Uyarisi (30+ Gun Dusus)",
+    "description": "Kategori raporunda son 30 gunde satis dususu olan kategorileri otomatik uyariyla isarettle. Renk kodu veya badge. Esnaf hareketsiz kategoriye zamaninda mudahale edebilsin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kategori Satislari - Fiyat Araligi Dagilimi",
+    "description": "Kategori raporuna fiyat bandi analizi ekle. Her kategoride hangi fiyat araligi en cok satiyor (0-100, 100-300, 300+ TL). Fiyatlandirma kararlarini destekler.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kargo Raporu - Kargo Firmasi Performans Karsilastirmasi",
+    "description": "Kargo raporuna firma bazli performans tablosu ekle. Kolonlar: firma adi, toplam gonderi, ortalama teslim suresi, basarili teslim orani, kayip/hasar orani. Esnaf en iyi firmay veriyle secsin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [
+      "Kargo raporunu ac.",
+      "Firma bazli tablo gorunmeli.",
+      "Ortalama teslim suresi ve basari orani hesaplanmali."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kargo Raporu - Bolge Bazli Teslimat Yogunlugu",
+    "description": "Kargo raporuna il bazli gonderi yogunluk gorunumu ekle. Hangi sehre en cok gonderi gidiyor? Basit tablo ile baslanir, harita sonra. Depo konumu / kargo anlasma planlamasi icin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12. Basit tablo ile baslanabilir, harita sonra.",
+    "priority": "low",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kargo Raporu - Gecikme Trend Grafigi",
+    "description": "Kargo raporuna haftalik gecikme trendi ekle. Bu hafta gecikmeler artti mi? Firma bazli gecikme degisimini goster. Operasyonel alarm icin.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "medium",
+    "plan": false,
+    "manual_test_steps": [],
+    "addOrUpdateUnitTests": false,
+    "addOrUpdateIntegrationTests": false
+  },
+  {
+    "task": "Kargo Raporu - Gecikme Listesi + Toplu Musteri Bilgilendirme",
+    "description": "Kargo raporuna Acil sekmesi ekle: tahmini teslim tarihi gecmis ama teslim edilmemis gonderiler. Secili musterilere toplu SMS/e-posta bilgilendirme aksiyonu. Musteri memnuniyeti icin proaktif iletisim.",
+    "status": "todo",
+    "notes": "PA onerisi - 2026-06-12",
+    "priority": "high",
+    "plan": false,
+    "manual_test_steps": [
+      "Kargo raporunu ac.",
+      "Acil sekmesine gec.",
+      "Tahmini teslim tarihi gecmis gonderiler listelenmeli.",
+      "Toplu sec + bildirim gonder aksiyonu calismali."
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": false
   }
 ]

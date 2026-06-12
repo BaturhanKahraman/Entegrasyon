@@ -38,5 +38,19 @@ public class OrderEntityConfiguration : IEntityTypeConfiguration<Order>
         // NOT "IsDeleted" formu query filter'ın ürettiği SQL ile birebir → planner partial'ı seçer.
         builder.HasIndex(x => new { x.MarketplaceOrderStatus, x.OrderDate })
             .HasFilter("\"MarketplaceOrderStatus\" IS NOT NULL AND NOT \"IsDeleted\"");
+
+        // Hot-path: Müşteri raporu RFM segmentasyonu + cohort (tutma) matrisi + dormant listesi.
+        // Üç aggregate de storefront B2C siparişlerini müşteri başına gruplar:
+        //   - Recency  = MAX(OrderDate)  → son alışveriş (VIP son-30-gün / dormant 90+ gün)
+        //   - Monetary = SUM(GrossAmount) → toplam harcama (VIP üst %20 persentil)
+        //   - Cohort   = MIN(OrderDate)  → müşterinin ilk-alışveriş ayı + sonraki ay tekrar alışveriş
+        // Hepsi GroupBy(CustomerId) + OrderDate üzerinde MIN/MAX/range. Composite'te eşitlik/grup
+        // kolonu (CustomerId) önde, zaman kolonu (OrderDate) sonda → GroupBy prefix'i + OrderDate
+        // MIN/MAX/range tek index'le karşılanır (index-only'a yakın aggregate).
+        // Partial: marketplace siparişlerinde CustomerId NULL'dur (storefront-only B2C müşteri
+        // ilişkisi) → NULL satırları index dışında bırakmak hem küçük hem RFM evrenine seçici tutar.
+        // NOT "IsDeleted" formu query filter'ın ürettiği SQL ile birebir → planner partial'ı seçer.
+        builder.HasIndex(x => new { x.CustomerId, x.OrderDate })
+            .HasFilter("\"CustomerId\" IS NOT NULL AND NOT \"IsDeleted\"");
     }
 }

@@ -1,55 +1,453 @@
 @model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto>
+@using Entegrasyon.MVC.Infrastructure.Extensions
+@{
+    // Aktif segment filtresi (ViewBag controller'dan gelir; form state'ini korur).
+    // Beklenen değerler: "" (tümü) | "vip" | "risk" | "yeni" | "dormant".
+    var selectedSegment = (ViewBag.Segment as string) ?? "";
 
-        <div class="row row-deck row-cards mb-3">
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="subheader">Toplam Müşteri</div>
-                        <div class="h1 mb-0">@Model.TotalItemCount</div>
+    var today = DateOnly.FromDateTime(DateTime.Today);
+
+    // --- RFM eşikleri (brief) ---
+    // VIP        = son 30 gün alışveriş + toplam harcama üst %20'de
+    // Risk Altında = 90+ gün alışveriş yapmamış (ama daha önce yapmış)
+    // Yeni        = son 30 gün içinde kayıt
+    // Dormant     = 90+ gün alışveriş yapmamış
+    const int recentDays = 30;
+    const int dormantDays = 90;
+
+    // Backend RFM aggregate'i HENÜZ wire edilmediyse bu alanlar null gelir → kartlar/rozetler
+    // "–" / "hesaplanıyor" gösterir (Inventory.cshtml'deki StockValue null-safe deseninin aynısı).
+    // Beklenen yeni DTO alanları (SWE eklemeli): LastPurchaseDate (DateOnly?), TotalSpend (decimal?),
+    //   RfmSegment (string?: "VIP"|"Risk"|"Yeni"|"Dormant"|"Standart"), SpendTopPercentile (bool?).
+    decimal? Spend(Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto c)
+        => c.GetType().GetProperty("TotalSpend")?.GetValue(c) as decimal?;
+    DateOnly? LastPurchase(Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto c)
+        => c.GetType().GetProperty("LastPurchaseDate")?.GetValue(c) as DateOnly?;
+    string? Segment(Entegrasyon.Entity.Dtos.Customers.CustomerDetailDto c)
+        => c.GetType().GetProperty("RfmSegment")?.GetValue(c) as string;
+
+    // KPI sayımları — backend segment verisi varsa onunla, yoksa türetilebilen kısmı (yeni kayıt) ile.
+    var rfmWired = Model.Items.Any() && Segment(Model.Items.First()) != null;
+
+    int vipCount = Model.Items.Count(c => Segment(c) == "VIP");
+    int riskCount = Model.Items.Count(c => Segment(c) is "Risk" or "Dormant");
+    int newCount = Model.Items.Count(c => c.CreatedAt >= DateTimeOffset.UtcNow.AddDays(-recentDays));
+    int dormantCount = Model.Items.Count(c => Segment(c) == "Dormant");
+
+    // Cohort retention matrisi — backend aggregate. ViewBag.Cohort beklenir:
+    //   IEnumerable<(string CohortMonth, int Size, int[] RetentionPct)> — RetentionPct[i] = i. ay tutma %.
+    var cohort = ViewBag.Cohort as IEnumerable<dynamic>;
+}
+
+<!-- KPI özet: RFM segmentleri -->
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-yellow text-yellow-fg"><i class="ti ti-crown"></i></span>
                     </div>
-                </div>
-            </div>
-            <div class="col-sm-6 col-lg-3">
-                <div class="card">
-                    <div class="card-body">
-                        <div class="subheader">Satış Yapan</div>
-                        <div class="h1 mb-0">@Model.Items.Count(c => c.SalesCount > 0)</div>
+                    <div class="col">
+                        <div class="font-weight-medium">VIP Müşteri</div>
+                        <div class="text-secondary">Son 30 gün · üst %20 harcama</div>
+                    </div>
+                    <div class="col-auto">
+                        @if (rfmWired)
+                        {
+                            <span class="h1 mb-0 text-yellow">@vipCount</span>
+                        }
+                        else
+                        {
+                            <span class="h1 mb-0 text-secondary" title="RFM segmenti hesaplanıyor">–</span>
+                        }
                     </div>
                 </div>
             </div>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">En Cok Satış Yapan Müşteriler</h3>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-red text-red-fg"><i class="ti ti-alert-triangle"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Risk Altında</div>
+                        <div class="text-secondary">@dormantDays+ gün alışveriş yok</div>
+                    </div>
+                    <div class="col-auto">
+                        @if (rfmWired)
+                        {
+                            <span class="h1 mb-0 text-red">@riskCount</span>
+                        }
+                        else
+                        {
+                            <span class="h1 mb-0 text-secondary" title="RFM segmenti hesaplanıyor">–</span>
+                        }
+                    </div>
+                </div>
             </div>
-            <div class="table-responsive">
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-green text-green-fg"><i class="ti ti-user-plus"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Yeni Müşteri</div>
+                        <div class="text-secondary">Son @recentDays gün kayıt</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0 text-green">@newCount</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-secondary-lt"><i class="ti ti-zzz"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Dormant</div>
+                        <div class="text-secondary">Geri kazanım hedefi</div>
+                    </div>
+                    <div class="col-auto">
+                        @if (rfmWired)
+                        {
+                            <span class="h1 mb-0">@dormantCount</span>
+                        }
+                        else
+                        {
+                            <span class="h1 mb-0 text-secondary" title="RFM segmenti hesaplanıyor">–</span>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cohort retention matrisi -->
+<div class="card mb-3">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Cohort Analizi — Müşteri Tutma</h3>
+            <p class="text-secondary m-0">
+                Her ay kazanılan müşterilerin sonraki aylarda tekrar alışveriş yapma oranı
+            </p>
+        </div>
+    </div>
+    @if (cohort != null && cohort.Any())
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table">
+                <thead>
+                    <tr>
+                        <th>Kohort Ayı</th>
+                        <th class="text-end">Müşteri</th>
+                        <th class="text-center">0. Ay</th>
+                        <th class="text-center">+1</th>
+                        <th class="text-center">+2</th>
+                        <th class="text-center">+3</th>
+                        <th class="text-center">+4</th>
+                        <th class="text-center">+5</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var row in cohort)
+                    {
+                        <tr>
+                            <td class="fw-medium">@row.CohortMonth</td>
+                            <td class="text-end text-secondary">@row.Size</td>
+                            @{
+                                int[] pcts = row.RetentionPct as int[] ?? new int[0];
+                            }
+                            @for (var m = 0; m < 6; m++)
+                            {
+                                if (m < pcts.Length)
+                                {
+                                    var p = pcts[m];
+                                    // Tutma oranına göre yeşil yoğunluğu (0→soluk, 100→koyu) — inline alpha.
+                                    var alpha = (0.08 + (p / 100.0) * 0.72).ToString("0.00", System.Globalization.CultureInfo.InvariantCulture);
+                                    <td class="text-center"
+                                        style="background-color: rgba(47, 179, 68, @alpha);">
+                                        <span class="@(p >= 50 ? "text-white fw-medium" : "")">@p%</span>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td class="text-center text-secondary">·</td>
+                                }
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Cohort verisi hazırlanıyor",
+                         Subtitle = "Aylık müşteri tutma matrisi sipariş geçmişi işlendikçe burada görünecek."
+                     }'/>
+        </div>
+    }
+</div>
+
+<!-- Segment filtre bari -->
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="d-flex align-items-center flex-wrap gap-2">
+            <span class="text-secondary me-1">Segment:</span>
+            <div class="btn-list">
+                <a href="/reports/customers"
+                   class="btn btn-sm @(selectedSegment == "" ? "btn-primary" : "btn-outline-secondary")">
+                    Tümü
+                </a>
+                <a href="/reports/customers?segment=vip"
+                   class="btn btn-sm @(selectedSegment == "vip" ? "btn-yellow" : "btn-outline-secondary")">
+                    <i class="ti ti-crown me-1"></i>VIP
+                </a>
+                <a href="/reports/customers?segment=risk"
+                   class="btn btn-sm @(selectedSegment == "risk" ? "btn-red" : "btn-outline-secondary")">
+                    <i class="ti ti-alert-triangle me-1"></i>Risk Altında
+                </a>
+                <a href="/reports/customers?segment=yeni"
+                   class="btn btn-sm @(selectedSegment == "yeni" ? "btn-green" : "btn-outline-secondary")">
+                    <i class="ti ti-user-plus me-1"></i>Yeni
+                </a>
+                <a href="/reports/customers?segment=dormant"
+                   class="btn btn-sm @(selectedSegment == "dormant" ? "btn-secondary" : "btn-outline-secondary")">
+                    <i class="ti ti-zzz me-1"></i>Dormant (@dormantDays+ gün)
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Müşteri tablosu + toplu indirim kodu gönderme -->
+<div class="card">
+    <div class="card-header">
+        <div>
+            <h3 class="card-title">Müşteri Listesi</h3>
+            <p class="text-secondary m-0">RFM segmenti, son alışveriş ve toplam harcama</p>
+        </div>
+    </div>
+    @if (Model.Items.Any())
+    {
+        <form action="/reports/customers/send-coupon" method="post" id="customer-coupon-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="Segment" value="@selectedSegment" />
+
+            <!-- Toplu aksiyon bari (seçim yapılınca etkinleşir) -->
+            <div class="d-flex align-items-end gap-2 flex-wrap px-3 pt-3">
+                <div>
+                    <label class="form-label" for="coupon-template">İndirim Kuponu</label>
+                    <select id="coupon-template" name="VoucherId" class="form-select" style="min-width: 16rem;" required>
+                        <option value="">Kupon seçin…</option>
+                        @{
+                            // Mevcut kupon/voucher listesi (ViewBag.Coupons — SWE wire eder).
+                            var coupons = ViewBag.Coupons as IEnumerable<dynamic>;
+                        }
+                        @if (coupons != null)
+                        {
+                            foreach (var cp in coupons)
+                            {
+                                <option value="@cp.Id">@cp.Code — @cp.Description</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary" id="send-coupon-btn" disabled>
+                    <i class="ti ti-discount-2 me-1"></i>İndirim Kodu Gönder
+                    (<span id="selected-count">0</span>)
+                </button>
+                <div class="text-secondary small ms-auto align-self-center">
+                    Dormant geri kazanım için müşterileri seçip kupon gönderin.
+                </div>
+            </div>
+
+            <div class="table-responsive mt-2">
                 <table class="table table-vcenter card-table table-hover">
                     <thead>
                         <tr>
+                            <th class="w-1">
+                                <input type="checkbox" class="form-check-input m-0 align-middle"
+                                       id="select-all" aria-label="Tümünü seç" />
+                            </th>
                             <th>Müşteri</th>
+                            <th>Segment</th>
                             <th>Tip</th>
                             <th>Telefon</th>
-                            <th>Satış Sayısı</th>
-                            <th>Kayit Tarihi</th>
+                            <th class="text-end">Satış</th>
+                            <th class="text-end">Toplam Harcama</th>
+                            <th>Son Alışveriş</th>
+                            <th>Kayıt</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach (var c in Model.Items.OrderByDescending(c => c.SalesCount))
                         {
+                            var displayName = string.IsNullOrEmpty(c.CorporateName) ? c.NameSurname : c.CorporateName;
+                            var seg = Segment(c);
+                            var spend = Spend(c);
+                            var last = LastPurchase(c);
+                            var isNew = c.CreatedAt >= DateTimeOffset.UtcNow.AddDays(-recentDays);
+
+                            // Segment rozet rengi.
+                            (string cls, string txt, string icon) segBadge = seg switch
+                            {
+                                "VIP" => ("bg-yellow-lt", "VIP", "ti-crown"),
+                                "Risk" => ("bg-orange-lt", "Risk", "ti-alert-triangle"),
+                                "Dormant" => ("bg-red-lt", "Dormant", "ti-zzz"),
+                                "Yeni" => ("bg-green-lt", "Yeni", "ti-user-plus"),
+                                _ when isNew => ("bg-green-lt", "Yeni", "ti-user-plus"),
+                                _ => ("", "", "")
+                            };
+
                             <tr>
                                 <td>
-                                    <a href="/customers/@c.Id/dashboard">
-                                        @(string.IsNullOrEmpty(c.CorporateName) ? c.NameSurname : c.CorporateName)
-                                    </a>
+                                    <input type="checkbox" class="form-check-input m-0 align-middle js-row-select"
+                                           name="CustomerIds" value="@c.Id" aria-label="Müşteri seç" />
                                 </td>
-                                <td><span class="badge @(c.CustomerType == "Corporate" ? "bg-blue-lt" : "bg-green-lt")">@c.CustomerType</span></td>
+                                <td>
+                                    <a href="/customers/@c.Id/dashboard" class="text-reset">@displayName</a>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(segBadge.txt))
+                                    {
+                                        <span class="badge @segBadge.cls">
+                                            <i class="ti @segBadge.icon me-1"></i>@segBadge.txt
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">Standart</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge @(c.CustomerType == "Corporate" ? "bg-blue-lt" : "bg-azure-lt")">
+                                        @(c.CustomerType == "Corporate" ? "Kurumsal" : "Bireysel")
+                                    </span>
+                                </td>
                                 <td class="text-secondary">@c.PhoneNumber</td>
-                                <td><span class="badge bg-purple-lt">@c.SalesCount</span></td>
+                                <td class="text-end">
+                                    <span class="badge bg-purple-lt">@c.SalesCount</span>
+                                </td>
+                                <td class="text-end">
+                                    @if (spend.HasValue)
+                                    {
+                                        <span class="fw-medium">@spend.Value.ToMoney()</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">–</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (last.HasValue)
+                                    {
+                                        var ageDays = today.DayNumber - last.Value.DayNumber;
+                                        var isDormant = ageDays >= dormantDays;
+                                        <span class="@(isDormant ? "text-red fw-medium" : "text-secondary")">
+                                            @last.Value.ToString("dd.MM.yyyy")
+                                        </span>
+                                        if (isDormant)
+                                        {
+                                            <span class="badge bg-red-lt ms-1" title="@ageDays gündür alışveriş yok">
+                                                <i class="ti ti-clock-pause me-1"></i>@ageDays gün
+                                            </span>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <span class="text-secondary">–</span>
+                                    }
+                                </td>
                                 <td class="text-secondary">@c.CreatedAt.ToString("dd.MM.yyyy")</td>
                             </tr>
                         }
                     </tbody>
                 </table>
             </div>
+        </form>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/reports/customers",
+                     QueryParams = string.IsNullOrEmpty(selectedSegment)
+                         ? new Dictionary<string, string>()
+                         : new Dictionary<string, string> { ["segment"] = selectedSegment }
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Müşteri bulunamadı",
+                         Subtitle = "Seçilen segmente uyan müşteri bulunmuyor."
+                     }'/>
         </div>
+    }
+</div>
+
+<script>
+    (function () {
+        var selectAll = document.getElementById('select-all');
+        var rows = Array.prototype.slice.call(document.querySelectorAll('.js-row-select'));
+        var countEl = document.getElementById('selected-count');
+        var sendBtn = document.getElementById('send-coupon-btn');
+        if (!sendBtn) return;
+
+        function refresh() {
+            var n = rows.filter(function (r) { return r.checked; }).length;
+            if (countEl) countEl.textContent = n;
+            sendBtn.disabled = n === 0;
+            if (selectAll) {
+                selectAll.checked = n > 0 && n === rows.length;
+                selectAll.indeterminate = n > 0 && n < rows.length;
+            }
+        }
+
+        if (selectAll) {
+            selectAll.addEventListener('change', function () {
+                rows.forEach(function (r) { r.checked = selectAll.checked; });
+                refresh();
+            });
+        }
+        rows.forEach(function (r) { r.addEventListener('change', refresh); });
+
+        var form = document.getElementById('customer-coupon-form');
+        if (form) {
+            form.addEventListener('submit', function (e) {
+                var n = rows.filter(function (r) { return r.checked; }).length;
+                if (n === 0) { e.preventDefault(); return; }
+                if (!confirm(n + ' müşteriye indirim kodu gönderilecek. Onaylıyor musunuz?')) {
+                    e.preventDefault();
+                }
+            });
+        }
+        refresh();
+    })();
+</script>
+</content>
+</invoke>

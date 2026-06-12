@@ -15,7 +15,7 @@ namespace Entegrasyon.MVC.Features.Reports;
 [Authorize]
 public class ReportController(
     IReportManager reportManager,
-    ICustomerManager customerManager,
+    ICustomerReportManager customerReportManager,
     IStorefrontReturnManager storefrontReturnManager,
     IShipmentTrackingManager shipmentTrackingManager,
     IBranchOfficeManager branchOfficeManager,
@@ -222,14 +222,45 @@ public class ReportController(
     }
 
     [HttpGet("/reports/customers")]
-    public async Task<IActionResult> Customers(int page = 1)
+    public async Task<IActionResult> Customers(string? segment = null, int page = 1)
     {
         ViewData.SetPageTitle("Musteri Raporu");
         ViewData.SetActiveNav("reports-customers");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Musteriler", null));
 
-        var result = await customerManager.GetCustomerDetailPageable("", page - 1, 50);
+        // RFM-zenginleştirilmiş sayfalı liste + segment filtresi (""/null=tümü, "vip"|"risk"|"yeni"|"dormant").
+        var result = await customerReportManager.GetRfmPageableAsync(segment, page - 1, 50);
+
+        // Form state — view "" | "vip" | "risk" | "yeni" | "dormant" değerlerini okur.
+        ViewBag.Segment = string.IsNullOrWhiteSpace(segment) ? "" : segment.Trim().ToLowerInvariant();
+
+        // Cohort retention matrisi (view ViewBag.Cohort üzerinden IEnumerable<{CohortMonth,Size,RetentionPct}> okur).
+        ViewBag.Cohort = await customerReportManager.GetCohortRetentionAsync();
+
+        // Gönderilebilir kupon listesi (view select dropdown'unda {Id,Code,Description} okur).
+        ViewBag.Coupons = await customerReportManager.GetSendableCouponsAsync();
+
         return View(result.Data);
+    }
+
+    /// <summary>
+    /// Müşteri raporundan seçili müşterilere toplu indirim kodu (dormant geri kazanım) gönderir.
+    /// MUTASYON → asıl validation + iş kuralları + çift loglama mutasyon katmanında
+    /// (CustomerReportManager.SendRecoveryCouponAsync). PRG: TempData + RedirectToAction(Customers).
+    /// </summary>
+    [HttpPost("/reports/customers/send-coupon")]
+    [Authorize(Policy = AppPermissions.Reports.Create)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SendCoupon(SendRecoveryCouponDto dto, CancellationToken ct = default)
+    {
+        var result = await customerReportManager.SendRecoveryCouponAsync(dto, GetCurrentUserId(), ct);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "İndirim kodu gönderildi.");
+        else
+            TempData.SetError(result.Message ?? "İndirim kodu gönderilemedi.");
+
+        return RedirectToAction(nameof(Customers), new { segment = dto.Segment });
     }
 
     [HttpGet("/reports/returns")]

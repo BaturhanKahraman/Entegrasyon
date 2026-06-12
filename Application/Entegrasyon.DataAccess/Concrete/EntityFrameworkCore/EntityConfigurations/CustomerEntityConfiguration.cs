@@ -16,6 +16,13 @@ public class CustomerEntityConfiguration : IEntityTypeConfiguration<Customer>
         builder.Property(x => x.FullName)
             .HasComputedColumnSql(@"""Name"" || ' ' || ""Surname""",stored: true);
         builder.HasQueryFilter(x => !x.IsDeleted);
+
+        // Hot-path: Müşteri raporu "Yeni" segmenti (CreatedAt son 30 gün) ve RFM persentil
+        // hesabı/dormant listesinin müşteri evrenini CreatedAt ile daraltır/sıralar. Partial
+        // (NOT "IsDeleted") query filter SQL'iyle birebir → planner partial'ı seçer, soft-deleted
+        // satırları index dışında bırakır.
+        builder.HasIndex(x => x.CreatedAt)
+            .HasFilter("NOT \"IsDeleted\"");
     }
 }
 public class RetailCustomerEntityConfiguration : IEntityTypeConfiguration<RetailCustomer>

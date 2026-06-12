@@ -22,6 +22,7 @@ using Entegrasyon.Entity.Dtos.POS;
 using Entegrasyon.Entity.Dtos.Invoicing;
 using Entegrasyon.Entity.Dtos.Settings;
 using Entegrasyon.Entity.Dtos.Shipping;
+using Entegrasyon.Entity.Dtos.Reports;
 
 namespace Entegrasyon.Business.Validation.FluentValidation;
 
@@ -48,6 +49,7 @@ public static class ServiceDependencyExtension
         services.AddScoped<IValidator<EditProductVariantDto>,EditProductVariantValidator>();
         services.AddScoped<IValidator<AddBranchOfficeStockDto>,AddBranchOfficeStockValidator>();
         services.AddScoped<IValidator<CreateDiscountVoucherDto>,CreateDiscountVoucherDtoValidator>();
+        services.AddScoped<IValidator<SendRecoveryCouponDto>, SendRecoveryCouponDtoValidator>();
         services.AddScoped<IValidator<MakeSaleDto>,MakeSaleValidator>();
         services.AddScoped<IValidator<SaleItemDto>, SaleItemDtoValidator>();
         services.AddScoped<IValidator<CreateSaleReturnDto>, CreateSaleReturnValidator>();

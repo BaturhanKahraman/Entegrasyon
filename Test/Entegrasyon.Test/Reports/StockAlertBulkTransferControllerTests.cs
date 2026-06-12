@@ -26,7 +26,7 @@ namespace Entegrasyon.UnitTest.Reports;
 public class StockAlertBulkTransferControllerTests
 {
     private readonly Mock<IReportManager> _reportManager = new();
-    private readonly Mock<ICustomerManager> _customerManager = new();
+    private readonly Mock<ICustomerReportManager> _customerReportManager = new();
     private readonly Mock<IStorefrontReturnManager> _returnManager = new();
     private readonly Mock<IShipmentTrackingManager> _shipmentManager = new();
     private readonly Mock<IBranchOfficeManager> _branchManager = new();
@@ -38,7 +38,7 @@ public class StockAlertBulkTransferControllerTests
     {
         var controller = new ReportController(
             _reportManager.Object,
-            _customerManager.Object,
+            _customerReportManager.Object,
             _returnManager.Object,
             _shipmentManager.Object,
             _branchManager.Object,
