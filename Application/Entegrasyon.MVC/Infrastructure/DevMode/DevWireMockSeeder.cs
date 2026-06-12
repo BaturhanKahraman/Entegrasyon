@@ -1,25 +1,20 @@
+using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.MVC.Infrastructure.DevMode;
 
 /// <summary>
-/// Development ortaminda DB'deki MarketPlace.BaseUrl alanini WireMock URL'ine
-/// update eder. MVC uygulamasi startup'ta calistirilir (sadece Development).
+/// Development ortaminda DB'deki MarketPlace kaytlarini WireMock'a yonlendirir.
+/// MVC uygulamasi startup'ta calistirilir (sadece Development).
 ///
-/// Amac: Lokal gelistirici ortaminda internetsiz calisabilmek. Gelistirici
-/// docker-compose.dev.yml ile WireMock container'i baslatir, MVC DevMode:WireMockUrl
-/// config'ini kullanarak DB'deki marketplace BaseUrl'lerini WireMock'a cevirir.
-/// Boylece TrendyolApiClient, HepsiburadaApiClient vs. HTTP cagrilari gercek API
-/// yerine lokal WireMock'a dusurur.
+/// Yapilan isler:
+///   1. BaseUrl → DevMode:WireMockUrl (tum marketplace'ler)
+///   2. Trendyol SellerId → DevMode:TrendyolSellerId (dev DB'de null olabilir)
 ///
-/// Gercek sandbox API'ye gitmek isteyen bir marketplace icin
-/// appsettings.Development.json'da:
-///   "DevMode": {
-///     "WireMockUrl": "http://wiremock:8080",
-///     "RealApiMarketplaces": ["Trendyol"]
-///   }
-/// listeye marketplace adi eklenir — seeder o marketplace'in BaseUrl'ine dokunmaz.
+/// Gercek sandbox API'ye gitmek isteyen marketplace icin
+/// appsettings.Development.json'da RealApiMarketplaces listesine adi ekle —
+/// seeder o marketplace'e dokunmaz.
 ///
 /// GUVENLIK: Sadece IsDevelopment() kosulunda calistirilir. Staging/Production'da
 /// calistirilirsa production DB'de marketplace URL'lerini bozar — bu yuzden Program.cs
@@ -49,7 +44,7 @@ public static class DevWireMockSeeder
             // AsTracking ŞART: context global no-tracking (TenantDbContextFactory) →
             // tracking'siz okunan entity'de mp.BaseUrl değişikliği SaveChanges'te no-op olur.
             var marketplaces = await db.MarketPlaces.AsTracking().ToListAsync();
-            var updated = 0;
+            var updatedIds = new HashSet<int>();
 
             foreach (var mp in marketplaces)
             {
@@ -66,26 +61,26 @@ public static class DevWireMockSeeder
                 {
                     var previous = mp.BaseUrl;
                     mp.BaseUrl = wireMockUrl;
-                    updated++;
+                    updatedIds.Add(mp.Id);
                     logger.LogInformation(
                         "DevWireMockSeeder: {Marketplace} BaseUrl {Previous} → {New}",
                         mp.Name, previous, wireMockUrl);
                 }
 
                 if (!string.IsNullOrEmpty(testSellerId) &&
-                    string.Equals(mp.Name, "Trendyol", StringComparison.OrdinalIgnoreCase) &&
+                    mp.Id == MarketPlaceConstants.TrendyolMarketPlaceId &&
                     mp.SellerId != testSellerId)
                 {
                     mp.SellerId = testSellerId;
-                    updated++;
+                    updatedIds.Add(mp.Id);
                     logger.LogInformation("DevWireMockSeeder: Trendyol SellerId → {SellerId}", testSellerId);
                 }
             }
 
-            if (updated > 0)
+            if (updatedIds.Count > 0)
             {
                 await db.SaveChangesAsync();
-                logger.LogInformation("DevWireMockSeeder: {Count} marketplace BaseUrl'i WireMock URL'ine guncellendi.", updated);
+                logger.LogInformation("DevWireMockSeeder: {Count} marketplace guncellendi.", updatedIds.Count);
             }
             else
             {

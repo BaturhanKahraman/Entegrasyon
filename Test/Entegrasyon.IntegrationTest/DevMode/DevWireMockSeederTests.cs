@@ -9,6 +9,8 @@ namespace Entegrasyon.IntegrationTest.DevMode;
 [Trait("Category", "Integration")]
 public class DevWireMockSeederTests : IntegrationTestBase
 {
+    private const string WireMockTestUrl = "http://wiremock-test:8080";
+
     public DevWireMockSeederTests(PostgreSqlFixture pgFixture, WireMockFixture wireMock)
         : base(pgFixture, wireMock) { }
 
@@ -17,15 +19,7 @@ public class DevWireMockSeederTests : IntegrationTestBase
     {
         await SeedMarketPlaceAsync(1, "Trendyol");
 
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["DevMode:WireMockUrl"] = "http://wiremock-test:8080",
-                ["DevMode:TrendyolSellerId"] = "999111"
-            })
-            .Build();
-
-        await DevWireMockSeeder.SeedAsync(Services, config, NullLogger.Instance);
+        await DevWireMockSeeder.SeedAsync(Services, BuildConfig(trendyolSellerId: "999111"), NullLogger.Instance);
 
         using var db = CreateDbContext();
         var trendyol = await db.MarketPlaces.AsNoTracking()
@@ -33,7 +27,7 @@ public class DevWireMockSeederTests : IntegrationTestBase
 
         trendyol.Should().NotBeNull();
         trendyol!.SellerId.Should().Be("999111");
-        trendyol.BaseUrl.Should().Be("http://wiremock-test:8080");
+        trendyol.BaseUrl.Should().Be(WireMockTestUrl);
     }
 
     [Fact]
@@ -48,17 +42,18 @@ public class DevWireMockSeederTests : IntegrationTestBase
             await db.SaveChangesAsync();
         }
 
-        var config = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                ["DevMode:WireMockUrl"] = "http://wiremock-test:8080"
-            })
-            .Build();
-
-        await DevWireMockSeeder.SeedAsync(Services, config, NullLogger.Instance);
+        await DevWireMockSeeder.SeedAsync(Services, BuildConfig(), NullLogger.Instance);
 
         using var dbCheck = CreateDbContext();
         var trendyol = await dbCheck.MarketPlaces.AsNoTracking().FirstAsync(m => m.Name == "Trendyol");
         trendyol.SellerId.Should().Be("existing-seller");
+    }
+
+    private static IConfiguration BuildConfig(string? trendyolSellerId = null)
+    {
+        var entries = new Dictionary<string, string?> { ["DevMode:WireMockUrl"] = WireMockTestUrl };
+        if (trendyolSellerId is not null)
+            entries["DevMode:TrendyolSellerId"] = trendyolSellerId;
+        return new ConfigurationBuilder().AddInMemoryCollection(entries).Build();
     }
 }
