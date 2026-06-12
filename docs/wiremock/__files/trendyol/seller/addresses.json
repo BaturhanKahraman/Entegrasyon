@@ -1,0 +1,15 @@
+{
+  "supplierAddresses": [
+    {
+      "id": 1,
+      "fullAddress": "Test Depo Mah. Sanayi Sk. No:5 Daire:1",
+      "city": "İstanbul",
+      "district": "Pendik",
+      "postalCode": "34890",
+      "isDefault": true,
+      "isShipmentAddress": true,
+      "isInvoiceAddress": true,
+      "isReturningAddress": false
+    }
+  ]
+}
