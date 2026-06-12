@@ -1,0 +1,20 @@
+{
+  "priority": 99,
+  "request": {
+    "method": "ANY",
+    "urlPathPattern": "/integration/.*",
+    "headers": {
+      "X-Simulate-RateLimit": { "equalTo": "true" }
+    }
+  },
+  "response": {
+    "status": 429,
+    "headers": {
+      "Content-Type": "application/json",
+      "Retry-After": "10"
+    },
+    "jsonBody": {
+      "errors": [{ "code": "RATE_LIMIT_EXCEEDED", "message": "Too many requests. Retry after 10 seconds." }]
+    }
+  }
+}
