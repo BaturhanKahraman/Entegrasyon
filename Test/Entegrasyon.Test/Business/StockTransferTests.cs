@@ -1,6 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Branches;
@@ -26,7 +24,6 @@ public class StockTransferTests : BaseTest
             _mockBranchOfficeManager.Object,
             _mockProductVariantManager.Object,
             _mockNotificationManager.Object,
-            new EventChannel<StockPriceChangedEvent>(),
             mockTenantContext.Object,
             _mockLogger.Object
         );

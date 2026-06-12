@@ -9,7 +9,6 @@ using Entegrasyon.Entity.Notifications;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Entegrasyon.Business.Utilities;
-using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Entity.Results;
 using Entegrasyon.Business.Abstract;
@@ -21,7 +20,6 @@ public class OfficeStockManager(
     IBranchOfficeManager branchOfficeManager,
     IProductVariantManager productVariantManager,
     INotificationManager notificationManager,
-    EventChannel<StockPriceChangedEvent> stockPriceChannel,
     ITenantContext tenantContext,
     ILogger<OfficeStockManager> logger) : IOfficeStockManager
 {
@@ -269,20 +267,23 @@ public class OfficeStockManager(
             targetMovements.Add(increaseResult.Data!);
         }
 
-        // Publish stock changed events for both branches
+        // Publish stock changed events — batch lookup to avoid N round-trips
+        await using var evtCtx = await contextFactory.CreateDbContextAsync();
+        var variantIds = items.Select(i => i.ProductVariantId).ToList();
+        var productIdMap = await evtCtx.ProductVariants.AsNoTracking()
+            .Where(v => variantIds.Contains(v.Id))
+            .Select(v => new { v.Id, v.ProductId })
+            .ToDictionaryAsync(v => v.Id, v => v.ProductId);
+
         foreach (var item in items)
         {
-            await using var ctx = await contextFactory.CreateDbContextAsync();
-            var productId = await ctx.ProductVariants.AsNoTracking()
-                .Where(v => v.Id == item.ProductVariantId)
-                .Select(v => v.ProductId)
-                .FirstOrDefaultAsync();
-
-            stockPriceChannel.TryPublish(new StockPriceChangedEvent(item.ProductVariantId, productId)
+            productIdMap.TryGetValue(item.ProductVariantId, out var productId);
+            evtCtx.AddDomainEvent(new StockPriceChangedEvent(item.ProductVariantId, productId)
             {
                 TenantId = tenantContext.TenantId
             });
         }
+        await evtCtx.SaveChangesAsync();
 
         var transferResult = new StockTransferResultDto(items.Count, sourceMovements, targetMovements);
         return new SuccessDataResult<StockTransferResultDto>(transferResult,
@@ -356,13 +357,14 @@ public class OfficeStockManager(
             .FirstOrDefaultAsync();
     }
 
-    public Task PublishStockChangedEventAsync(Guid productVariantId, Guid productId)
+    public async Task PublishStockChangedEventAsync(Guid productVariantId, Guid productId)
     {
-        stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId)
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        dbContext.AddDomainEvent(new StockPriceChangedEvent(productVariantId, productId)
         {
             TenantId = tenantContext.TenantId
         });
-        return Task.CompletedTask;
+        await dbContext.SaveChangesAsync();
     }
 
     private async Task CheckStockLevelsAsync(int branchOfficeId, Guid productVariantId, int currentStock)
@@ -379,10 +381,11 @@ public class OfficeStockManager(
         // initialize edilmemiş olabilir — IsInitialized guard ile güvenli yayınla.
         if (tenantContext.IsInitialized)
         {
-            stockPriceChannel.TryPublish(new StockPriceChangedEvent(productVariantId, productId)
+            dbContext.AddDomainEvent(new StockPriceChangedEvent(productVariantId, productId)
             {
                 TenantId = tenantContext.TenantId
             });
+            await dbContext.SaveChangesAsync();
         }
         else
         {

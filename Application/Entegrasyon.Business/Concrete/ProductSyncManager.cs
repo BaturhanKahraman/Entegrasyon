@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
 using Entegrasyon.Business.Diagnostics;
 using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
@@ -15,7 +14,6 @@ namespace Entegrasyon.Business.Concrete;
 
 public sealed class ProductSyncManager(
     IDbContextFactory<IntegrationDbContext> contextFactory,
-    EventChannel<ProductCreatedForMarketplaceEvent> eventChannel,
     IApplicationLogManager applicationLogManager,
     IProductActivityLogger activityLogger,
     ITenantContext tenantContext) : IProductSyncManager
@@ -241,12 +239,11 @@ public sealed class ProductSyncManager(
             marketplace.StatusMessage = null;
         }
 
-        await dbContext.SaveChangesAsync();
-
-        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
+        dbContext.AddDomainEvent(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
         {
             TenantId = tenantContext.TenantId
         });
+        await dbContext.SaveChangesAsync();
 
         await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
             $"{marketplaceName} senkronizasyon kuyruğuna eklendi",
@@ -274,13 +271,13 @@ public sealed class ProductSyncManager(
         marketplace.Status = MarketplaceProductStatus.Pending;
         marketplace.BatchRequestId = null;
         marketplace.StatusMessage = null;
-        await dbContext.SaveChangesAsync();
 
         var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-        await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
+        dbContext.AddDomainEvent(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
         {
             TenantId = tenantContext.TenantId
         });
+        await dbContext.SaveChangesAsync();
 
         await activityLogger.LogAsync(productId, ProductActivityType.PublishRequested,
             $"{marketplaceName} için yeniden kuyruğa eklendi",
@@ -317,6 +314,7 @@ public sealed class ProductSyncManager(
                 .Select(p => p.Id)
                 .ToListAsync();
 
+            var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
             foreach (var productId in unsyncedProductIds)
             {
                 dbContext.ProductMarketplaces.Add(new ProductMarketplace
@@ -325,18 +323,13 @@ public sealed class ProductSyncManager(
                     MarketPlaceId = marketPlaceId,
                     Status = MarketplaceProductStatus.Pending
                 });
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-            foreach (var productId in unsyncedProductIds)
-            {
-                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
+                dbContext.AddDomainEvent(new ProductCreatedForMarketplaceEvent(productId, [marketplaceName])
                 {
                     TenantId = tenantContext.TenantId
                 });
             }
+
+            await dbContext.SaveChangesAsync();
 
             await applicationLogManager.AddLog(
                 $"{unsyncedProductIds.Count} ürün {marketplaceName} senkronizasyonuna toplu gönderildi",
@@ -380,23 +373,19 @@ public sealed class ProductSyncManager(
                              (pm.Status == MarketplaceProductStatus.Failed || pm.Status == MarketplaceProductStatus.Rejected))
                 .ToListAsync();
 
+            var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
             foreach (var record in failedRecords)
             {
                 record.Status = MarketplaceProductStatus.Pending;
                 record.BatchRequestId = null;
                 record.StatusMessage = null;
-            }
-
-            await dbContext.SaveChangesAsync();
-
-            var marketplaceName = marketPlaceId == 1 ? "Trendyol" : $"Marketplace-{marketPlaceId}";
-            foreach (var record in failedRecords)
-            {
-                await eventChannel.PublishAsync(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName])
+                dbContext.AddDomainEvent(new ProductCreatedForMarketplaceEvent(record.ProductId, [marketplaceName])
                 {
                     TenantId = tenantContext.TenantId
                 });
             }
+
+            await dbContext.SaveChangesAsync();
 
             await applicationLogManager.AddLog(
                 $"{failedRecords.Count} hatalı ürün {marketplaceName} için yeniden kuyruğa eklendi",
