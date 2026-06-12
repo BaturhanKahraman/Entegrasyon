@@ -1398,8 +1398,8 @@
   {
     "task": "Iade Raporu - Tedarikciye Yuksek Iadeli Urun Bildirimi",
     "description": "Iade raporundaki yuksek iade oranli urunleri secip tedarikciye bildirim gonder. E-posta veya platform ici mesaj. Urun kalitesi sorunlarini tedarik zincirine iletmek icin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12. Tedarikci iletisim altyapisi hazir oldugunda uygulanacak.",
+    "status": "done",
+    "notes": "MUTASYON: ISupplierReturnNotificationManager.NotifyHighReturnAsync (FluentValidation+LogicRunner+cift log). Brand.SupplierEmail (migration AddBrandSupplierEmail) tanimliysa IStorefrontEmailService.SendAsync ile e-posta; degilse INotificationManager in-app fallback. Returns sayfasi urun-orani tablosunda uyarili satira Tedarikciye Bildir butonu (PRG+antiforgery+Authorize). 4 integration test (email-yol/in-app/urun-yok/marka-yok) + ctor mock fix.",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],

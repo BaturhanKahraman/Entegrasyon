@@ -20,6 +20,7 @@ public class ReportController(
     IStorefrontReturnManager storefrontReturnManager,
     IShipmentTrackingManager shipmentTrackingManager,
     IBranchOfficeManager branchOfficeManager,
+    ISupplierReturnNotificationManager supplierReturnNotificationManager,
     IStockTransferRequestManager stockTransferRequestManager) : Controller
 {
     [HttpGet("/reports/sales")]
@@ -262,6 +263,22 @@ public class ReportController(
             TempData.SetError(result.Message ?? "İndirim kodu gönderilemedi.");
 
         return RedirectToAction(nameof(Customers), new { segment = dto.Segment });
+    }
+
+    [HttpPost("/reports/returns/notify-supplier")]
+    [Authorize(Policy = AppPermissions.Reports.Create)]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> NotifySupplier(
+        NotifySupplierHighReturnDto dto, DateOnly? startDate = null, DateOnly? endDate = null, CancellationToken ct = default)
+    {
+        var result = await supplierReturnNotificationManager.NotifyHighReturnAsync(dto, GetCurrentUserId(), ct);
+
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "Tedarikçi bildirimi gönderildi.");
+        else
+            TempData.SetError(result.Message ?? "Tedarikçi bildirimi gönderilemedi.");
+
+        return RedirectToAction(nameof(Returns), new { startDate, endDate });
     }
 
     [HttpGet("/reports/returns")]

@@ -184,10 +184,20 @@
                                     <td class="text-end">@p.SoldQuantity</td>
                                     <td class="text-end">@p.ReturnedQuantity</td>
                                     <td class="text-end fw-bold @(p.IsAlert ? "text-red" : "")">%@p.ReturnRatePercent.ToString("F1")</td>
-                                    <td>
+                                    <td class="text-end">
                                         @if (p.IsAlert)
                                         {
-                                            <span class="badge bg-red-lt">Yüksek İade</span>
+                                            <form method="post" action="/reports/returns/notify-supplier" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="ProductVariantId" value="@p.ProductVariantId" />
+                                                <input type="hidden" name="ReturnRatePercent" value="@p.ReturnRatePercent.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                                                <input type="hidden" name="startDate" value="@startDate.ToString("yyyy-MM-dd")" />
+                                                <input type="hidden" name="endDate" value="@endDate.ToString("yyyy-MM-dd")" />
+                                                <button type="submit" class="btn btn-sm btn-outline-red"
+                                                        onclick="return confirm('Bu ürünün tedarikçisine yüksek iade bildirimi gönderilsin mi?');">
+                                                    Tedarikçiye Bildir
+                                                </button>
+                                            </form>
                                         }
                                     </td>
                                 </tr>

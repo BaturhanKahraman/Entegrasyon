@@ -28,6 +28,7 @@ public class InventoryReportControllerTests
     private readonly Mock<IStorefrontReturnManager> _returnManager = new();
     private readonly Mock<IShipmentTrackingManager> _shipmentManager = new();
     private readonly Mock<IBranchOfficeManager> _branchManager = new();
+    private readonly Mock<ISupplierReturnNotificationManager> _supplierNotifyManager = new();
     private readonly Mock<IStockTransferRequestManager> _transferManager = new();
 
     private static readonly InventoryReportDto EmptyReport =
@@ -49,6 +50,7 @@ public class InventoryReportControllerTests
             _returnManager.Object,
             _shipmentManager.Object,
             _branchManager.Object,
+            _supplierNotifyManager.Object,
             _transferManager.Object);
 
         var httpContext = new DefaultHttpContext();
