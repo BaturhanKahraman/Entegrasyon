@@ -5,6 +5,7 @@ using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Reports;
 using Entegrasyon.Entity.Invoicing;
+using Entegrasyon.Entity.Orders;
 using Entegrasyon.Entity.Sales;
 using Microsoft.EntityFrameworkCore;
 
@@ -1017,6 +1018,222 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             totalRefund,
             count * shippingPerReturn,
             count * processPerReturn);
+    }
+
+    #endregion
+
+    #region Category Sales Report
+    // Kanal: Mağaza = POS (Sales/SaleItem); Storefront + pazaryeri = Orders/OrderItem.
+    // Kategori atfı: (Sale|Order)Item → ProductVariant → Product → Category.
+
+    private static (DateTimeOffset Start, DateTimeOffset End) Range(DateOnly s, DateOnly e) =>
+        (new DateTimeOffset(s.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
+         new DateTimeOffset(e.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero));
+
+    /// <summary>
+    /// Kategori bazında ciro+adet toplamı (Mağaza + Orders birleşik), bellekte merge.
+    /// Ciro = liste tutarı (UnitPrice × Quantity); kategori-düzeyi raporda satır indirimi atlanır
+    /// (money kolon aritmetiği numeric/double çarpanı desteklemiyor).
+    /// </summary>
+    private static async Task<List<(string Category, decimal Revenue, int Qty)>> CategoryTotalsAsync(
+        IntegrationDbContext db, DateTimeOffset startTs, DateTimeOffset endTs)
+    {
+        var fromSales = await db.Set<Sale>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.SaleStatus != SaleStatus.Cancelled
+                        && s.SaleDate >= startTs && s.SaleDate <= endTs)
+            .SelectMany(s => s.SaleItems.Where(si => !si.IsDeleted))
+            .GroupBy(si => si.ProductVariant.Product.Category.Name)
+            .Select(g => new
+            {
+                Category = g.Key,
+                Revenue = g.Sum(si => si.UnitPrice * si.Quantity),
+                Qty = g.Sum(si => si.Quantity)
+            })
+            .ToListAsync();
+
+        var fromOrders = await db.Set<Order>()
+            .AsNoTracking()
+            .Where(o => !o.IsDeleted && o.OrderDate >= startTs && o.OrderDate <= endTs)
+            .SelectMany(o => o.OrderItems.Where(oi => !oi.IsDeleted && oi.Product != null))
+            .GroupBy(oi => oi.Product!.Product.Category.Name)
+            .Select(g => new
+            {
+                Category = g.Key,
+                Revenue = g.Sum(oi => oi.UnitPrice * oi.Quantity),
+                Qty = g.Sum(oi => oi.Quantity)
+            })
+            .ToListAsync();
+
+        var merged = new Dictionary<string, (decimal Rev, int Qty)>();
+        foreach (var r in fromSales.Concat(fromOrders))
+        {
+            var cur = merged.GetValueOrDefault(r.Category);
+            merged[r.Category] = (cur.Rev + r.Revenue, cur.Qty + r.Qty);
+        }
+
+        return merged
+            .Select(kv => (kv.Key, kv.Value.Rev, kv.Value.Qty))
+            .ToList();
+    }
+
+    public async Task<List<ChannelSalesDto>> GetCategoryChannelSalesAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+
+        var storeItems = db.Set<Sale>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.SaleStatus != SaleStatus.Cancelled
+                        && s.SaleDate >= startTs && s.SaleDate <= endTs)
+            .SelectMany(s => s.SaleItems.Where(si => !si.IsDeleted));
+
+        var storeRevenue = await storeItems.SumAsync(si => (decimal?)(si.UnitPrice * si.Quantity)) ?? 0m;
+        var storeQty = await storeItems.SumAsync(si => (int?)si.Quantity) ?? 0;
+
+        var orderChannels = await db.Set<Order>()
+            .AsNoTracking()
+            .Where(o => !o.IsDeleted && o.OrderDate >= startTs && o.OrderDate <= endTs)
+            .SelectMany(o => o.OrderItems
+                .Where(oi => !oi.IsDeleted)
+                .Select(oi => new
+                {
+                    Channel = o.MarketPlace != null ? o.MarketPlace.Name : "Storefront",
+                    Revenue = oi.UnitPrice * oi.Quantity,
+                    oi.Quantity
+                }))
+            .GroupBy(x => x.Channel)
+            .Select(g => new { Channel = g.Key, Revenue = g.Sum(x => x.Revenue), Qty = g.Sum(x => x.Quantity) })
+            .ToListAsync();
+
+        var result = new List<ChannelSalesDto>();
+        if (storeQty > 0)
+            result.Add(new ChannelSalesDto("Mağaza", storeRevenue, storeQty));
+        result.AddRange(orderChannels
+            .Select(c => new ChannelSalesDto(c.Channel, c.Revenue, c.Qty)));
+
+        return result.OrderByDescending(c => c.Revenue).ToList();
+    }
+
+    public async Task<List<CategorySeasonalDto>> GetCategorySeasonalComparisonAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+        var (prevStartTs, prevEndTs) = Range(startDate.AddYears(-1), endDate.AddYears(-1));
+
+        var current = await CategoryTotalsAsync(db, startTs, endTs);
+        var previous = await CategoryTotalsAsync(db, prevStartTs, prevEndTs);
+        var prevMap = previous.ToDictionary(p => p.Category, p => p.Revenue);
+
+        return current
+            .Select(c =>
+            {
+                var prev = prevMap.GetValueOrDefault(c.Category, 0m);
+                double delta = prev == 0m
+                    ? (c.Revenue > 0m ? 100.0 : 0.0)
+                    : Math.Round((double)((c.Revenue - prev) / prev) * 100, 1);
+                return new CategorySeasonalDto(c.Category, c.Revenue, prev, delta);
+            })
+            .OrderByDescending(c => c.CurrentRevenue)
+            .ToList();
+    }
+
+    public async Task<List<SlowMovingCategoryDto>> GetSlowMovingCategoriesAsync(int staleDays = 30)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var now = DateTimeOffset.UtcNow;
+        var cutoff = now.AddDays(-staleDays);
+
+        var salesLast = await db.Set<Sale>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.SaleStatus != SaleStatus.Cancelled)
+            .SelectMany(s => s.SaleItems
+                .Where(si => !si.IsDeleted)
+                .Select(si => new { Category = si.ProductVariant.Product.Category.Name, s.SaleDate, si.Quantity }))
+            .GroupBy(x => x.Category)
+            .Select(g => new { Category = g.Key, Last = g.Max(x => x.SaleDate), Qty = g.Sum(x => x.Quantity) })
+            .ToListAsync();
+
+        var ordersLast = await db.Set<Order>()
+            .AsNoTracking()
+            .Where(o => !o.IsDeleted && o.OrderDate != null)
+            .SelectMany(o => o.OrderItems
+                .Where(oi => !oi.IsDeleted && oi.Product != null)
+                .Select(oi => new { Category = oi.Product!.Product.Category.Name, Date = o.OrderDate!.Value, oi.Quantity }))
+            .GroupBy(x => x.Category)
+            .Select(g => new { Category = g.Key, Last = g.Max(x => x.Date), Qty = g.Sum(x => x.Quantity) })
+            .ToListAsync();
+
+        var merged = new Dictionary<string, (DateTimeOffset Last, int Qty)>();
+        foreach (var r in salesLast.Concat(ordersLast))
+        {
+            if (merged.TryGetValue(r.Category, out var cur))
+                merged[r.Category] = (r.Last > cur.Last ? r.Last : cur.Last, cur.Qty + r.Qty);
+            else
+                merged[r.Category] = (r.Last, r.Qty);
+        }
+
+        return merged
+            .Where(kv => kv.Value.Last < cutoff)
+            .Select(kv => new SlowMovingCategoryDto(
+                kv.Key,
+                DateOnly.FromDateTime(kv.Value.Last.UtcDateTime),
+                (int)(now - kv.Value.Last).TotalDays,
+                kv.Value.Qty))
+            .OrderByDescending(c => c.DaysSinceLastSale)
+            .ToList();
+    }
+
+    public async Task<List<PriceRangeBucketDto>> GetCategoryPriceDistributionAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+        var (startTs, endTs) = Range(startDate, endDate);
+
+        // Kova sınırları (TL). MaxPrice null = üst sınırsız.
+        var buckets = new (string Label, decimal Min, decimal? Max)[]
+        {
+            ("0 - 50 TL", 0m, 50m),
+            ("50 - 100 TL", 50m, 100m),
+            ("100 - 250 TL", 100m, 250m),
+            ("250 - 500 TL", 250m, 500m),
+            ("500 - 1.000 TL", 500m, 1000m),
+            ("1.000 TL+", 1000m, null)
+        };
+
+        int BucketIndex(decimal price)
+        {
+            for (var i = 0; i < buckets.Length; i++)
+                if (buckets[i].Max == null || price < buckets[i].Max) return i;
+            return buckets.Length - 1;
+        }
+
+        var salesLines = await db.Set<Sale>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted && s.SaleStatus != SaleStatus.Cancelled
+                        && s.SaleDate >= startTs && s.SaleDate <= endTs)
+            .SelectMany(s => s.SaleItems
+                .Where(si => !si.IsDeleted)
+                .Select(si => new { Price = si.UnitPrice, si.Quantity }))
+            .ToListAsync();
+
+        var orderLines = await db.Set<Order>()
+            .AsNoTracking()
+            .Where(o => !o.IsDeleted && o.OrderDate >= startTs && o.OrderDate <= endTs)
+            .SelectMany(o => o.OrderItems
+                .Where(oi => !oi.IsDeleted)
+                .Select(oi => new { Price = oi.UnitPrice, oi.Quantity }))
+            .ToListAsync();
+
+        var agg = new (int Lines, int Qty, decimal Revenue)[buckets.Length];
+        foreach (var l in salesLines.Concat(orderLines))
+        {
+            var idx = BucketIndex(l.Price);
+            agg[idx] = (agg[idx].Lines + 1, agg[idx].Qty + l.Quantity, agg[idx].Revenue + l.Price * l.Quantity);
+        }
+
+        return buckets
+            .Select((b, i) => new PriceRangeBucketDto(b.Label, b.Min, b.Max, agg[i].Lines, agg[i].Qty, agg[i].Revenue))
+            .ToList();
     }
 
     #endregion

@@ -21,6 +21,11 @@
         @{
             var totalRevenue = Model.Sum(p => p.TotalRevenue);
             var totalSold = Model.Sum(p => p.TotalSold);
+            var channels = ViewBag.ChannelSales as List<Entegrasyon.Entity.Dtos.Reports.ChannelSalesDto> ?? new();
+            var seasonal = ViewBag.SeasonalComparison as List<Entegrasyon.Entity.Dtos.Reports.CategorySeasonalDto> ?? new();
+            var slow = ViewBag.SlowMovingCategories as List<Entegrasyon.Entity.Dtos.Reports.SlowMovingCategoryDto> ?? new();
+            var priceDist = ViewBag.PriceDistribution as List<Entegrasyon.Entity.Dtos.Reports.PriceRangeBucketDto> ?? new();
+            string Inv(decimal v) => v.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture);
         }
 
         <div class="row row-deck row-cards mb-3">
@@ -49,6 +54,160 @@
                 </div>
             </div>
         </div>
+
+        <div class="row row-cards mb-3">
+            @if (channels.Count > 0)
+            {
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Kanal Bazlı Karşılaştırma</h3>
+                                <p class="text-secondary m-0">Mağaza · Storefront · pazaryerleri (liste cirosu)</p>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div id="channel-chart" data-apex-chart style="height: 280px;"></div>
+                            <script>
+                                (function () {
+                                    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                                    var textColor = isDark ? '#a0aec0' : '#666';
+                                    var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+                                    var options = {
+                                        chart: { type: 'bar', height: 280, toolbar: { show: false }, fontFamily: 'inherit', background: 'transparent' },
+                                        theme: { mode: isDark ? 'dark' : 'light' },
+                                        plotOptions: { bar: { columnWidth: '50%', borderRadius: 4, distributed: true } },
+                                        series: [{ name: 'Ciro', data: [@Html.Raw(string.Join(",", channels.Select(c => Inv(c.Revenue))))] }],
+                                        xaxis: {
+                                            categories: [@Html.Raw(string.Join(",", channels.Select(c => "'" + System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(c.Channel) + "'")))],
+                                            labels: { style: { colors: textColor } }
+                                        },
+                                        yaxis: { labels: { style: { colors: textColor }, formatter: function (v) { return v.toLocaleString('tr-TR') + ' ₺'; } } },
+                                        legend: { show: false },
+                                        grid: { borderColor: gridColor },
+                                        tooltip: { y: { formatter: function (v) { return v.toLocaleString('tr-TR') + ' ₺'; } } },
+                                        dataLabels: { enabled: false }
+                                    };
+                                    new ApexCharts(document.querySelector('#channel-chart'), options).render();
+                                })();
+                            </script>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @if (priceDist.Any(b => b.LineCount > 0))
+            {
+                <div class="col-lg-6">
+                    <div class="card">
+                        <div class="card-header">
+                            <div>
+                                <h3 class="card-title">Fiyat Aralığı Dağılımı</h3>
+                                <p class="text-secondary m-0">Satılan kalemlerin birim fiyat aralığına göre dağılımı</p>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-vcenter card-table">
+                                <thead>
+                                    <tr>
+                                        <th>Fiyat Aralığı</th>
+                                        <th class="text-end">Kalem</th>
+                                        <th class="text-end">Adet</th>
+                                        <th class="text-end">Ciro</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var b in priceDist)
+                                    {
+                                        <tr>
+                                            <td><span class="badge bg-azure-lt">@b.Label</span></td>
+                                            <td class="text-end">@b.LineCount</td>
+                                            <td class="text-end">@b.Quantity</td>
+                                            <td class="text-end">@b.Revenue.ToString("N2") TL</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        @if (seasonal.Count > 0)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Sezonsal Trend (Geçen Yıl Aynı Dönem)</h3>
+                        <p class="text-secondary m-0">Kategori cirosunun bir önceki yılın aynı dönemiyle karşılaştırması</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th class="text-end">Bu Dönem</th>
+                                <th class="text-end">Geçen Yıl</th>
+                                <th class="text-end">Değişim</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in seasonal)
+                            {
+                                var up = c.DeltaPercent >= 0;
+                                <tr>
+                                    <td>@c.CategoryName</td>
+                                    <td class="text-end">@c.CurrentRevenue.ToString("N2") TL</td>
+                                    <td class="text-end text-secondary">@c.PreviousYearRevenue.ToString("N2") TL</td>
+                                    <td class="text-end">
+                                        <span class="badge @(up ? "bg-green-lt" : "bg-red-lt")">
+                                            @(up ? "▲" : "▼") %@Math.Abs(c.DeltaPercent).ToString("F1")
+                                        </span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+
+        @if (slow.Count > 0)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Yavaş Hareket Uyarısı</h3>
+                        <p class="text-secondary m-0">30+ gündür satışı olmayan kategoriler</p>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>Kategori</th>
+                                <th>Son Satış</th>
+                                <th class="text-end">Gün</th>
+                                <th class="text-end">Geçmiş Satış Adedi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var c in slow)
+                            {
+                                <tr>
+                                    <td>@c.CategoryName</td>
+                                    <td class="text-secondary">@(c.LastSaleDate?.ToString("dd.MM.yyyy") ?? "-")</td>
+                                    <td class="text-end"><span class="badge bg-yellow-lt">@c.DaysSinceLastSale gün</span></td>
+                                    <td class="text-end text-secondary">@c.HistoricalQuantity</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
 
         <div class="card">
             <div class="card-header">

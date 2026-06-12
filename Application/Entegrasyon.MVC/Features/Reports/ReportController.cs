@@ -363,6 +363,10 @@ public class ReportController(
 
         ViewBag.StartDate = start;
         ViewBag.EndDate = end;
+        ViewBag.ChannelSales = await reportManager.GetCategoryChannelSalesAsync(start, end);
+        ViewBag.SeasonalComparison = await reportManager.GetCategorySeasonalComparisonAsync(start, end);
+        ViewBag.SlowMovingCategories = await reportManager.GetSlowMovingCategoriesAsync();
+        ViewBag.PriceDistribution = await reportManager.GetCategoryPriceDistributionAsync(start, end);
         return View(data);
     }
 

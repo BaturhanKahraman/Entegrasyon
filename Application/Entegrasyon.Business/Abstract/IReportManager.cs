@@ -21,4 +21,9 @@ public interface IReportManager
         DateOnly startDate, DateOnly endDate, int minSold = 5, double alertThresholdPercent = 10, int top = 20);
     Task<ReturnCostDto> GetReturnCostAsync(
         DateOnly startDate, DateOnly endDate, decimal shippingPerReturn = 50m, decimal processPerReturn = 25m);
+
+    Task<List<ChannelSalesDto>> GetCategoryChannelSalesAsync(DateOnly startDate, DateOnly endDate);
+    Task<List<CategorySeasonalDto>> GetCategorySeasonalComparisonAsync(DateOnly startDate, DateOnly endDate);
+    Task<List<SlowMovingCategoryDto>> GetSlowMovingCategoriesAsync(int staleDays = 30);
+    Task<List<PriceRangeBucketDto>> GetCategoryPriceDistributionAsync(DateOnly startDate, DateOnly endDate);
 }

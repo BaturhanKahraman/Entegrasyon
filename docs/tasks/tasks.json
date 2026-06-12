@@ -1458,8 +1458,8 @@
   {
     "task": "Kategori Satislari - Sezonsal Trend (Gecen Yil Ayni Donem Karsilastirmasi)",
     "description": "Kategori satis raporuna yil karsilastirmasi ekle. Bu Ocak vs Gecen Yil Ocak bazli kategori performansi. Bebe giyimde sezonsal talep cok belirgin; esnafin stok planlamasi icin kritik.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetCategorySeasonalComparisonAsync: kategori cirosu bu donem vs gecen yil ayni donem (AddYears(-1)), delta%. Sezonsal tablo.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [],
@@ -1469,8 +1469,8 @@
   {
     "task": "Kategori Satislari - Kanal Bazli Karsilastirma (Trendyol vs Storefront vs Magaza)",
     "description": "Kategori raporuna kanal kirilimi ekle. Her kategori icin Trendyol, Pazarama, Storefront, Magaza ici satis dagilimi. Esnaf hangi kategorisini nerede sattigini gorebilsin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12. CategoryPerformanceDto.MarketplaceBreakdown zaten modellenenmis.",
+    "status": "done",
+    "notes": "GetCategoryChannelSalesAsync: Magaza(Sales/SaleItem) + Storefront/pazaryeri(Orders/OrderItem, MarketPlace.Name veya Storefront), ciro+adet. ApexCharts bar.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [
@@ -1484,8 +1484,8 @@
   {
     "task": "Kategori Satislari - Yavas Hareket Uyarisi (30+ Gun Dusus)",
     "description": "Kategori raporunda son 30 gunde satis dususu olan kategorileri otomatik uyariyla isarettle. Renk kodu veya badge. Esnaf hareketsiz kategoriye zamaninda mudahale edebilsin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetSlowMovingCategoriesAsync(staleDays=30): son satis (Sales+Orders max) cutoff oncesiyse yavas; gun+gecmis adet. Uyari tablo.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [],
@@ -1495,8 +1495,8 @@
   {
     "task": "Kategori Satislari - Fiyat Araligi Dagilimi",
     "description": "Kategori raporuna fiyat bandi analizi ekle. Her kategoride hangi fiyat araligi en cok satiyor (0-100, 100-300, 300+ TL). Fiyatlandirma kararlarini destekler.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetCategoryPriceDistributionAsync: satilan kalemler birim fiyat kovalari (0-50..1000+), kalem+adet+ciro. Tablo. Ciro brut (money kolon -> indirim atlandi).",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],
