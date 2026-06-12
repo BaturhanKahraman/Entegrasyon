@@ -285,9 +285,11 @@ public class ReportController(
         var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);
 
         var report = await reportManager.GetSalesReportAsync(new SalesReportFilterDto(start, end));
+        var vatDeclaration = await reportManager.GetVatDeclarationAsync(start, end);
 
         ViewBag.StartDate = start;
         ViewBag.EndDate = end;
+        ViewBag.VatDeclaration = vatDeclaration;
         return View(report);
     }
 

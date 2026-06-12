@@ -1409,8 +1409,8 @@
   {
     "task": "Vergi Raporu - KDV Beyani Ozeti (KDV Orani Bazli Tablo)",
     "description": "Vergi raporunu yeniden tasarla. Satislari KDV oranina gore grupla (yuzde1, yuzde10, yuzde20). Her oran icin: matrah, KDV tutari, toplam. Mevcut sabit yuzde20 hesabi kaldirilacak, VatRate entity kullanilacak. Bebe giyimi icin yuzde1 orani kritik.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12. Mevcut sayfada yanlis manager cagrisi var; VatRate entity hazir ama kullanilmiyor.",
+    "status": "done",
+    "notes": "PA onerisi - 2026-06-12. KDV beyan kesilen EInvoice satirlarindan (Sent/Accepted) TaxRate bazli aggregate. Sabit yuzde20 kaldirildi. GetVatDeclarationAsync + integration test. 2026-06-12.",
     "priority": "high",
     "plan": false,
     "manual_test_steps": [

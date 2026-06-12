@@ -4,6 +4,7 @@ using Entegrasyon.Business.Extensions;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Reports;
+using Entegrasyon.Entity.Invoicing;
 using Microsoft.EntityFrameworkCore;
 
 namespace Entegrasyon.Business.Concrete;
@@ -798,6 +799,38 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             .ToList();
 
         return result;
+    }
+
+    #endregion
+
+    #region Tax Report
+
+    public async Task<VatDeclarationDto> GetVatDeclarationAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+
+        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        // Sadece KESİLEN faturalar (Sent/Accepted), dönem içi; satırları KDV oranına göre grupla.
+        // Matrah = LineTotal - TaxAmount (LineTotal KDV dahil).
+        var lines = await db.Set<EInvoice>()
+            .AsNoTracking()
+            .Where(i => !i.IsDeleted
+                        && (i.Status == EInvoiceStatus.Sent || i.Status == EInvoiceStatus.Accepted)
+                        && i.IssueDate >= startTs && i.IssueDate <= endTs)
+            .SelectMany(i => i.Lines)
+            .Where(l => !l.IsDeleted)
+            .GroupBy(l => l.TaxRate)
+            .OrderBy(g => g.Key)
+            .Select(g => new VatDeclarationLineDto(
+                g.Key,
+                g.Sum(l => l.LineTotal - l.TaxAmount),
+                g.Sum(l => l.TaxAmount),
+                g.Count()))
+            .ToListAsync();
+
+        return new VatDeclarationDto(lines, lines.Sum(l => l.TaxBase), lines.Sum(l => l.VatAmount));
     }
 
     #endregion

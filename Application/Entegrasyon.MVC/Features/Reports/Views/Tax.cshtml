@@ -1,4 +1,7 @@
 @model Entegrasyon.Entity.Dtos.Reports.SalesReportDto
+@{
+    var vat = ViewBag.VatDeclaration as Entegrasyon.Entity.Dtos.Reports.VatDeclarationDto;
+}
 
         <div class="card mb-3">
             <div class="card-body">
@@ -53,9 +56,57 @@
             </div>
         </div>
 
+        <div class="card mb-3">
+            <div class="card-header">
+                <h3 class="card-title">KDV Beyan Özeti</h3>
+                <div class="card-subtitle">Kesilen faturalar (e-Fatura/e-Arşiv) — orana göre matrah ve KDV</div>
+            </div>
+            @if (vat is null || vat.Lines.Count == 0)
+            {
+                <div class="empty">
+                    <p class="empty-title">Bu dönemde kesilmiş fatura yok</p>
+                    <p class="empty-subtitle text-secondary">Seçili tarih aralığında Gönderildi/Kabul Edildi durumunda fatura bulunamadı.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table">
+                        <thead>
+                            <tr>
+                                <th>KDV Oranı</th>
+                                <th class="text-end">Matrah</th>
+                                <th class="text-end">KDV Tutarı</th>
+                                <th class="text-end">Satır</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var line in vat.Lines)
+                            {
+                                <tr>
+                                    <td><span class="badge bg-azure-lt">%@line.VatRate</span></td>
+                                    <td class="text-end">@line.TaxBase.ToString("N2") TL</td>
+                                    <td class="text-end">@line.VatAmount.ToString("N2") TL</td>
+                                    <td class="text-end text-secondary">@line.LineCount</td>
+                                </tr>
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr class="fw-bold">
+                                <td>Toplam</td>
+                                <td class="text-end">@vat.TotalTaxBase.ToString("N2") TL</td>
+                                <td class="text-end">@vat.TotalVat.ToString("N2") TL</td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            }
+        </div>
+
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Gunluk KDV Dağılımı</h3>
+                <h3 class="card-title">Gunluk Satış Dağılımı</h3>
             </div>
             <div class="table-responsive">
                 <table class="table table-vcenter card-table table-hover">
@@ -63,8 +114,7 @@
                         <tr>
                             <th>Tarih</th>
                             <th>Satış</th>
-                            <th>Brut Tutar</th>
-                            <th>Tahmini KDV</th>
+                            <th class="text-end">Brut Tutar</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -73,8 +123,7 @@
                             <tr>
                                 <td>@day.Date.ToString("dd.MM.yyyy")</td>
                                 <td><span class="badge bg-blue-lt">@day.SaleCount</span></td>
-                                <td>@day.Revenue.ToString("N2") TL</td>
-                                <td class="text-secondary">@((day.Revenue * 0.20m).ToString("N2")) TL</td>
+                                <td class="text-end">@day.Revenue.ToString("N2") TL</td>
                             </tr>
                         }
                     </tbody>
