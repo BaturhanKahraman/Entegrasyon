@@ -1,0 +1,14 @@
+{
+  "priority": 5,
+  "scenarioName": "order-lifecycle",
+  "requiredScenarioState": "Started",
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/integration/order/sellers/[0-9]+/orders"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/order/orders-created.json"
+  }
+}
