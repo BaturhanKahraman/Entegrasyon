@@ -812,8 +812,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     {
         await using var db = await dbContextFactory.CreateDbContextAsync();
 
-        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var (startTs, endTs) = Range(startDate, endDate);
 
         // Sadece KESİLEN faturalar (Sent/Accepted), dönem içi; satırları KDV oranına göre grupla.
         // Matrah = LineTotal - TaxAmount (LineTotal KDV dahil).
@@ -840,8 +839,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     {
         await using var db = await dbContextFactory.CreateDbContextAsync();
 
-        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var (startTs, endTs) = Range(startDate, endDate);
 
         // Kesilen faturalar (Sent/Accepted), dönem içi — türe göre adet + GrandTotal.
         var invoiceGroups = await db.Set<EInvoice>()
@@ -895,8 +893,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     {
         await using var db = await dbContextFactory.CreateDbContextAsync();
 
-        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var (startTs, endTs) = Range(startDate, endDate);
 
         // Dönem içi gerçekleşen iadeleri (yıl, ay, neden) bazında projekte et; gruplamayı bellekte yap.
         var rows = await db.Set<SaleReturn>()
@@ -908,38 +905,29 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             {
                 r.ReturnDate.Year,
                 r.ReturnDate.Month,
-                Reason = r.ReturnReason != null ? r.ReturnReason.Name : (r.CustomReason ?? "Diğer")
+                Reason = r.ReturnReason != null ? r.ReturnReason.Name : (r.CustomReason ?? OtherReason)
             })
             .ToListAsync();
 
         // Ay ekseni: start..end arası tüm aylar (boş aylar 0 ile dolar).
-        var months = new List<(int Year, int Month)>();
-        var cursor = new DateOnly(startDate.Year, startDate.Month, 1);
-        var last = new DateOnly(endDate.Year, endDate.Month, 1);
-        while (cursor <= last)
-        {
-            months.Add((cursor.Year, cursor.Month));
-            cursor = cursor.AddMonths(1);
-        }
-
+        var months = MonthAxis(startDate, endDate);
         var monthLabels = months.Select(m => $"{m.Month:D2}.{m.Year}").ToList();
         var monthIndex = months
             .Select((m, i) => (m, i))
             .ToDictionary(x => (x.m.Year, x.m.Month), x => x.i);
 
         var reasons = rows.Select(r => r.Reason).Distinct().OrderBy(r => r).ToList();
+        var seriesMap = reasons.ToDictionary(r => r, _ => new int[months.Count]);
 
-        var series = reasons.Select(reason =>
+        // Tek geçiş: her iade satırını ilgili (neden, ay) hücresine say.
+        foreach (var row in rows)
         {
-            var counts = new int[months.Count];
-            foreach (var row in rows.Where(r => r.Reason == reason))
-            {
-                if (monthIndex.TryGetValue((row.Year, row.Month), out var idx))
-                    counts[idx]++;
-            }
-            return new ReturnReasonSeriesDto(reason, counts);
-        }).ToList();
+            if (seriesMap.TryGetValue(row.Reason, out var counts)
+                && monthIndex.TryGetValue((row.Year, row.Month), out var idx))
+                counts[idx]++;
+        }
 
+        var series = reasons.Select(r => new ReturnReasonSeriesDto(r, seriesMap[r])).ToList();
         return new ReturnReasonTrendDto(monthLabels, series);
     }
 
@@ -948,8 +936,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     {
         await using var db = await dbContextFactory.CreateDbContextAsync();
 
-        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var (startTs, endTs) = Range(startDate, endDate);
 
         // Dönem içi satılan adet (ürün varyantı bazında).
         var sold = await db.Set<Sale>()
@@ -1002,8 +989,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     {
         await using var db = await dbContextFactory.CreateDbContextAsync();
 
-        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var (startTs, endTs) = Range(startDate, endDate);
 
         var realized = db.Set<SaleReturn>()
             .AsNoTracking()
@@ -1030,6 +1016,26 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     private static (DateTimeOffset Start, DateTimeOffset End) Range(DateOnly s, DateOnly e) =>
         (new DateTimeOffset(s.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero),
          new DateTimeOffset(e.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero));
+
+    /// <summary>start..end arasındaki tüm ayları (yıl, ay) sırayla döner — trend grafiklerinin eksen ayları.</summary>
+    private static List<(int Year, int Month)> MonthAxis(DateOnly start, DateOnly end)
+    {
+        var months = new List<(int Year, int Month)>();
+        var cursor = new DateOnly(start.Year, start.Month, 1);
+        var last = new DateOnly(end.Year, end.Month, 1);
+        while (cursor <= last)
+        {
+            months.Add((cursor.Year, cursor.Month));
+            cursor = cursor.AddMonths(1);
+        }
+        return months;
+    }
+
+    // Kanal/sentinel etiketleri — tek kaynaktan (literal drift'i bir kanalı iki satıra bölebilir).
+    private const string ChannelStore = "Mağaza";
+    private const string ChannelStorefront = "Storefront";
+    private const string UnknownCity = "Bilinmeyen";
+    private const string OtherReason = "Diğer";
 
     /// <summary>
     /// Kategori bazında ciro+adet toplamı (Mağaza + Orders birleşik), bellekte merge.
@@ -1083,14 +1089,15 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
         await using var db = await dbContextFactory.CreateDbContextAsync();
         var (startTs, endTs) = Range(startDate, endDate);
 
-        var storeItems = db.Set<Sale>()
+        // Mağaza (POS): tek sorguda ciro + adet.
+        var store = await db.Set<Sale>()
             .AsNoTracking()
             .Where(s => !s.IsDeleted && s.SaleStatus != SaleStatus.Cancelled
                         && s.SaleDate >= startTs && s.SaleDate <= endTs)
-            .SelectMany(s => s.SaleItems.Where(si => !si.IsDeleted));
-
-        var storeRevenue = await storeItems.SumAsync(si => (decimal?)(si.UnitPrice * si.Quantity)) ?? 0m;
-        var storeQty = await storeItems.SumAsync(si => (int?)si.Quantity) ?? 0;
+            .SelectMany(s => s.SaleItems.Where(si => !si.IsDeleted))
+            .GroupBy(si => 1)
+            .Select(g => new { Revenue = g.Sum(si => si.UnitPrice * si.Quantity), Qty = g.Sum(si => si.Quantity) })
+            .FirstOrDefaultAsync();
 
         var orderChannels = await db.Set<Order>()
             .AsNoTracking()
@@ -1099,7 +1106,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                 .Where(oi => !oi.IsDeleted)
                 .Select(oi => new
                 {
-                    Channel = o.MarketPlace != null ? o.MarketPlace.Name : "Storefront",
+                    Channel = o.MarketPlace != null ? o.MarketPlace.Name : ChannelStorefront,
                     Revenue = oi.UnitPrice * oi.Quantity,
                     oi.Quantity
                 }))
@@ -1108,8 +1115,8 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             .ToListAsync();
 
         var result = new List<ChannelSalesDto>();
-        if (storeQty > 0)
-            result.Add(new ChannelSalesDto("Mağaza", storeRevenue, storeQty));
+        if (store is { Qty: > 0 })
+            result.Add(new ChannelSalesDto(ChannelStore, store.Revenue, store.Qty));
         result.AddRange(orderChannels
             .Select(c => new ChannelSalesDto(c.Channel, c.Revenue, c.Qty)));
 
@@ -1302,7 +1309,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             .Where(s => !s.IsDeleted && s.CreatedAt >= startTs && s.CreatedAt <= endTs)
             .GroupBy(s => s.Order != null && s.Order.ShippingAddress.City != null
                 ? s.Order.ShippingAddress.City
-                : "Bilinmeyen")
+                : UnknownCity)
             .Select(g => new
             {
                 City = g.Key,
@@ -1312,7 +1319,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             .ToListAsync();
 
         return rows
-            .Select(r => new RegionDensityDto(r.City ?? "Bilinmeyen", r.Count, r.Delivered))
+            .Select(r => new RegionDensityDto(r.City ?? UnknownCity, r.Count, r.Delivered))
             .OrderByDescending(r => r.ShipmentCount)
             .Take(top)
             .ToList();
@@ -1342,20 +1349,16 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             })
             .ToListAsync();
 
-        var months = new List<(int Year, int Month)>();
-        var cursor = new DateOnly(startDate.Year, startDate.Month, 1);
-        var last = new DateOnly(endDate.Year, endDate.Month, 1);
-        while (cursor <= last)
-        {
-            months.Add((cursor.Year, cursor.Month));
-            cursor = cursor.AddMonths(1);
-        }
+        // Tek geçiş: ayları (yıl, ay) anahtarıyla grupla, sonra eksen aylarına eşle.
+        var byMonth = rows
+            .GroupBy(r => (r.Year, r.Month))
+            .ToDictionary(g => g.Key, g => (Total: g.Count(), Delayed: g.Count(r => r.IsDelayed)));
 
-        return months
+        return MonthAxis(startDate, endDate)
             .Select(m =>
             {
-                var inMonth = rows.Where(r => r.Year == m.Year && r.Month == m.Month).ToList();
-                return new DelayTrendPointDto($"{m.Month:D2}.{m.Year}", inMonth.Count(r => r.IsDelayed), inMonth.Count);
+                byMonth.TryGetValue((m.Year, m.Month), out var c);
+                return new DelayTrendPointDto($"{m.Month:D2}.{m.Year}", c.Delayed, c.Total);
             })
             .ToList();
     }
