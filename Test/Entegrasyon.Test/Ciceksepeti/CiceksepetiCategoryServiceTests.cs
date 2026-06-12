@@ -203,10 +203,10 @@ public class CiceksepetiCategoryServiceTests : Entegrasyon.UnitTest.BaseTest
         roots[0].HasChildren.Should().BeFalse("it has no SubCategories");
     }
 
-    // ── Test 6: CategoryImporter maps Kisisellestirilebilir to AllowCustom=true ──
+    // ── Test 6: CategoryImporter, Ciceksepeti attribute Type string'lerini servisten doğru yüzeye çıkarır ──
 
     [Fact]
-    public async Task CategoryImporter_MapsKisisellestirilebilir_ToAllowCustomTrue()
+    public async Task CategoryImporter_SurfacesAttributeTypeStrings_FromService()
     {
         // Arrange
         var categoryId = 99;
@@ -231,7 +231,7 @@ public class CiceksepetiCategoryServiceTests : Entegrasyon.UnitTest.BaseTest
 
         // We test the type mapping by verifying that the importer correctly calls
         // GetCategoryAttributesAsync and the service returns the expected Type strings.
-        // The actual DB mapping (IsVarianter, AllowCustom) happens during ImportCategoryAttributesAsync
+        // The actual DB mapping (IsVarianter) happens during ImportCategoryAttributesAsync
         // which requires a real DbContext — we verify the service contract here.
         var attrResult = await _categoryServiceMock.Object.GetCategoryAttributesAsync(categoryId);
 
