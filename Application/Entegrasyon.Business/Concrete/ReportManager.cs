@@ -613,6 +613,11 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
 
     #region Marketplace Summary
 
+    // En çok satan ürünler (pazaryeri bazında): OrderItems → ProductVariant → MainProducts.
+    // Etiket: ürün başlığı (eşleşen yerel ürün) ya da MerchantSku/Barcode fallback (eşleşmemiş
+    // pazaryeri satırı kaybolmasın). Adede göre azalan, en fazla 3. Pazaryeri başına izole
+    // (LATERAL alt-sorgu o."MarketPlaceId"e bağlı). Büyük tablo (Orders/OrderItems) — index'li
+    // join (OrderItems.OrderId FK, Orders.MarketPlaceId+CreatedAt) DB Master review tetikleyici.
     private const string MarketplaceSummaryQuery = """
         SELECT json_agg(row_to_json(t))::text AS "Value"
         FROM (
@@ -628,7 +633,26 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                 CASE WHEN COUNT(DISTINCT o."Id") > 0
                     THEN ROUND(COALESCE(SUM(oi."UnitPrice" * oi."Quantity"), 0) / COUNT(DISTINCT o."Id"), 2)
                     ELSE 0
-                END AS average_order_value
+                END AS average_order_value,
+                COALESCE((
+                    SELECT json_agg(tp.product_label ORDER BY tp.qty DESC)
+                    FROM (
+                        SELECT
+                            COALESCE(p2."Title", oi2."MerchantSku", oi2."Barcode", 'Bilinmeyen Ürün') AS product_label,
+                            SUM(oi2."Quantity")::int AS qty
+                        FROM "Orders" o2
+                        INNER JOIN "OrderItems" oi2 ON oi2."OrderId" = o2."Id" AND NOT oi2."IsDeleted"
+                        LEFT JOIN "ProductVariants" pv2 ON pv2."Id" = oi2."ProductId"
+                        LEFT JOIN "MainProducts" p2 ON p2."Id" = pv2."ProductId"
+                        WHERE NOT o2."IsDeleted"
+                          AND o2."MarketPlaceId" IS NOT DISTINCT FROM o."MarketPlaceId"
+                          AND o2."CreatedAt" >= @p0::timestamptz
+                          AND o2."CreatedAt" < (@p1::date + 1)::timestamptz
+                        GROUP BY 1
+                        ORDER BY qty DESC
+                        LIMIT 3
+                    ) tp
+                ), '[]') AS top_selling_products
             FROM "Orders" o
             INNER JOIN "OrderItems" oi ON oi."OrderId" = o."Id" AND NOT oi."IsDeleted"
             LEFT JOIN "MarketPlaces" mp ON mp."Id" = o."MarketPlaceId"
@@ -665,6 +689,18 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
 
         foreach (var item in doc.RootElement.EnumerateArray())
         {
+            var topSelling = new List<string>();
+            if (item.TryGetProperty("top_selling_products", out var tsp)
+                && tsp.ValueKind == JsonValueKind.Array)
+            {
+                foreach (var p in tsp.EnumerateArray())
+                {
+                    var label = p.GetString();
+                    if (!string.IsNullOrEmpty(label))
+                        topSelling.Add(label);
+                }
+            }
+
             result.Add(new MarketplaceSummaryDto(
                 item.GetProperty("marketplace_id").GetInt32(),
                 item.GetProperty("marketplace_name").GetString() ?? "",
@@ -672,7 +708,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                 item.GetProperty("total_revenue").GetDecimal(),
                 item.GetProperty("commission_paid").GetDecimal(),
                 item.GetProperty("average_order_value").GetDecimal(),
-                [])); // Top selling products ileride join ile eklenebilir
+                topSelling));
         }
 
         return result;

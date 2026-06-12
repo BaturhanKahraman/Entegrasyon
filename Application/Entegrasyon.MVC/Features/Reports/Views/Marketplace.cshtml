@@ -1,78 +1,275 @@
 @model List<Entegrasyon.Entity.Dtos.Reports.MarketplaceSummaryDto>
+@using Entegrasyon.MVC.Infrastructure.Extensions
+@{
+    var startDate = (DateOnly)ViewBag.StartDate;
+    var endDate = (DateOnly)ViewBag.EndDate;
 
-        <!-- Date Filter -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <form method="get" action="/reports/marketplace" class="row g-3 align-items-end">
-                    <div class="col-auto">
-                        <label class="form-label">Başlangıç</label>
-                        <input type="date" class="form-control" name="startDate" value="@(((DateOnly)ViewBag.StartDate).ToString("yyyy-MM-dd"))" />
-                    </div>
-                    <div class="col-auto">
-                        <label class="form-label">Bitiş</label>
-                        <input type="date" class="form-control" name="endDate" value="@(((DateOnly)ViewBag.EndDate).ToString("yyyy-MM-dd"))" />
-                    </div>
-                    <div class="col-auto">
-                        <button type="submit" class="btn btn-primary">Filtrele</button>
-                    </div>
-                </form>
-            </div>
-        </div>
+    // KPI toplamları — tümü Model üzerinden hesaplanır (backend aggregate gerekmez).
+    var totalOrders = Model.Sum(m => m.TotalOrders);
+    var totalRevenue = Model.Sum(m => m.TotalRevenue);
+    var totalCommission = Model.Sum(m => m.CommissionPaid);
+    var netRevenue = totalRevenue - totalCommission;
+    var grandRevenue = totalRevenue; // gelir payı paydası
 
-        <!-- Chart Placeholder -->
-        <div class="card mb-3">
-            <div class="card-header">
-                <h3 class="card-title">Pazaryeri Performans Grafigi</h3>
-            </div>
+    // Karşılaştırma için sıralı liste (gelire göre azalan zaten geliyor ama garanti edelim).
+    var rows = Model.OrderByDescending(m => m.TotalRevenue).ToList();
+
+    // Tabler palet renkleri — grafik + tablo nokta rengi için pazaryeri başına döngü.
+    string[] palette = { "blue", "green", "orange", "purple", "cyan", "pink", "teal", "yellow", "red", "indigo" };
+}
+
+<!-- KPI özet -->
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
             <div class="card-body">
-                <div id="marketplace-chart" style="height:300px; display:flex; align-items:center; justify-content:center;">
-                    <span class="text-secondary">Grafik alanı— chart kutuphanesi entegre edilecek</span>
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-blue-lt avatar"><i class="ti ti-shopping-cart"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Sipariş</div>
+                        <div class="text-secondary">@rows.Count pazaryeri</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0">@totalOrders</span>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <!-- Table -->
-        <div class="card">
-            <div class="card-header">
-                <h3 class="card-title">Pazaryeri Ozeti</h3>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-cyan-lt avatar"><i class="ti ti-cash"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Gelir</div>
+                        <div class="text-secondary">Komisyon öncesi</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0">@totalRevenue.ToMoney()</span>
+                    </div>
+                </div>
             </div>
-            @if (Model.Any())
-            {
-                <div class="table-responsive">
-                    <table class="table table-vcenter card-table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Pazaryeri</th>
-                                <th>Sipariş Sayısı</th>
-                                <th>Toplam Gelir</th>
-                                <th>Komisyon</th>
-                                <th>Ort. Sipariş</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var mp in Model)
-                            {
-                                <tr>
-                                    <td><strong>@mp.MarketplaceName</strong></td>
-                                    <td>@mp.TotalOrders</td>
-                                    <td>@mp.TotalRevenue.ToMoney()</td>
-                                    <td>@mp.CommissionPaid.ToMoney()</td>
-                                    <td>@mp.AverageOrderValue.ToMoney()</td>
-                                </tr>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-green text-green-fg"><i class="ti ti-wallet"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Net Gelir</div>
+                        <div class="text-secondary">Gelir − komisyon</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0 text-green">@netRevenue.ToMoney()</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="avatar bg-red-lt"><i class="ti ti-receipt-tax"></i></span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium">Toplam Komisyon</div>
+                        <div class="text-secondary">Pazaryerlerine ödenen</div>
+                    </div>
+                    <div class="col-auto">
+                        <span class="h1 mb-0 text-red">@totalCommission.ToMoney()</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filtre -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" action="/reports/marketplace" class="row g-2 align-items-end">
+            <div class="col-6 col-sm-auto">
+                <label class="form-label" for="filter-start">Başlangıç</label>
+                <input type="date" id="filter-start" name="startDate" class="form-control"
+                       value="@startDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-6 col-sm-auto">
+                <label class="form-label" for="filter-end">Bitiş</label>
+                <input type="date" id="filter-end" name="endDate" class="form-control"
+                       value="@endDate.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-12 col-sm-auto">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="ti ti-filter me-1"></i>Filtrele
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@if (rows.Any())
+{
+    <!-- Grafik: pazaryeri başına gelir vs komisyon -->
+    <div class="card mb-3">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Pazaryeri Karşılaştırması</h3>
+                <p class="text-secondary m-0">Gelir ve ödenen komisyonun pazaryerlerine dağılımı</p>
+            </div>
+        </div>
+        <div class="card-body">
+            <div id="marketplace-chart" data-apex-chart style="height: 320px;"></div>
+            <script>
+                (function () {
+                    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                    var textColor = isDark ? '#a0aec0' : '#666';
+                    var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+                    var css = getComputedStyle(document.documentElement);
+                    var revColor = css.getPropertyValue('--tblr-primary').trim() || '#206bc4';
+                    var comColor = css.getPropertyValue('--tblr-red').trim() || '#d63939';
+
+                    var options = {
+                        chart: {
+                            type: 'bar',
+                            height: 320,
+                            toolbar: { show: false },
+                            fontFamily: 'inherit',
+                            background: 'transparent'
+                        },
+                        theme: { mode: isDark ? 'dark' : 'light' },
+                        plotOptions: { bar: { columnWidth: '55%', borderRadius: 4 } },
+                        series: [
+                            { name: 'Gelir', data: [@Html.Raw(string.Join(",", rows.Select(r => r.TotalRevenue.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))] },
+                            { name: 'Komisyon', data: [@Html.Raw(string.Join(",", rows.Select(r => r.CommissionPaid.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))] }
+                        ],
+                        colors: [revColor, comColor],
+                        xaxis: {
+                            categories: [@Html.Raw(string.Join(",", rows.Select(r => "'" + System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(r.MarketplaceName) + "'")))],
+                            labels: { style: { colors: textColor } }
+                        },
+                        yaxis: {
+                            labels: {
+                                style: { colors: textColor },
+                                formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; }
                             }
-                        </tbody>
-                    </table>
-                </div>
-            }
-            else
-            {
-                <div class="card-body">
-                    <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
-                             model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
-                             {
-                                 Title = "Pazaryeri verisi yok",
-                                 Subtitle = "Secilen tarih araliginda pazaryeri verisi bulunmuyor."
-                             }'/>
-                </div>
-            }
+                        },
+                        legend: { labels: { colors: textColor } },
+                        grid: { borderColor: gridColor },
+                        tooltip: { y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; } } },
+                        dataLabels: { enabled: false }
+                    };
+                    new ApexCharts(document.querySelector('#marketplace-chart'), options).render();
+                })();
+            </script>
         </div>
+    </div>
+
+    <!-- Karşılaştırma tablosu -->
+    <div class="card">
+        <div class="card-header">
+            <div>
+                <h3 class="card-title">Pazaryeri Özeti</h3>
+                <p class="text-secondary m-0">Her pazaryerinin gelir payı ve aldığı komisyon oranı</p>
+            </div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Pazaryeri</th>
+                        <th class="text-end">Sipariş</th>
+                        <th class="text-end">Toplam Gelir</th>
+                        <th style="min-width: 9rem;">Gelir Payı</th>
+                        <th class="text-end">Komisyon</th>
+                        <th class="text-end">Komisyon Oranı</th>
+                        <th class="text-end">Net Gelir</th>
+                        <th class="text-end">Ort. Sipariş</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ var idx = 0; }
+                    @foreach (var mp in rows)
+                    {
+                        var color = palette[idx % palette.Length];
+                        idx++;
+
+                        var sharePct = grandRevenue > 0 ? (double)(mp.TotalRevenue / grandRevenue) * 100 : 0;
+                        var commPct = mp.TotalRevenue > 0 ? (double)(mp.CommissionPaid / mp.TotalRevenue) * 100 : 0;
+                        var lineNet = mp.TotalRevenue - mp.CommissionPaid;
+
+                        // Komisyon oranı badge tonu: bebe giyimde tipik %12-20; yüksekse uyar.
+                        var commBadge = commPct >= 20 ? "bg-red-lt" : commPct >= 15 ? "bg-yellow-lt" : "bg-green-lt";
+
+                        <tr>
+                            <td>
+                                <span class="status-dot status-dot-animated bg-@color me-2"></span>
+                                <strong>@mp.MarketplaceName</strong>
+                                @if (mp.TopSellingProducts is { Count: > 0 })
+                                {
+                                    <div class="text-secondary small mt-1">
+                                        <i class="ti ti-flame me-1"></i>@string.Join(", ", mp.TopSellingProducts.Take(3))
+                                    </div>
+                                }
+                            </td>
+                            <td class="text-end">@mp.TotalOrders</td>
+                            <td class="text-end fw-medium">@mp.TotalRevenue.ToMoney()</td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 text-secondary small" style="width: 3rem;">%@sharePct.ToString("0.0")</span>
+                                    <div class="progress progress-sm flex-fill">
+                                        <div class="progress-bar bg-@color" style="width: @sharePct.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)%"
+                                             role="progressbar" aria-valuenow="@sharePct.ToString("0")" aria-valuemin="0" aria-valuemax="100"
+                                             aria-label="@mp.MarketplaceName gelir payı %@sharePct.ToString("0")"></div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end text-red">@mp.CommissionPaid.ToMoney()</td>
+                            <td class="text-end">
+                                <span class="badge @commBadge">%@commPct.ToString("0.0")</span>
+                            </td>
+                            <td class="text-end fw-medium text-green">@lineNet.ToMoney()</td>
+                            <td class="text-end text-secondary">@mp.AverageOrderValue.ToMoney()</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-bold">
+                        <td>Toplam</td>
+                        <td class="text-end">@totalOrders</td>
+                        <td class="text-end">@totalRevenue.ToMoney()</td>
+                        <td></td>
+                        <td class="text-end text-red">@totalCommission.ToMoney()</td>
+                        <td class="text-end">
+                            <span class="badge bg-secondary-lt">%@((totalRevenue > 0 ? (double)(totalCommission / totalRevenue) * 100 : 0).ToString("0.0"))</span>
+                        </td>
+                        <td class="text-end text-green">@netRevenue.ToMoney()</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card">
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Pazaryeri verisi yok",
+                         Subtitle = "Seçilen tarih aralığında pazaryeri verisi bulunmuyor."
+                     }'/>
+        </div>
+    </div>
+}
