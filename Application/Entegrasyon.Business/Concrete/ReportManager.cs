@@ -885,4 +885,139 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
     }
 
     #endregion
+
+    #region Returns Report
+    // Gerçekleşen iade = ReturnStatus Approved veya Completed.
+
+    public async Task<ReturnReasonTrendDto> GetReturnReasonTrendAsync(DateOnly startDate, DateOnly endDate)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+
+        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        // Dönem içi gerçekleşen iadeleri (yıl, ay, neden) bazında projekte et; gruplamayı bellekte yap.
+        var rows = await db.Set<SaleReturn>()
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted
+                        && (r.ReturnStatus == ReturnStatus.Approved || r.ReturnStatus == ReturnStatus.Completed)
+                        && r.ReturnDate >= startTs && r.ReturnDate <= endTs)
+            .Select(r => new
+            {
+                r.ReturnDate.Year,
+                r.ReturnDate.Month,
+                Reason = r.ReturnReason != null ? r.ReturnReason.Name : (r.CustomReason ?? "Diğer")
+            })
+            .ToListAsync();
+
+        // Ay ekseni: start..end arası tüm aylar (boş aylar 0 ile dolar).
+        var months = new List<(int Year, int Month)>();
+        var cursor = new DateOnly(startDate.Year, startDate.Month, 1);
+        var last = new DateOnly(endDate.Year, endDate.Month, 1);
+        while (cursor <= last)
+        {
+            months.Add((cursor.Year, cursor.Month));
+            cursor = cursor.AddMonths(1);
+        }
+
+        var monthLabels = months.Select(m => $"{m.Month:D2}.{m.Year}").ToList();
+        var monthIndex = months
+            .Select((m, i) => (m, i))
+            .ToDictionary(x => (x.m.Year, x.m.Month), x => x.i);
+
+        var reasons = rows.Select(r => r.Reason).Distinct().OrderBy(r => r).ToList();
+
+        var series = reasons.Select(reason =>
+        {
+            var counts = new int[months.Count];
+            foreach (var row in rows.Where(r => r.Reason == reason))
+            {
+                if (monthIndex.TryGetValue((row.Year, row.Month), out var idx))
+                    counts[idx]++;
+            }
+            return new ReturnReasonSeriesDto(reason, counts);
+        }).ToList();
+
+        return new ReturnReasonTrendDto(monthLabels, series);
+    }
+
+    public async Task<List<ProductReturnRateDto>> GetProductReturnRatesAsync(
+        DateOnly startDate, DateOnly endDate, int minSold = 5, double alertThresholdPercent = 10, int top = 20)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+
+        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        // Dönem içi satılan adet (ürün varyantı bazında).
+        var sold = await db.Set<Sale>()
+            .AsNoTracking()
+            .Where(s => !s.IsDeleted
+                        && s.SaleStatus != SaleStatus.Cancelled
+                        && s.SaleDate >= startTs && s.SaleDate <= endTs)
+            .SelectMany(s => s.SaleItems.Where(si => !si.IsDeleted))
+            .GroupBy(si => si.ProductVariantId)
+            .Select(g => new
+            {
+                VariantId = g.Key,
+                Sold = g.Sum(si => si.Quantity),
+                Title = g.Max(si => si.ProductTitle),
+                Barcode = g.Max(si => si.Barcode)
+            })
+            .ToListAsync();
+
+        // Dönem içi gerçekleşen iade adedi (ürün varyantı bazında).
+        var returned = await db.Set<SaleReturn>()
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted
+                        && (r.ReturnStatus == ReturnStatus.Approved || r.ReturnStatus == ReturnStatus.Completed)
+                        && r.ReturnDate >= startTs && r.ReturnDate <= endTs)
+            .SelectMany(r => r.Items.Where(i => !i.IsDeleted && i.SaleItem != null))
+            .GroupBy(i => i.SaleItem!.ProductVariantId)
+            .Select(g => new { VariantId = g.Key, Returned = g.Sum(i => i.Quantity) })
+            .ToListAsync();
+
+        var returnedMap = returned.ToDictionary(x => x.VariantId, x => x.Returned);
+
+        return sold
+            .Where(s => s.Sold >= minSold && returnedMap.ContainsKey(s.VariantId))
+            .Select(s =>
+            {
+                var ret = returnedMap[s.VariantId];
+                var rate = Math.Round(ret * 100.0 / s.Sold, 1);
+                return new ProductReturnRateDto(
+                    s.VariantId, s.Title ?? "", s.Barcode ?? "",
+                    s.Sold, ret, rate, rate >= alertThresholdPercent);
+            })
+            .OrderByDescending(p => p.ReturnRatePercent)
+            .ThenByDescending(p => p.ReturnedQuantity)
+            .Take(top)
+            .ToList();
+    }
+
+    public async Task<ReturnCostDto> GetReturnCostAsync(
+        DateOnly startDate, DateOnly endDate, decimal shippingPerReturn = 50m, decimal processPerReturn = 25m)
+    {
+        await using var db = await dbContextFactory.CreateDbContextAsync();
+
+        var startTs = new DateTimeOffset(startDate.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var endTs = new DateTimeOffset(endDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+
+        var realized = db.Set<SaleReturn>()
+            .AsNoTracking()
+            .Where(r => !r.IsDeleted
+                        && (r.ReturnStatus == ReturnStatus.Approved || r.ReturnStatus == ReturnStatus.Completed)
+                        && r.ReturnDate >= startTs && r.ReturnDate <= endTs);
+
+        var count = await realized.CountAsync();
+        var totalRefund = count == 0 ? 0m : await realized.SumAsync(r => r.RefundAmount);
+
+        return new ReturnCostDto(
+            count,
+            totalRefund,
+            count * shippingPerReturn,
+            count * processPerReturn);
+    }
+
+    #endregion
 }

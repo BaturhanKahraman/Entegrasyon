@@ -16,4 +16,9 @@ public interface IReportManager
     Task<List<ProductPerformanceDto>> GetSlowMovingProductsAsync(DateOnly startDate, DateOnly endDate, int top = 10);
     Task<VatDeclarationDto> GetVatDeclarationAsync(DateOnly startDate, DateOnly endDate);
     Task<InvoiceTypeBreakdownDto> GetInvoiceTypeBreakdownAsync(DateOnly startDate, DateOnly endDate);
+    Task<ReturnReasonTrendDto> GetReturnReasonTrendAsync(DateOnly startDate, DateOnly endDate);
+    Task<List<ProductReturnRateDto>> GetProductReturnRatesAsync(
+        DateOnly startDate, DateOnly endDate, int minSold = 5, double alertThresholdPercent = 10, int top = 20);
+    Task<ReturnCostDto> GetReturnCostAsync(
+        DateOnly startDate, DateOnly endDate, decimal shippingPerReturn = 50m, decimal processPerReturn = 25m);
 }

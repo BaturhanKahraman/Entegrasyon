@@ -265,11 +265,21 @@ public class ReportController(
     }
 
     [HttpGet("/reports/returns")]
-    public async Task<IActionResult> Returns()
+    public async Task<IActionResult> Returns(DateOnly? startDate = null, DateOnly? endDate = null)
     {
         ViewData.SetPageTitle("Iade Raporu");
         ViewData.SetActiveNav("reports-returns");
         ViewData.SetBreadcrumb(("Raporlar", null), ("Iade", null));
+
+        // İade hacmi seyrek — varsayılan son 90 gün.
+        var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-90));
+        var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);
+
+        ViewBag.StartDate = start;
+        ViewBag.EndDate = end;
+        ViewBag.ReturnReasonTrend = await reportManager.GetReturnReasonTrendAsync(start, end);
+        ViewBag.ProductReturnRates = await reportManager.GetProductReturnRatesAsync(start, end);
+        ViewBag.ReturnCost = await reportManager.GetReturnCostAsync(start, end);
 
         var result = await storefrontReturnManager.GetAllReturnsAsync(1);
         return View(result.Data ?? []);

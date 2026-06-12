@@ -1360,8 +1360,8 @@
   {
     "task": "Iade Raporu - Nedensel Trend Grafigi",
     "description": "Iade raporuna iade nedeni x zaman grafigi ekle. Beden uymadi nedeni bu ay onceki aya gore artti mi? Bebe giyimde sezon gecislerinde beden iade artisini onceden gormek kritik.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetReturnReasonTrendAsync: aylik+neden bazli seriler (ApexCharts stacked bar). Gerceklesen iade Approved/Completed; bos ay 0.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [],
@@ -1371,8 +1371,8 @@
   {
     "task": "Iade Raporu - Urun Bazli Iade Orani Uyarisi",
     "description": "Iade raporuna urun bazli iade orani sutunu ekle. Yuzde15 uzeri iade oranina sahip urunler kirmizi badge ile isaretlensin. Sorunlu urunleri erken tespit icin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12",
+    "status": "done",
+    "notes": "GetProductReturnRatesAsync: iade adedi/satilan adet, minSold+alert esigi (%10). SaleReturnItem->SaleItem->VariantId.",
     "priority": "medium",
     "plan": false,
     "manual_test_steps": [
@@ -1387,8 +1387,8 @@
   {
     "task": "Iade Raporu - Iade Maliyet Hesabi (Kargo + Surec)",
     "description": "Iade raporuna KPI karti ekle: toplam iade maliyeti = iade kargo bedeli + islem sureci maliyeti. Esnafin gercek iade maliyetini gormesi icin.",
-    "status": "todo",
-    "notes": "PA onerisi - 2026-06-12. Kargo bedeli manuel girilebilir veya kargo firmasi tarifesinden cekilir.",
+    "status": "done",
+    "notes": "GetReturnCostAsync: gerceklesen iade refund + tahmini kargo (50/iade) + surec (25/iade); avg/iade. Returns sayfasi: filtre bari + maliyet KPI + trend grafik + urun orani tablosu. Integration test 3 metodu kapsar.",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],

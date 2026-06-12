@@ -7,7 +7,31 @@
             var rejected = Model.Count(r => r.Status == ReturnStatus.Rejected);
             var pending = Model.Count(r => r.Status == ReturnStatus.Pending);
             var returnRate = total > 0 ? (approved * 100.0 / total) : 0;
+
+            var startDate = (DateOnly)ViewBag.StartDate;
+            var endDate = (DateOnly)ViewBag.EndDate;
+            var trend = ViewBag.ReturnReasonTrend as Entegrasyon.Entity.Dtos.Reports.ReturnReasonTrendDto;
+            var prodRates = ViewBag.ProductReturnRates as List<Entegrasyon.Entity.Dtos.Reports.ProductReturnRateDto> ?? new();
+            var cost = ViewBag.ReturnCost as Entegrasyon.Entity.Dtos.Reports.ReturnCostDto;
         }
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <form method="get" action="/reports/returns" class="row g-3 align-items-end">
+                    <div class="col-auto">
+                        <label class="form-label">Başlangıç</label>
+                        <input type="date" class="form-control" name="startDate" value="@startDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-auto">
+                        <label class="form-label">Bitiş</label>
+                        <input type="date" class="form-control" name="endDate" value="@endDate.ToString("yyyy-MM-dd")" />
+                    </div>
+                    <div class="col-auto">
+                        <button type="submit" class="btn btn-primary">Filtrele</button>
+                    </div>
+                </form>
+            </div>
+        </div>
 
         <div class="row row-deck row-cards mb-3">
             <div class="col-sm-6 col-lg-3">
@@ -44,9 +68,139 @@
             </div>
         </div>
 
+        @if (cost is not null)
+        {
+            <div class="row row-deck row-cards mb-3">
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="subheader">Gerçekleşen İade (dönem)</div>
+                            <div class="h1 mb-0">@cost.ReturnCount</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="subheader">İade Tutarı</div>
+                            <div class="h1 mb-0">@cost.TotalRefund.ToString("N2") TL</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="subheader">Tahmini Toplam Maliyet</div>
+                            <div class="h1 mb-0 text-red">@cost.TotalCost.ToString("N2") TL</div>
+                            <div class="text-secondary small">refund + kargo + süreç</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-6 col-lg-3">
+                    <div class="card">
+                        <div class="card-body">
+                            <div class="subheader">İade Başına Ort. Maliyet</div>
+                            <div class="h1 mb-0">@cost.AverageCostPerReturn.ToString("N2") TL</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @if (trend is not null && trend.Series.Count > 0)
+        {
+            <div class="card mb-3">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title">Nedensel İade Trendi</h3>
+                        <p class="text-secondary m-0">Aylık, iade nedenine göre gerçekleşen iade adedi</p>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div id="return-trend-chart" data-apex-chart style="height: 320px;"></div>
+                    <script>
+                        (function () {
+                            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                            var textColor = isDark ? '#a0aec0' : '#666';
+                            var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+                            var options = {
+                                chart: { type: 'bar', height: 320, stacked: true, toolbar: { show: false }, fontFamily: 'inherit', background: 'transparent' },
+                                theme: { mode: isDark ? 'dark' : 'light' },
+                                plotOptions: { bar: { columnWidth: '55%', borderRadius: 3 } },
+                                series: [
+                                    @Html.Raw(string.Join(",", trend.Series.Select(s =>
+                                        "{name:'" + System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(s.Reason) + "',data:[" + string.Join(",", s.Counts) + "]}")))
+                                ],
+                                xaxis: {
+                                    categories: [@Html.Raw(string.Join(",", trend.Months.Select(m => "'" + m + "'")))],
+                                    labels: { style: { colors: textColor } }
+                                },
+                                yaxis: { labels: { style: { colors: textColor }, formatter: function (v) { return Math.round(v); } } },
+                                legend: { labels: { colors: textColor } },
+                                grid: { borderColor: gridColor },
+                                dataLabels: { enabled: false }
+                            };
+                            new ApexCharts(document.querySelector('#return-trend-chart'), options).render();
+                        })();
+                    </script>
+                </div>
+            </div>
+        }
+
+        <div class="card mb-3">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title">Ürün Bazlı İade Oranı</h3>
+                    <p class="text-secondary m-0">İade adedi / satılan adet — %10 ve üzeri uyarı işaretli</p>
+                </div>
+            </div>
+            @if (prodRates.Count == 0)
+            {
+                <div class="empty">
+                    <p class="empty-title">Bu dönemde yeterli veri yok</p>
+                    <p class="empty-subtitle text-secondary">Seçili aralıkta (en az 5 satılan) iadeli ürün bulunamadı.</p>
+                </div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table table-vcenter card-table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Ürün</th>
+                                <th>Barkod</th>
+                                <th class="text-end">Satılan</th>
+                                <th class="text-end">İade</th>
+                                <th class="text-end">İade Oranı</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var p in prodRates)
+                            {
+                                <tr>
+                                    <td>@p.ProductTitle</td>
+                                    <td class="text-secondary">@p.Barcode</td>
+                                    <td class="text-end">@p.SoldQuantity</td>
+                                    <td class="text-end">@p.ReturnedQuantity</td>
+                                    <td class="text-end fw-bold @(p.IsAlert ? "text-red" : "")">%@p.ReturnRatePercent.ToString("F1")</td>
+                                    <td>
+                                        @if (p.IsAlert)
+                                        {
+                                            <span class="badge bg-red-lt">Yüksek İade</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">İade Neden Dağılımı</h3>
+                <h3 class="card-title">İade Neden Dağılımı (Storefront)</h3>
             </div>
             <div class="table-responsive">
                 <table class="table table-vcenter card-table table-hover">
