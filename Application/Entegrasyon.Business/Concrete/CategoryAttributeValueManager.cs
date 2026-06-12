@@ -10,10 +10,6 @@ namespace Entegrasyon.Business.Concrete;
 
 public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManager
 {
-    // NormalizedName kolonu varchar(256). Normalize (upper) çok-baytlı karakterde büyüyebilir;
-    // 256 altında headroom bırak ki DB hatası (500) yerine temiz validasyon mesajı dönsün.
-    private const int MaxNameLength = 200;
-
     private readonly IDbContextFactory<IntegrationDbContext> _contextFactory;
     private readonly IApplicationLogManager _applicationLogManager;
     private readonly ILogger<CategoryAttributeValueManager> _logger;
@@ -44,11 +40,12 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
 
     public async Task<int> GetOrCreate(int categoryAttributeId, string rawName)
     {
-        var normalized = AttributeValueNormalizer.Normalize(rawName);
+        var trimmed = rawName?.Trim() ?? string.Empty;
+        var normalized = AttributeValueNormalizer.Normalize(trimmed);
         if (normalized.Length == 0)
             throw new ArgumentException("Değer boş olamaz.", nameof(rawName));
-        if (rawName.Trim().Length > MaxNameLength)
-            throw new ArgumentException($"Değer adı en fazla {MaxNameLength} karakter olabilir.", nameof(rawName));
+        if (trimmed.Length > CategoryAttributeValue.MaxNameLength)
+            throw new ArgumentException($"Değer adı en fazla {CategoryAttributeValue.MaxNameLength} karakter olabilir.", nameof(rawName));
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
 
@@ -62,7 +59,7 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         var entity = new CategoryAttributeValue
         {
             CategoryAttributeId = categoryAttributeId,
-            Name = rawName.Trim(),
+            Name = trimmed,
             NormalizedName = normalized
         };
         dbContext.CategoryAttributeValues.Add(entity);
@@ -87,20 +84,14 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         var trimmed = newName?.Trim() ?? string.Empty;
         if (trimmed.Length == 0)
             throw new ArgumentException("Değer adı boş olamaz.", nameof(newName));
-        if (trimmed.Length > MaxNameLength)
-            throw new ArgumentException($"Değer adı en fazla {MaxNameLength} karakter olabilir.", nameof(newName));
-
-        var normalized = AttributeValueNormalizer.Normalize(trimmed);
+        if (trimmed.Length > CategoryAttributeValue.MaxNameLength)
+            throw new ArgumentException($"Değer adı en fazla {CategoryAttributeValue.MaxNameLength} karakter olabilir.", nameof(newName));
 
         await _applicationLogManager.AddLog($"Özellik değeri güncelleniyor (Id: {id})", LogType.Category, LogAction.Update);
         _logger.LogInformation("Updating CategoryAttributeValue {ValueId} to name '{Name}'", id, trimmed);
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
-        // IDOR koruması: değer hem id hem categoryAttributeId ile eşleşmeli.
-        var entity = await dbContext.CategoryAttributeValues
-            .AsTracking()
-            .FirstOrDefaultAsync(v => v.Id == id && v.CategoryAttributeId == categoryAttributeId && !v.IsDeleted);
-
+        var entity = await LoadTrackedAsync(dbContext, id, categoryAttributeId);
         if (entity is null)
         {
             _logger.LogWarning("CategoryAttributeValue {ValueId} (attr {AttrId}) not found for rename", id, categoryAttributeId);
@@ -108,7 +99,7 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         }
 
         entity.Name = trimmed;
-        entity.NormalizedName = normalized;
+        entity.NormalizedName = AttributeValueNormalizer.Normalize(trimmed);
         await dbContext.SaveChangesAsync();
 
         await _applicationLogManager.AddLog($"Özellik değeri güncellendi: '{trimmed}' (Id: {id})", LogType.Category, LogAction.Update);
@@ -122,11 +113,7 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         _logger.LogInformation("Soft-deleting CategoryAttributeValue {ValueId}", id);
 
         await using var dbContext = await _contextFactory.CreateDbContextAsync();
-        // IDOR koruması: değer hem id hem categoryAttributeId ile eşleşmeli.
-        var entity = await dbContext.CategoryAttributeValues
-            .AsTracking()
-            .FirstOrDefaultAsync(v => v.Id == id && v.CategoryAttributeId == categoryAttributeId && !v.IsDeleted);
-
+        var entity = await LoadTrackedAsync(dbContext, id, categoryAttributeId);
         if (entity is null)
         {
             _logger.LogWarning("CategoryAttributeValue {ValueId} (attr {AttrId}) not found or already deleted", id, categoryAttributeId);
@@ -141,4 +128,9 @@ public sealed class CategoryAttributeValueManager : ICategoryAttributeValueManag
         _logger.LogInformation("CategoryAttributeValue {ValueId} soft-deleted", id);
         return true;
     }
+
+    // Mutasyon için izlenen (tracked) değeri yükler. IDOR koruması: hem id hem categoryAttributeId eşleşmeli.
+    private static Task<CategoryAttributeValue?> LoadTrackedAsync(IntegrationDbContext db, int id, int categoryAttributeId) =>
+        db.CategoryAttributeValues.AsTracking()
+            .FirstOrDefaultAsync(v => v.Id == id && v.CategoryAttributeId == categoryAttributeId && !v.IsDeleted);
 }

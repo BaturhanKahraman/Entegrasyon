@@ -78,6 +78,20 @@ public sealed class TrendyolProductMapper(
             .Where(v => valueIds.Contains(v.Id))
             .ToDictionaryAsync(v => v.Id, v => v.Name);
 
+        // Varyant seviyesi attribute degerlerinin CategoryAttributeId'lerini toplu cek (N+1 onleme:
+        // aksi halde her varyant×ozellik icin ayri sorgu atilirdi).
+        var pvaValueIds = product.ProductVariants
+            .Where(v => v.ProductVariantAttributes is not null)
+            .SelectMany(v => v.ProductVariantAttributes)
+            .Where(p => p.CategoryAttributeValueId.HasValue)
+            .Select(p => p.CategoryAttributeValueId!.Value)
+            .Distinct().ToList();
+        var pvaValueCategoryIds = pvaValueIds.Count == 0
+            ? new Dictionary<int, int>()
+            : await dbContext.CategoryAttributeValues.AsNoTracking()
+                .Where(v => pvaValueIds.Contains(v.Id))
+                .ToDictionaryAsync(v => v.Id, v => v.CategoryAttributeId);
+
         // Marketplace'e stok gonderecek depo ID'lerini belirle
         var warehouseIds = await dbContext.MarketPlaceWarehouses.AsNoTracking()
             .Where(w => w.MarketPlaceId == TrendyolMarketPlaceId)
@@ -168,9 +182,8 @@ public sealed class TrendyolProductMapper(
                 {
                     if (!pva.CategoryAttributeValueId.HasValue) continue;
 
-                    var attrValue = await dbContext.CategoryAttributeValues.AsNoTracking()
-                        .FirstOrDefaultAsync(v => v.Id == pva.CategoryAttributeValueId.Value);
-                    if (attrValue is null || !attributeMatches.TryGetValue(attrValue.CategoryAttributeId, out var tAttrId))
+                    if (!pvaValueCategoryIds.TryGetValue(pva.CategoryAttributeValueId.Value, out var pvaCatAttrId)
+                        || !attributeMatches.TryGetValue(pvaCatAttrId, out var tAttrId))
                         continue;
 
                     if (valueMatches.TryGetValue(pva.CategoryAttributeValueId.Value, out var trendyolValueId))

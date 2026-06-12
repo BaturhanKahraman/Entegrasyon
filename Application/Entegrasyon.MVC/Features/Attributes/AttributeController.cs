@@ -182,24 +182,17 @@ public class AttributeController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ValuesCreate(int attributeId, [FromForm] string name)
     {
-        name = name?.Trim() ?? string.Empty;
-        if (name.Length == 0)
-        {
-            TempData.SetError("Değer adı boş olamaz.");
+        var trimmed = NormalizeAndValidateName(name);
+        if (trimmed is null)
             return RedirectToAction(nameof(Values), new { attributeId });
-        }
-        if (name.Length > MaxValueNameLength)
-        {
-            TempData.SetError($"Değer adı en fazla {MaxValueNameLength} karakter olabilir.");
-            return RedirectToAction(nameof(Values), new { attributeId });
-        }
 
+        // attributeId varlık/ownership kontrolü (IDOR + temiz 404; GetOrCreate aksi halde FK hatası → 500).
         var attrResult = await categoryAttributeManager.GetCategoryAttributeById(attributeId);
         if (!attrResult.Success)
             return NotFound();
 
         // GetOrCreate idempotent: aynı kanonik değer zaten varsa mevcut id'yi döner (ekstra precheck gerekmez).
-        await categoryAttributeValueManager.GetOrCreate(attributeId, name);
+        await categoryAttributeValueManager.GetOrCreate(attributeId, trimmed);
         TempData.SetSuccess("Değer kaydedildi.");
         return RedirectToAction(nameof(Values), new { attributeId });
     }
@@ -208,20 +201,12 @@ public class AttributeController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ValueEdit(int id, [FromForm] int attributeId, [FromForm] string name)
     {
-        name = name?.Trim() ?? string.Empty;
-        if (name.Length == 0)
-        {
-            TempData.SetError("Değer adı boş olamaz.");
+        var trimmed = NormalizeAndValidateName(name);
+        if (trimmed is null)
             return RedirectToAction(nameof(Values), new { attributeId });
-        }
-        if (name.Length > MaxValueNameLength)
-        {
-            TempData.SetError($"Değer adı en fazla {MaxValueNameLength} karakter olabilir.");
-            return RedirectToAction(nameof(Values), new { attributeId });
-        }
 
         // attributeId scope = IDOR koruması (değer başka attribute'a aitse güncellenmez).
-        var ok = await categoryAttributeValueManager.UpdateName(id, attributeId, name);
+        var ok = await categoryAttributeValueManager.UpdateName(id, attributeId, trimmed);
         if (ok) TempData.SetSuccess("Değer güncellendi.");
         else TempData.SetError("Değer bulunamadı.");
         return RedirectToAction(nameof(Values), new { attributeId });
@@ -247,12 +232,27 @@ public class AttributeController(
         name = name?.Trim() ?? string.Empty;
         if (name.Length == 0 || categoryAttributeId <= 0)
             return BadRequest("Geçersiz değer.");
-        if (name.Length > MaxValueNameLength)
-            return BadRequest($"Değer adı en fazla {MaxValueNameLength} karakter olabilir.");
+        if (name.Length > CategoryAttributeValue.MaxNameLength)
+            return BadRequest($"Değer adı en fazla {CategoryAttributeValue.MaxNameLength} karakter olabilir.");
 
         var id = await categoryAttributeValueManager.GetOrCreate(categoryAttributeId, name);
         return Json(new { id, name });
     }
 
-    private const int MaxValueNameLength = 200;
+    // Değer adını trim'ler + (boş/uzunluk) doğrular; geçersizse TempData hatası yazıp null döner.
+    private string? NormalizeAndValidateName(string? raw)
+    {
+        var trimmed = raw?.Trim() ?? string.Empty;
+        if (trimmed.Length == 0)
+        {
+            TempData.SetError("Değer adı boş olamaz.");
+            return null;
+        }
+        if (trimmed.Length > CategoryAttributeValue.MaxNameLength)
+        {
+            TempData.SetError($"Değer adı en fazla {CategoryAttributeValue.MaxNameLength} karakter olabilir.");
+            return null;
+        }
+        return trimmed;
+    }
 }
