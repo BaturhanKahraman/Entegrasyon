@@ -420,9 +420,7 @@ namespace Entegrasyon.ApplicationBootstrap
             // bell badge updates vb. dev'de de gerekli). Marketplace polling servisleri burada kalır.
 
             services.AddHostedService<CategoryImportBackgroundService>();
-            services.AddHostedService<TrendyolProductPublishBackgroundService>();
             services.AddHostedService<TrendyolBatchStatusPollingService>();
-            services.AddHostedService<TrendyolStockPriceSyncService>();
             services.AddHostedService<TrendyolProductStatusSyncService>();
             services.AddHostedService<TrendyolOrderPollingService>();
             services.AddHostedService<N11OrderPollingService>();

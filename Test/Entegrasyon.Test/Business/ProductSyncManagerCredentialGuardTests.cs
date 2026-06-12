@@ -1,6 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
 using FluentAssertions;
@@ -20,10 +18,8 @@ public class ProductSyncManagerCredentialGuardTests : BaseTest
 
     public ProductSyncManagerCredentialGuardTests()
     {
-        var eventChannel = new EventChannel<ProductCreatedForMarketplaceEvent>();
         _sut = new ProductSyncManager(
             mockContextFactory.Object,
-            eventChannel,
             mockApplicationLogger.Object,
             new Mock<IProductActivityLogger>().Object,
             mockTenantContext.Object);

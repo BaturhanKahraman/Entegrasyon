@@ -1,6 +1,4 @@
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Channels;
-using Entegrasyon.Business.Channels.Events.Products;
 using Entegrasyon.Business.Concrete;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Products;
@@ -17,12 +15,10 @@ public class ProductSyncManagerEnrichedDtoTests : BaseTest
 
     public ProductSyncManagerEnrichedDtoTests()
     {
-        var eventChannel = new EventChannel<ProductCreatedForMarketplaceEvent>();
         mockTenantContext.Setup(t => t.TenantId).Returns(1);
 
         _sut = new ProductSyncManager(
             mockContextFactory.Object,
-            eventChannel,
             mockApplicationLogger.Object,
             _mockActivityLogger.Object,
             mockTenantContext.Object);

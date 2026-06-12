@@ -34,10 +34,41 @@ public sealed class OutboxDispatcher(
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
+        await ResetStuckProcessingRowsAsync(stoppingToken);
+
         var listen = ListenLoopAsync(stoppingToken);
         var poll = PollLoopAsync(stoppingToken);
         // İkisi birlikte çalışır; birisi iptal/hata ile dursa diğeri de durur.
         await Task.WhenAny(listen, poll);
+    }
+
+    // Önceki process crash'inde Processing olarak kalan satırları Pending'e çeker.
+    private async Task ResetStuckProcessingRowsAsync(CancellationToken ct)
+    {
+        try
+        {
+            await using var scope = scopeFactory.CreateAsyncScope();
+            var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<IntegrationDbContext>>();
+            await using var db = await factory.CreateDbContextAsync(ct);
+
+            var stuckCutoff = DateTimeOffset.UtcNow.AddMinutes(-10);
+            var stuckRows = await db.NotificationOutbox
+                .AsTracking()
+                .Where(x => x.Status == OutboxStatus.Processing && x.UpdatedAt < stuckCutoff)
+                .ToListAsync(ct);
+
+            if (stuckRows.Count == 0) return;
+
+            foreach (var row in stuckRows)
+                row.Status = OutboxStatus.Pending;
+
+            await db.SaveChangesAsync(ct);
+            logger.LogWarning("OutboxDispatcher startup: {Count} stuck Processing rows reset to Pending", stuckRows.Count);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "OutboxDispatcher startup recovery failed");
+        }
     }
 
     // ─── LISTEN loop ─────────────────────────────────────────────────────────
