@@ -101,8 +101,7 @@ public sealed class N11RestProductService(
             .ToDictionaryAsync(m => m.ApplicationCategoryAttributeId, m => m.MarketPlaceCategoryAttributeId);
 
         var valueIds = product.AttributeKeyValues
-            .Where(a => a.AttributeValueId.HasValue)
-            .Select(a => a.AttributeValueId!.Value)
+            .Select(a => a.AttributeValueId)
             .Distinct().ToList();
         var valueMatches = await dbContext.CategoryAttributeValueMarketPlaceMatches
             .AsNoTracking()
@@ -414,11 +413,11 @@ public sealed class N11RestProductService(
                 .Select(a =>
                 {
                     long? valueId = null;
-                    if (a.AttributeValueId.HasValue && valueMatches.TryGetValue(a.AttributeValueId.Value, out var mappedId))
+                    if (a.AttributeValueId > 0 && valueMatches.TryGetValue(a.AttributeValueId, out var mappedId))
                         valueId = mappedId;
 
                     string? customValue = !valueId.HasValue
-                        ? (a.AttributeValue?.Name ?? a.CustomValue)
+                        ? a.AttributeValue?.Name
                         : null;
 
                     return new N11AttributeDto(attributeMatches[a.CategoryAttributeId], valueId, customValue);

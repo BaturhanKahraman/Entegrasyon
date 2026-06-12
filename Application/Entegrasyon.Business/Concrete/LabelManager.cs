@@ -219,6 +219,6 @@ public class LabelManager(
     {
         if (attributes is null) return string.Empty;
         return string.Join(" / ",
-            attributes.Select(a => !string.IsNullOrWhiteSpace(a.CustomValue) ? a.CustomValue : a.CategoryAttributeValue));
+            attributes.Select(a => a.CategoryAttributeValue));
     }
 }

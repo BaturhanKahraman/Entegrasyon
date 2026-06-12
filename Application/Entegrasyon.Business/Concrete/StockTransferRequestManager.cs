@@ -362,7 +362,7 @@ public class StockTransferRequestManager(
                 Title = v.Product.Title ?? "",
                 Barcode = v.Barcode ?? "",
                 v.Name,
-                RawAttrs = v.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                RawAttrs = v.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
             .ToListAsync(ct);
 
@@ -371,7 +371,7 @@ public class StockTransferRequestManager(
             x.Barcode,
             DisplayName: VariantNameExtensions.ResolveDisplayName(
                 x.Name,
-                x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                 x.Title)
         ));
 

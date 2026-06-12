@@ -10,7 +10,7 @@ public sealed class VariantNamingService : IVariantNamingService
         var values = variant.ProductVariantAttributes
             .Where(a => a.IsVarianter || a.IsSlicer)
             .OrderByDescending(a => a.IsVarianter)
-            .Select(a => a.CategoryAttributeValue ?? a.CustomValue ?? string.Empty)
+            .Select(a => a.CategoryAttributeValue ?? string.Empty)
             .Where(v => !string.IsNullOrWhiteSpace(v));
 
         var computed = string.Join(" ", values).Trim();

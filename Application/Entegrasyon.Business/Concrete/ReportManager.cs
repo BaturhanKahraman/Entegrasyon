@@ -167,7 +167,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             // Stok değeri kaynağı: ProductVariant.CostPrice (birim maliyet, money kolonu) × adet.
             CostPrice = x.pv.CostPrice,
             BranchName = x.bo.Name ?? "",
-            RawAttrs = x.pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+            RawAttrs = x.pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
         }).ToListAsync();
 
         // LastStockEntryDate — varyant+şube başına son stok GİRİŞİ (pozitif hareket: initial/return/inbound transfer).
@@ -223,7 +223,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
                 r.ProductTitle,
                 VariantNameExtensions.ResolveDisplayName(
                     r.Name,
-                    r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                     r.ProductTitle),
                 r.Barcode,
                 r.CurrentStock,
@@ -514,7 +514,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
             x.bo,
             ProductTitle = x.p.Title ?? "",
             RawAttrs = x.pv.ProductVariantAttributes
-                .Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList(),
+                .Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList(),
             DaysUntilStockout = x.bos.CurrentStock > 0
                 ? x.bos.CurrentStock / (x.bos.SoldQuantity / 30 > 1 ? x.bos.SoldQuantity / 30 : 1)
                 : 0
@@ -586,7 +586,7 @@ public sealed class ReportManager(IDbContextFactory<IntegrationDbContext> dbCont
 
             var displayName = VariantNameExtensions.ResolveDisplayName(
                 x.pv.Name,
-                x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                x.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                 x.ProductTitle);
 
             DateTime? lastEntry = x.bos.ProductVariantId.HasValue

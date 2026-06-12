@@ -178,7 +178,7 @@ public sealed class SaleManager(
                 ? VariantNameExtensions.ResolveDisplayName(
                     si.ProductVariant.Name,
                     si.ProductVariant.ProductVariantAttributes.Select((a, i) =>
-                        new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                        new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                     si.ProductVariant.Product?.Title ?? si.ProductTitle)
                 : si.ProductTitle;
 

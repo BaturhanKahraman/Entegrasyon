@@ -39,7 +39,7 @@ public sealed class CiceksepetiProductMapper(
         var product = await dbContext.MainProducts
             .Include(p => p.ProductVariants).ThenInclude(v => v.BranchOfficeStocks)
             .Include(p => p.ProductVariants).ThenInclude(v => v.Images)
-            .Include(p => p.AttributeKeyValues)
+            .Include(p => p.AttributeKeyValues).ThenInclude(a => a.AttributeValue)
             .FirstOrDefaultAsync(p => p.Id == productId, ct);
 
         if (product is null)
@@ -87,16 +87,16 @@ public sealed class CiceksepetiProductMapper(
                     continue;
 
                 int valueId = 0;
-                if (akv.AttributeValueId.HasValue && akv.AttributeValueId.Value > 0 &&
-                    valueMatches.TryGetValue(akv.AttributeValueId.Value, out var marketplaceValueId))
+                if (akv.AttributeValueId > 0 &&
+                    valueMatches.TryGetValue(akv.AttributeValueId, out var marketplaceValueId))
                 {
                     valueId = marketplaceValueId;
                 }
 
-                // TextLength: use 0 unless custom value has a length
+                // TextLength: use value name length if no marketplace value match
                 var textLength = 0;
-                if (!string.IsNullOrWhiteSpace(akv.CustomValue))
-                    textLength = akv.CustomValue.Length;
+                if (!string.IsNullOrWhiteSpace(akv.AttributeValue?.Name))
+                    textLength = akv.AttributeValue.Name.Length;
 
                 attributes.Add(new CiceksepetiAttributeRequest(
                     Id: marketplaceAttrId,

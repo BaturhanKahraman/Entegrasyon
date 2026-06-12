@@ -69,8 +69,7 @@ public sealed class PazaramaProductMapper(
             .ToDictionaryAsync(m => m.ApplicationCategoryAttributeId, m => m.MarketPlaceCategoryAttributeExternalId ?? string.Empty);
 
         var valueIds = product.AttributeKeyValues
-            .Where(a => a.AttributeValueId.HasValue)
-            .Select(a => a.AttributeValueId!.Value)
+            .Select(a => a.AttributeValueId)
             .Distinct().ToList();
         var valueMatches = await dbContext.CategoryAttributeValueMarketPlaceMatches.AsNoTracking()
             .Where(m => valueIds.Contains(m.ApplicationCategoryAttributeValueId) && m.MarketPlaceId == PazaramaMarketPlaceId)
@@ -146,10 +145,10 @@ public sealed class PazaramaProductMapper(
                     || string.IsNullOrEmpty(pazaramaAttrId))
                     continue;
 
-                if (!akv.AttributeValueId.HasValue)
+                if (akv.AttributeValueId <= 0)
                     continue;
 
-                if (!valueMatches.TryGetValue(akv.AttributeValueId.Value, out var pazaramaValueId)
+                if (!valueMatches.TryGetValue(akv.AttributeValueId, out var pazaramaValueId)
                     || string.IsNullOrEmpty(pazaramaValueId))
                     continue;
 

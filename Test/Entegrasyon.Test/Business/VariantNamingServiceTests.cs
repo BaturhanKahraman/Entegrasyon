@@ -80,10 +80,10 @@ public class VariantNamingServiceTests
     }
 
     [Fact]
-    public void Compute_UsesCustomValueWhenCategoryValueNull()
+    public void Compute_UsesCategoryAttributeValue()
     {
         var variant = MakeVariant(
-            new ProductVariantAttribute { CategoryAttributeValue = null, CustomValue = "Lacivert", IsVarianter = true }
+            new ProductVariantAttribute { CategoryAttributeValue = "Lacivert", IsVarianter = true }
         );
 
         _sut.Compute(variant, MakeProduct()).Should().Be("Lacivert");

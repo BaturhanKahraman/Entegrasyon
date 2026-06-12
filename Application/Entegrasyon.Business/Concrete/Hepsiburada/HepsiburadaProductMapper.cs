@@ -27,7 +27,7 @@ public sealed class HepsiburadaProductMapper(
         var product = await dbContext.MainProducts
             .Include(p => p.ProductVariants).ThenInclude(v => v.BranchOfficeStocks).ThenInclude(s => s.BranchOffice)
             .Include(p => p.ProductVariants).ThenInclude(v => v.Images)
-            .Include(p => p.AttributeKeyValues)
+            .Include(p => p.AttributeKeyValues).ThenInclude(a => a.AttributeValue)
             .Include(p => p.Brand)
             .Include(p => p.Category)
             .FirstOrDefaultAsync(p => p.Id == productId);
@@ -141,14 +141,14 @@ public sealed class HepsiburadaProductMapper(
             {
                 if (attrMatches.TryGetValue(akv.CategoryAttributeId, out var hbAttrId))
                 {
-                    if (akv.AttributeValueId.HasValue && akv.AttributeValueId.Value > 0 &&
-                        valueMatches.TryGetValue(akv.AttributeValueId.Value, out var hbValueId))
+                    if (akv.AttributeValueId > 0 &&
+                        valueMatches.TryGetValue(akv.AttributeValueId, out var hbValueId))
                     {
                         attributes[hbAttrId] = hbValueId;
                     }
-                    else if (!string.IsNullOrWhiteSpace(akv.CustomValue))
+                    else if (!string.IsNullOrWhiteSpace(akv.AttributeValue?.Name))
                     {
-                        attributes[hbAttrId] = akv.CustomValue;
+                        attributes[hbAttrId] = akv.AttributeValue.Name;
                     }
                 }
             }

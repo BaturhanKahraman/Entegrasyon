@@ -67,7 +67,7 @@
         <!-- Category Attributes -->
         @{
             var filledAttrs = Model.CategoryAttributes
-                .Where(a => (a.ValueId.HasValue && a.ValueId > 0) || !string.IsNullOrWhiteSpace(a.CustomValue))
+                .Where(a => a.ValueId.HasValue && a.ValueId > 0)
                 .ToList();
         }
         @if (filledAttrs.Count > 0)
@@ -78,7 +78,7 @@
                 {
                     <div class="datagrid-item">
                         <div class="datagrid-title">@attr.AttributeName</div>
-                        <div class="datagrid-content">@(!string.IsNullOrWhiteSpace(attr.CustomValue) ? attr.CustomValue : attr.ValueId?.ToString())</div>
+                        <div class="datagrid-content">@(attr.ValueId?.ToString() ?? "-")</div>
                     </div>
                 }
             </div>

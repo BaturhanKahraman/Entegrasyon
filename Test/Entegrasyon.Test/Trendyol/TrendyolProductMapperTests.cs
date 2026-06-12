@@ -105,6 +105,8 @@ public class TrendyolProductMapperTests : Entegrasyon.UnitTest.BaseTest
             .ReturnsDbSet(new List<CategoryAttributeMarketPlaceMatch>());
         mockIntegrationDbContext.Setup(x => x.CategoryAttributeValueMarketPlaceMatches)
             .ReturnsDbSet(new List<CategoryAttributeValueMarketPlaceMatch>());
+        mockIntegrationDbContext.Setup(x => x.CategoryAttributeValues)
+            .ReturnsDbSet(new List<CategoryAttributeValue>());
 
         mockIntegrationDbContext.Setup(x => x.MarketPlaceWarehouses)
             .ReturnsDbSet(new List<MarketPlaceWarehouse>());

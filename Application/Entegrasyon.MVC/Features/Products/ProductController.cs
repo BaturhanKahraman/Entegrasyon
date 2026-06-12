@@ -251,7 +251,7 @@ public class ProductController(
 
         // Step 2 validation — zorunlu kategori özelliklerini kontrol et
         var missing = state.CategoryAttributes
-            .Where(a => a.IsRequired && (a.ValueId is null or 0) && string.IsNullOrWhiteSpace(a.CustomValue))
+            .Where(a => a.IsRequired && (a.ValueId is null or 0))
             .ToList();
 
         if (missing.Count > 0)
@@ -456,12 +456,11 @@ public class ProductController(
         }
 
         var attributeKeyValues = vm.CategoryAttributes
-            .Where(a => a.ValueId > 0 || !string.IsNullOrWhiteSpace(a.CustomValue))
+            .Where(a => a.ValueId > 0)
             .Select(a => new Entity.Categories.AttributeKeyValue
             {
                 CategoryAttributeId = a.CategoryAttributeId,
-                AttributeValueId = a.ValueId > 0 ? a.ValueId : null,
-                CustomValue = a.CustomValue
+                AttributeValueId = a.ValueId!.Value
             }).ToList();
 
         var dto = new AddProductDto
@@ -493,7 +492,6 @@ public class ProductController(
                     {
                         CategoryAttributeValueId = va.ValueId,
                         CategoryAttributeValue = va.ValueName,
-                        CustomValue = va.IsCustom ? va.ValueName : null,
                         IsVarianter = va.IsVarianter,
                         IsSlicer = va.IsSlicer
                     }).ToList(),

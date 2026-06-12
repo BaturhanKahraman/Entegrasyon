@@ -58,7 +58,12 @@ public class AmazonProductMapperTests : Entegrasyon.UnitTest.BaseTest
             },
             AttributeKeyValues = new List<AttributeKeyValue>
             {
-                new() { CategoryAttributeId = 100, CustomValue = "Cotton" }
+                new()
+                {
+                    CategoryAttributeId = 100,
+                    AttributeValueId = 1,
+                    AttributeValue = new CategoryAttributeValue { Id = 1, Name = "Pamuk", NormalizedName = "PAMUK", CategoryAttributeId = 100 }
+                }
             }
         };
     }

@@ -322,7 +322,7 @@ public class OfficeStockManager(
                 m.StockAfter,
                 m.ReferenceType,
                 m.ReferenceId,
-                RawAttrs = m.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                RawAttrs = m.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
             .ToListAsync();
 
@@ -332,7 +332,7 @@ public class OfficeStockManager(
             r.ProductTitle,
             VariantNameExtensions.ResolveDisplayName(
                 r.VariantName,
-                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                 r.ProductTitle),
             r.Barcode,
             r.Type,

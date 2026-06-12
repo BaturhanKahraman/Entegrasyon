@@ -183,7 +183,7 @@
                             {
                                 variantDisplayName = Entegrasyon.Business.Extensions.VariantNameExtensions.ResolveDisplayName(
                                     pv.Name,
-                                    pv.ProductVariantAttributes.Select((a, i) => new Entegrasyon.Business.Abstract.VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                                    pv.ProductVariantAttributes.Select((a, i) => new Entegrasyon.Business.Abstract.VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                                     pv.Product?.Title ?? productTitle);
                             }
                             <tr>

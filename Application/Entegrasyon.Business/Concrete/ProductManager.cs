@@ -156,7 +156,7 @@ public class ProductManager(
                     pv.BranchOfficeStocks.Select(bos => new EditBranchOfficeStockDto(bos.BranchOfficeId, bos.FirstTotalStock)).ToList(),
                     pv.Images.Select(img => new EditableImageDto(img.Id, img.Src ?? "", img.IsMain, img.IsDeleted)).ToList(),
                     pv.ProductVariantAttributes
-                        .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId, pva.CategoryAttributeValue ?? "", pva.CustomValue ?? "", pva.IsVarianter, pva.IsSlicer))
+                        .Select(pva => new VariantAttributeDto(pva.CategoryAttributeValueId, pva.CategoryAttributeValue ?? "", pva.IsVarianter, pva.IsSlicer))
                         .ToList()
                 )).ToList(),
                 p.AttributeKeyValues.Select(akv => new AttributeKeyValueDto(
@@ -164,8 +164,7 @@ public class ProductManager(
                     akv.CategoryAttribute.CategoryAttributeKey!,
                     akv.AttributeValueId,
                     akv.AttributeValue != null ? akv.AttributeValue.Name! : string.Empty,
-                    akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId) == null ? false : akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId)!.IsRequired,
-                    akv.CustomValue ?? string.Empty)
+                    akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId) == null ? false : akv.CategoryAttribute.Categories.FirstOrDefault(ca => ca.CategoryId == p.CategoryId)!.IsRequired)
                 ).ToList()))
             .FirstOrDefaultAsync();
 
@@ -258,13 +257,12 @@ public class ProductManager(
         dbContext.AttributeKeyValues.RemoveRange(product.AttributeKeyValues);
         product.AttributeKeyValues.Clear();
 
-        foreach (var akv in dto.AttributeKeyValues.Where(a => a.AttributeValueId.HasValue || !string.IsNullOrWhiteSpace(a.CustomValue)))
+        foreach (var akv in dto.AttributeKeyValues.Where(a => a.AttributeValueId > 0))
         {
             product.AttributeKeyValues.Add(new AttributeKeyValue
             {
                 CategoryAttributeId = akv.CategoryAttributeId,
-                AttributeValueId = akv.AttributeValueId,
-                CustomValue = akv.CustomValue
+                AttributeValueId = akv.AttributeValueId!.Value
             });
         }
 
@@ -356,12 +354,12 @@ public class ProductManager(
                         .Select(img => img.StorageKey != null ? img.StorageKey + "_original.webp" : img.Src ?? "")
                         .ToArray(),
                     StockDetails = pv.BranchOfficeStocks.Select(stck => new StockDetailDto(stck.BranchOffice.Name!, stck.CurrentStock, stck.SoldQuantity, stck.FirstTotalStock)).ToList(),
-                    RawAttrs = pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                    RawAttrs = pv.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
                 }).ToList(),
                 AttributeKeyValues = p.AttributeKeyValues.Select(kv => new AttributeKeyValueDetailDto(
                     kv.CategoryAttribute.CategoryAttributeKey!,
                     kv.CategoryAttribute!.CategoryAttributeHumanized ?? kv.CategoryAttribute.CategoryAttributeKey ?? "",
-                    kv.AttributeValueId.HasValue ? kv.AttributeValue!.Name! : kv.CustomValue ?? "")).ToList(),
+                    kv.AttributeValue != null ? kv.AttributeValue.Name! : "")).ToList(),
                 p.UpdatedAt,
                 p.SeoTitle,
                 p.SeoDescription,
@@ -381,7 +379,7 @@ public class ProductManager(
                 pv.Id, pv.Barcode,
                 VariantNameExtensions.ResolveDisplayName(
                     pv.Name,
-                    pv.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                    pv.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                     raw.Title),
                 pv.DimensionalWeight, pv.CurrencyType, pv.ListPrice, pv.SalePrice, pv.CostPrice, pv.ECommercePrice, pv.VatRate,
                 pv.ImageLinks, pv.StockDetails
@@ -531,7 +529,7 @@ public class ProductManager(
                     .FirstOrDefault(),
                 pv.Name,
                 RawAttrs = pv.ProductVariantAttributes
-                    .Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer })
+                    .Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer })
                     .ToList()
             })
             .FirstOrDefaultAsync();
@@ -552,7 +550,7 @@ public class ProductManager(
                 DisplayName = VariantNameExtensions.ResolveDisplayName(
                     exactBarcodeRaw.Name,
                     exactBarcodeRaw.RawAttrs.Select((a, i) =>
-                        new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                        new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                     exactBarcodeRaw.ProductTitle)
             };
 
@@ -608,7 +606,7 @@ public class ProductManager(
                             .FirstOrDefault(),
                         pv.Name,
                         RawAttrs = pv.ProductVariantAttributes
-                            .Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer })
+                            .Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer })
                             .ToList()
                     })
                     .ToList()
@@ -636,7 +634,7 @@ public class ProductManager(
                 DisplayName = VariantNameExtensions.ResolveDisplayName(
                     pv.Name,
                     pv.RawAttrs.Select((a, i) =>
-                        new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                        new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                     p.Title)
             }).ToList()
         }).ToList();
@@ -861,7 +859,7 @@ public class ProductManager(
             pv.ProductVariantAttributes
                 .Select(a => new StorefrontVariantAttributeDto(
                     a.CategoryAttributeValue ?? "",
-                    a.CustomValue ?? a.CategoryAttributeValue ?? ""))
+                    a.CategoryAttributeValue ?? ""))
                 .ToList(),
             pv.Images.OrderBy(i => i.DisplayOrder)
                 .Select(i =>
@@ -878,9 +876,7 @@ public class ProductManager(
             .Select(akv => new StorefrontAttributeDto(
                 akv.CategoryAttribute.CategoryAttributeKey ?? "",
                 akv.CategoryAttribute.CategoryAttributeHumanized ?? akv.CategoryAttribute.CategoryAttributeKey ?? "",
-                akv.AttributeValueId.HasValue && akv.AttributeValue is not null
-                    ? akv.AttributeValue.Name ?? ""
-                    : akv.CustomValue ?? ""))
+                akv.AttributeValue?.Name ?? ""))
             .ToList();
 
         // Build breadcrumbs
@@ -929,7 +925,7 @@ public class ProductManager(
                 pv.BranchOfficeStocks.Sum(s => s.CurrentStock),
                 pv.ProductVariantAttributes
                     .Select(a => new StorefrontVariantAttributeDto(
-                        a.CategoryAttributeValue ?? "", a.CustomValue ?? a.CategoryAttributeValue ?? ""))
+                        a.CategoryAttributeValue ?? "", a.CategoryAttributeValue ?? ""))
                     .ToList(),
                 pv.Images.OrderBy(i => i.DisplayOrder)
                     .Select(i =>
@@ -946,9 +942,7 @@ public class ProductManager(
                 .Select(akv => new StorefrontAttributeDto(
                     akv.CategoryAttribute.CategoryAttributeKey ?? "",
                     akv.CategoryAttribute.CategoryAttributeHumanized ?? akv.CategoryAttribute.CategoryAttributeKey ?? "",
-                    akv.AttributeValueId.HasValue && akv.AttributeValue is not null
-                        ? akv.AttributeValue.Name ?? ""
-                        : akv.CustomValue ?? ""))
+                    akv.AttributeValue?.Name ?? ""))
                 .ToList();
 
             var breadcrumbs = new List<BreadcrumbItemDto> { new("Ana Sayfa", "/") };
