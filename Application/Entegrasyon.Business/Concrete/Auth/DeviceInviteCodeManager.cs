@@ -87,13 +87,14 @@ public class DeviceInviteCodeManager(
             .ToListAsync();
     }
 
+    // 0/O, 1/I gibi karışan karakterler yok — okunur + URL-safe + sabit uzunluk
+    private const string CodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
     private static string GenerateCode()
     {
-        // 10-char URL-safe random — yeterli entropi (~60 bit), insan okuyabilir
-        var bytes = RandomNumberGenerator.GetBytes(8);
-        var b64 = Convert.ToBase64String(bytes)
-            .Replace("+", "").Replace("/", "").Replace("=", "")
-            .ToUpperInvariant();
-        return CodePrefix + b64[..10];
+        // 10-char crypto-güçlü, bias'sız, her zaman tam 10 karakter (~50 bit entropi).
+        // Eski yöntem base64'ten +,/,= SİLDİĞİ için string 10'un altına düşüp Substring
+        // patlatabiliyordu (~%5 flaky); GetString sabit uzunluk garanti eder.
+        return CodePrefix + RandomNumberGenerator.GetString(CodeAlphabet, 10);
     }
 }
