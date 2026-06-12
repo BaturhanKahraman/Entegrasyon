@@ -337,7 +337,7 @@ public class BranchOfficeManager(
                 Barcode = s.ProductVariant.Barcode ?? string.Empty,
                 s.FirstTotalStock,
                 s.SoldQuantity,
-                RawAttrs = s.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                RawAttrs = s.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
             .ToListAsync();
 
@@ -346,7 +346,7 @@ public class BranchOfficeManager(
             r.ProductTitle,
             VariantNameExtensions.ResolveDisplayName(
                 r.Name,
-                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                 r.ProductTitle),
             r.Barcode,
             r.FirstTotalStock,
@@ -385,7 +385,7 @@ public class BranchOfficeManager(
                 m.StockAfter,
                 m.ReferenceType,
                 m.ReferenceId,
-                RawAttrs = m.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                RawAttrs = m.ProductVariant.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
             .ToListAsync();
 
@@ -395,7 +395,7 @@ public class BranchOfficeManager(
             r.ProductTitle,
             VariantNameExtensions.ResolveDisplayName(
                 r.VariantName,
-                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                 r.ProductTitle),
             r.Barcode,
             r.Type,

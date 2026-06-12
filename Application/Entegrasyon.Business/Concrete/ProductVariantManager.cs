@@ -57,7 +57,7 @@ public class ProductVariantManager(
                 Stock = x.BranchOfficeStocks.Sum(z => z.CurrentStock),
                 CategoryName = x.Product.Category.Name,
                 x.Name,
-                RawAttrs = x.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                RawAttrs = x.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
             .FirstOrDefaultAsync();
         if (raw == null)
@@ -65,7 +65,7 @@ public class ProductVariantManager(
 
         var displayName = VariantNameExtensions.ResolveDisplayName(
             raw.Name,
-            raw.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+            raw.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
             raw.ProductTitle);
 
         var result = new ProductVariantSaleSearchDto(
@@ -94,7 +94,7 @@ public class ProductVariantManager(
                 Stock = x.BranchOfficeStocks.Sum(z => z.CurrentStock),
                 CategoryName = x.Product.Category.Name,
                 x.Name,
-                RawAttrs = x.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer }).ToList()
+                RawAttrs = x.ProductVariantAttributes.Select(a => new { a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer }).ToList()
             })
             .ToListAsync();
 
@@ -102,7 +102,7 @@ public class ProductVariantManager(
             r.Id, r.ProductTitle,
             VariantNameExtensions.ResolveDisplayName(
                 r.Name,
-                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                r.RawAttrs.Select((a, i) => new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
                 r.ProductTitle),
             r.Image, r.VatRate, r.ListPrice, r.SalePrice, r.CostPrice, r.Stock, r.CategoryName
         )).ToList();
@@ -144,7 +144,6 @@ public class ProductVariantManager(
                 new Entity.Dtos.Attributes.VariantAttributeDto(
                     a.CategoryAttributeValueId,
                     a.CategoryAttributeValue ?? "",
-                    a.CustomValue ?? "",
                     a.IsVarianter,
                     a.IsSlicer)).ToList()
         );
@@ -347,7 +346,7 @@ public class ProductVariantManager(
         var displayName = VariantNameExtensions.ResolveDisplayName(
             variant.Name,
             variant.ProductVariantAttributes.Select((a, i) =>
-                new VariantAttributeLite(a.CategoryAttributeValue, a.CustomValue, a.IsVarianter, a.IsSlicer, i)),
+                new VariantAttributeLite(a.CategoryAttributeValue, a.IsVarianter, a.IsSlicer, i)),
             variant.Product.Title);
 
         var dto = new VariantDetailPageDto(
@@ -371,8 +370,8 @@ public class ProductVariantManager(
                 new VariantImageInfo(i.Id, i.Src ?? "", i.IsMain)).ToList(),
             variant.ProductVariantAttributes.Select(a =>
                 new VariantAttributeInfo(
-                    a.CategoryAttributeValue ?? a.CustomValue ?? "",
-                    a.CategoryAttributeValue ?? a.CustomValue ?? "",
+                    a.CategoryAttributeValue ?? "",
+                    a.CategoryAttributeValue ?? "",
                     a.IsVarianter,
                     a.IsSlicer)).ToList(),
             marketplaces

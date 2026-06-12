@@ -420,7 +420,6 @@ public class MatchedEntityImportManager(
             {
                 CategoryAttributeKey = templateAttr.AttributeKey,
                 CategoryAttributeHumanized = templateAttr.AttributeHumanized,
-                AllowCustom = templateAttr.AllowCustom,
                 CreatedAt = DateTimeOffset.UtcNow
             };
             await dbContext.CategoryAttributes.AddAsync(attr, ct);
@@ -631,7 +630,6 @@ public class MatchedEntityImportManager(
             Id = a.Id,
             AttributeKey = a.AttributeKey,
             AttributeHumanized = a.AttributeHumanized,
-            AllowCustom = a.AllowCustom,
             IsRequired = a.IsRequired,
             IsSlicer = a.IsSlicer,
             IsVarianter = a.IsVarianter,

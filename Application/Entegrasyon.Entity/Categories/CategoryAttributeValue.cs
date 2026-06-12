@@ -6,6 +6,7 @@ public class CategoryAttributeValue : BaseEntity
 {
     public int Id { get; set; }
     public string? Name { get; set; }
+    public string NormalizedName { get; set; } = string.Empty;
     public int CategoryAttributeId { get; set; }
     public CategoryAttribute CategoryAttribute { get; set; } = null!;
 }

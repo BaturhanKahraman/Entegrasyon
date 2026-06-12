@@ -12,7 +12,7 @@ public class VariantNameExtensionsTests
     {
         var result = VariantNameExtensions.ResolveDisplayName(
             "Override",
-            new[] { new VariantAttributeLite("Sarı", null, true, false, 0) },
+            new[] { new VariantAttributeLite("Sarı", true, false, 0) },
             "Tshirt");
         result.Should().Be("Override");
     }
@@ -24,8 +24,8 @@ public class VariantNameExtensionsTests
             null,
             new[]
             {
-                new VariantAttributeLite("Sarı", null, true, false, 0),
-                new VariantAttributeLite("XL", null, false, true, 1)
+                new VariantAttributeLite("Sarı", true, false, 0),
+                new VariantAttributeLite("XL", false, true, 1)
             },
             "Tshirt");
         result.Should().Be("Sarı XL");
@@ -43,7 +43,7 @@ public class VariantNameExtensionsTests
     {
         var result = VariantNameExtensions.ResolveDisplayName(
             "   ",
-            new[] { new VariantAttributeLite("Sarı", null, true, false, 0) },
+            new[] { new VariantAttributeLite("Sarı", true, false, 0) },
             "Tshirt");
         result.Should().Be("Sarı");
     }
@@ -62,10 +62,10 @@ public class VariantNameExtensionsTests
             null,
             new[]
             {
-                new VariantAttributeLite("M", null, false, true, 0),
-                new VariantAttributeLite("Sarı", null, true, false, 1),
-                new VariantAttributeLite("Çiçekli", null, true, false, 2),
-                new VariantAttributeLite("XL", null, false, true, 3)
+                new VariantAttributeLite("M", false, true, 0),
+                new VariantAttributeLite("Sarı", true, false, 1),
+                new VariantAttributeLite("Çiçekli", true, false, 2),
+                new VariantAttributeLite("XL", false, true, 3)
             },
             "Tshirt");
         result.Should().Be("Sarı Çiçekli M XL");

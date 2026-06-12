@@ -18,7 +18,6 @@ public class CategoryAttributeSelectionVm
     public bool IsRequired { get; set; }
     public bool IsVarianter { get; set; }
     public bool IsSlicer { get; set; }
-    public bool AllowCustom { get; set; }
 }
 
 public class CategoryCreateSuccessVm

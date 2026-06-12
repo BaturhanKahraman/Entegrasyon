@@ -5,7 +5,6 @@ namespace Entegrasyon.Entity.Dtos.Category;
 public record CategoryAttributeDto(
 int Id,
 bool IsRequired,
-bool AllowCustom,
 bool IsVarianter,
 bool IsSlicer,
 DateTimeOffset CreatedAt,

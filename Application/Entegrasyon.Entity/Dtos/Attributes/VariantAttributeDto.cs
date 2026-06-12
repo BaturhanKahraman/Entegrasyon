@@ -3,6 +3,5 @@
 public sealed record VariantAttributeDto(
 int? CategoryAttributeValueId,
 string CategoryAttributeValueName,
-string CustomValue,
 bool IsVarianter,
 bool IsSlicer);

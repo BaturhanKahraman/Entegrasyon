@@ -169,7 +169,6 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
                 var existingCatAttr = existingCatAttrs.GetValueOrDefault(catAttr.Id);
                 existingCatAttr!.CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized;
                 existingCatAttr.CategoryAttributeKey = catAttr.CategoryAttributeKey;
-                existingCatAttr.AllowCustom = catAttr.AllowCustom;
                 catAttrcat.CategoryAttribute = existingCatAttr;
             }
             else
@@ -179,7 +178,6 @@ public class CategoryAttributeCategoryManager : ICategoryAttributeCategoryManage
                     Id = catAttr.Id,
                     CategoryAttributeKey = catAttr.CategoryAttributeKey,
                     CategoryAttributeHumanized = catAttr.CategoryAttributeHumanized,
-                    AllowCustom = catAttr.AllowCustom,
                     CategoryAttributeValues = new()
                 };
             }

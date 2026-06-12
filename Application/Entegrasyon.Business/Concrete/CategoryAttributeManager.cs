@@ -86,7 +86,6 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
             .Select(x => new CategoryAttributeDto(
                 x.Id,
                 x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id)!.IsRequired,
-                x.AllowCustom,
                 x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id)!.IsVarianter,
                 x.Categories.FirstOrDefault(z => z.CategoryId == categoryId && z.CategoryAttributeId == x.Id)!.IsSlicer,
                 x.CreatedAt,
@@ -122,7 +121,6 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
         attr.CategoryAttributeKey = dto.CategoryAttributeKey;
         attr.CategoryAttributeHumanized = dto.CategoryAttributeHumanized;
-        attr.AllowCustom = dto.AllowCustom;
 
         // Diff predefined values: remove deleted, add new
         var incomingIds = dto.CategoryAttributeValues?.Select(v => v.Id).Where(id => id > 0).ToHashSet() ?? [];

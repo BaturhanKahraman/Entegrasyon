@@ -69,12 +69,14 @@ public sealed class TrendyolProductMapper(
             .ToDictionaryAsync(m => m.ApplicationCategoryAttributeId, m => m.MarketPlaceCategoryAttributeId);
 
         var valueIds = product.AttributeKeyValues
-            .Where(a => a.AttributeValueId.HasValue)
-            .Select(a => a.AttributeValueId!.Value)
+            .Select(a => a.AttributeValueId)
             .Distinct().ToList();
         var valueMatches = await dbContext.CategoryAttributeValueMarketPlaceMatches.AsNoTracking()
             .Where(m => valueIds.Contains(m.ApplicationCategoryAttributeValueId) && m.MarketPlaceId == TrendyolMarketPlaceId)
             .ToDictionaryAsync(m => m.ApplicationCategoryAttributeValueId, m => m.MarketPlaceCategoryAttributeValueId);
+        var valueNames = await dbContext.CategoryAttributeValues.AsNoTracking()
+            .Where(v => valueIds.Contains(v.Id))
+            .ToDictionaryAsync(v => v.Id, v => v.Name);
 
         // Marketplace'e stok gonderecek depo ID'lerini belirle
         var warehouseIds = await dbContext.MarketPlaceWarehouses.AsNoTracking()
@@ -143,13 +145,13 @@ public sealed class TrendyolProductMapper(
                 int? trendyolValueId = null;
                 string? customValue = null;
 
-                if (akv.AttributeValueId.HasValue && valueMatches.TryGetValue(akv.AttributeValueId.Value, out var mappedValueId))
+                if (valueMatches.TryGetValue(akv.AttributeValueId, out var mappedValueId))
                 {
                     trendyolValueId = mappedValueId;
                 }
-                else if (!string.IsNullOrEmpty(akv.CustomValue))
+                else if (valueNames.TryGetValue(akv.AttributeValueId, out var name) && !string.IsNullOrEmpty(name))
                 {
-                    customValue = akv.CustomValue;
+                    customValue = name; // no marketplace match -> send the value's own name as custom string
                 }
                 else
                 {
@@ -164,26 +166,20 @@ public sealed class TrendyolProductMapper(
             {
                 foreach (var pva in variant.ProductVariantAttributes)
                 {
-                    if (pva.CategoryAttributeValueId.HasValue
-                        && valueMatches.TryGetValue(pva.CategoryAttributeValueId.Value, out var trendyolValueId))
-                    {
-                        var attrValue = await dbContext.CategoryAttributeValues.AsNoTracking()
-                            .FirstOrDefaultAsync(v => v.Id == pva.CategoryAttributeValueId.Value);
+                    if (!pva.CategoryAttributeValueId.HasValue) continue;
 
-                        if (attrValue is not null && attributeMatches.TryGetValue(attrValue.CategoryAttributeId, out var tAttrId))
-                        {
-                            attributes.Add(new TrendyolProductAttribute(tAttrId, trendyolValueId, null));
-                        }
+                    var attrValue = await dbContext.CategoryAttributeValues.AsNoTracking()
+                        .FirstOrDefaultAsync(v => v.Id == pva.CategoryAttributeValueId.Value);
+                    if (attrValue is null || !attributeMatches.TryGetValue(attrValue.CategoryAttributeId, out var tAttrId))
+                        continue;
+
+                    if (valueMatches.TryGetValue(pva.CategoryAttributeValueId.Value, out var trendyolValueId))
+                    {
+                        attributes.Add(new TrendyolProductAttribute(tAttrId, trendyolValueId, null));
                     }
-                    else if (!string.IsNullOrEmpty(pva.CustomValue) && pva.CategoryAttributeValueId.HasValue)
+                    else if (!string.IsNullOrEmpty(pva.CategoryAttributeValue))
                     {
-                        var attrValue = await dbContext.CategoryAttributeValues.AsNoTracking()
-                            .FirstOrDefaultAsync(v => v.Id == pva.CategoryAttributeValueId.Value);
-
-                        if (attrValue is not null && attributeMatches.TryGetValue(attrValue.CategoryAttributeId, out var tAttrId))
-                        {
-                            attributes.Add(new TrendyolProductAttribute(tAttrId, null, pva.CustomValue));
-                        }
+                        attributes.Add(new TrendyolProductAttribute(tAttrId, null, pva.CategoryAttributeValue));
                     }
                 }
             }

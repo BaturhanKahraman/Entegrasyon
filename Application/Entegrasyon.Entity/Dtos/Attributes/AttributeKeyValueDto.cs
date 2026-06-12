@@ -5,5 +5,4 @@ int CategoryAttributeId,
 string CategoryAttributeName,
 int? AttributeValueId,
 string AttributeValueName,
-bool IsRequired,
-string CustomValue);
+bool IsRequired);

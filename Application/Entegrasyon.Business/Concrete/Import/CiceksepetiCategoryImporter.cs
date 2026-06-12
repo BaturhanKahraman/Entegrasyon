@@ -13,7 +13,6 @@ namespace Entegrasyon.Business.Concrete.Import;
 /// <summary>
 /// Çiçeksepeti pazaryerinden kategori ve kategori özelliklerini import eder.
 /// API recursive ağaç yapısında döner (SubCategories listeli).
-/// Özellik tipleri: "Variant Ozellik" → IsVarianter, "Kisisellestirilebilir Ozellik" → AllowCustom.
 /// </summary>
 public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICiceksepetiCategoryImporter
 {
@@ -108,10 +107,10 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
     /// Çiçeksepeti'ye özgü kategori özellik import işlemi.
     /// GET /api/v1/Categories/{id}/attributes üzerinden özellikler çekilir.
     /// Tip eşlemesi:
-    ///   "Variant Ozellik"             → IsVarianter=true,  AllowCustom=false
-    ///   "Urun Ozellik"                → IsVarianter=false, AllowCustom=false
-    ///   "Kisisellestirilebilir Ozellik" → IsVarianter=false, AllowCustom=true
-    /// </summary>
+    ///   "Variant Ozellik"             → IsVarianter=true
+    ///   "Urun Ozellik"                → IsVarianter=false
+    ///   "Kisisellestirilebilir Ozellik" → IsVarianter=false
+    ///</summary>
     protected override async Task ImportCategoryAttributesAsync(
         IntegrationDbContext dbContext,
         Category category,
@@ -144,10 +143,10 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
 
             foreach (var attr in attrResult.Data.CategoryAttributes)
             {
-                var (isVarianter, allowCustom) = MapAttributeType(attr.Type);
+                var isVarianter = MapAttributeType(attr.Type);
 
                 var dbCatAttr = await GetOrCreateAttributeAsync(
-                    dbContext, attr, allowCustom, cancellationToken);
+                    dbContext, attr, cancellationToken);
 
                 foreach (var val in attr.AttributeValues)
                 {
@@ -197,15 +196,10 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
     }
 
     /// <summary>
-    /// Attribute tipine göre (IsVarianter, AllowCustom) flag'lerini döndürür.
+    /// Attribute tipine göre IsVarianter flag'ini döndürür.
     /// </summary>
-    private static (bool IsVarianter, bool AllowCustom) MapAttributeType(string type) =>
-        type switch
-        {
-            AttributeTypeVariant => (true, false),
-            AttributeTypePersonalized => (false, true),
-            _ => (false, false)   // AttributeTypeProduct ve bilinmeyen tipler
-        };
+    private static bool MapAttributeType(string type) =>
+        type == AttributeTypeVariant;
 
     /// <summary>
     /// Çiçeksepeti AttributeId'sine göre mevcut attribute'u bulur ya da yeni oluşturur.
@@ -214,7 +208,6 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
     private async Task<CategoryAttribute> GetOrCreateAttributeAsync(
         IntegrationDbContext dbContext,
         CiceksepetiAttributeDto attr,
-        bool allowCustom,
         CancellationToken cancellationToken)
     {
         var attrIdString = attr.AttributeId.ToString();
@@ -233,7 +226,6 @@ public class CiceksepetiCategoryImporter : BaseCategoryImporterService, ICicekse
         {
             CategoryAttributeKey = attrIdString,
             CategoryAttributeHumanized = attr.AttributeName,
-            AllowCustom = allowCustom,
             CategoryAttributeValues = new List<CategoryAttributeValue>(),
             CreatedAt = DateTimeOffset.UtcNow
         };

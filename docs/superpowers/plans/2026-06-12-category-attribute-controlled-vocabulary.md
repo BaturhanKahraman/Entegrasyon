@@ -704,12 +704,10 @@ protected override void Up(MigrationBuilder migrationBuilder)
 ```
 > **TR katlama notu:** PostgreSQL `upper()` `i→I` yapar (`İ` değil), uygulamadaki `ToUpper(tr-TR)` `i→İ` yapar. Bu fark, backfill ile uygulama-üretimi kanonik anahtarların UYUŞMAMASINA yol açar → dedup'tan sonra uygulama yeni "İ"li kanonikle eski "I"lı satırı eşleştiremez. **Çözüm:** backfill'i SQL yerine C# ile yap (migration içinde değil, `Up` sonrası bir data-seed/one-off servis veya migration'da raw değerleri çekip `AttributeValueNormalizer.Normalize` ile güncelleyen kod). **Karar:** Bu projede seed `CategoryAttributeValue` sayısı yönetilebilirse, migration'da raw SQL yerine `IntegrationDbContext` üzerinden C# backfill tercih et (Task 7b). Eğer canlı veri yoksa ve dev DB master'dan yeniden seed edilecekse, en temizi: **dev DB'yi master'dan taze seed et, backfillّi seed sırasında `Normalize` ile yap** — o zaman migration sadece şema (drop/add/index), dedup gerekmez. Hangi yolun geçerli olduğunu uygulamadan önce kullanıcıyla netleştir.
 
-- [ ] **Step 2b: Karar gerektiren nokta — backfill stratejisi**
+- [ ] **Step 2b: KARAR VERİLDİ — taze seed (i) + apply-güvenli migration**
 
-İki seçenek, uygulamadan önce doğrula:
-- **(i) Taze seed:** dev DB master'dan yeniden seed; seed kodu `NormalizedName = AttributeValueNormalizer.Normalize(Name)` set eder → migration'dan dedup/backfill SQL'i ÇIKAR, sadece şema kalsın.
-- **(ii) Yerinde backfill:** mevcut değerleri koru; backfill'i C# ile (`Normalize`) yap, sonra dedup. SQL `upper()` ile TR uyuşmazlığı riskine düşme.
-> Bu plan (i)'yi varsayar (canlı veri yok, memory: master-catalog-dev-fill). (i) geçerliyse Step 2'deki SQL blok 3-4'ü sil.
+Kullanıcı kararı (2026-06-12): **dev DB verisi önemsiz, tekrar seed'lenebilir → taze seed (i).** Doğruluk re-seed'den gelir (`NormalizedName = AttributeValueNormalizer.Normalize(Name)`).
+**ANCAK** mevcut dev DB'de `NormalizedName=NULL` satırlar var; NOT NULL kolon `defaultValue=""` ile eklenince attribute başına tüm değerler `""` paylaşır → filtreli unique index apply'da **çakışır**. Bu yüzden Step 2'deki SQL blok 3 (backfill `upper(trim)`) + blok 4 (dedup) **KALSIN** — sadece migration'ın mevcut satırlarda çökmeden uygulanması için. TR `upper()` uyuşmazlığı **önemsiz**, çünkü re-seed `Normalize` ile üzerine yazacak. Yani: SQL blokları apply-güvenliği için tutulur, kanonik doğruluk re-seed'le sağlanır.
 
 - [ ] **Step 3: Uygula**
 

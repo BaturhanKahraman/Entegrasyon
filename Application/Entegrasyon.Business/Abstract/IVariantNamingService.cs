@@ -12,7 +12,6 @@ public interface IVariantNamingService
 
 public readonly record struct VariantAttributeLite(
     string? Value,
-    string? CustomValue,
     bool IsVarianter,
     bool IsSlicer,
     int Order);

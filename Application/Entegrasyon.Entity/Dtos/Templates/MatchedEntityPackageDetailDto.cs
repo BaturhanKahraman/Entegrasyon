@@ -35,7 +35,6 @@ public record TemplateAttributeDetailDto
     public int Id { get; init; }
     public string AttributeKey { get; init; } = null!;
     public string? AttributeHumanized { get; init; }
-    public bool AllowCustom { get; init; }
     public bool IsRequired { get; init; }
     public bool IsSlicer { get; init; }
     public bool IsVarianter { get; init; }

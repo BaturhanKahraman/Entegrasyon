@@ -10,7 +10,6 @@ public sealed class TemplateCategoryAttributeData : TemplateBaseEntity
 
     public string AttributeKey { get; set; } = null!;
     public string? AttributeHumanized { get; set; }
-    public bool AllowCustom { get; set; }
     public bool IsRequired { get; set; }
     public bool IsSlicer { get; set; }
     public bool IsVarianter { get; set; }

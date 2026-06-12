@@ -26,9 +26,7 @@
         <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@Model.CategoryAttributes[i].CategoryAttributeId" />
         <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@Model.CategoryAttributes[i].AttributeName" />
         <input type="hidden" name="CategoryAttributes[@i].ValueId" value="@Model.CategoryAttributes[i].ValueId" />
-        <input type="hidden" name="CategoryAttributes[@i].CustomValue" value="@Model.CategoryAttributes[i].CustomValue" />
         <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired" />
-        <input type="hidden" name="CategoryAttributes[@i].AllowCustom" value="@Model.CategoryAttributes[i].AllowCustom" />
     }
 
     <!-- Variant Attribute Selectors -->
@@ -64,30 +62,16 @@
                             <input type="hidden" name="VariantAttributeSelections[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
                             <input type="hidden" name="VariantAttributeSelections[@i].IsVarianter" value="@attr.IsVarianter" />
                             <input type="hidden" name="VariantAttributeSelections[@i].IsSlicer" value="@attr.IsSlicer" />
-                            <input type="hidden" name="VariantAttributeSelections[@i].AllowCustom" value="@attr.AllowCustom" />
 
-                            @if (attr.AllowCustom)
-                            {
-                                <!-- Tag input for custom values -->
-                                <div class="variant-tag-input" data-attr-index="@i">
-                                    <div class="d-flex flex-wrap gap-1 p-2 border rounded tags-container" style="min-height:38px; cursor:text;">
-                                    </div>
-                                    <input type="text" class="form-control mt-1 tag-text-input"
-                                           placeholder="Değer yazin, Enter veya virgul ile ekleyin" />
-                                </div>
-                            }
-                            else
-                            {
-                                <!-- Searchable multi-select (Tom Select) -->
-                                <select multiple class="form-select variant-tomselect" data-attr-index="@i"
-                                        data-placeholder="Ara ve sec...">
-                                    @foreach (var val in attr.CategoryAttributeValues)
-                                    {
-                                        <option value="@val.Id" data-name="@val.Name">@val.Name</option>
-                                    }
-                                </select>
-                                <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
-                            }
+                            <!-- Searchable multi-select (Tom Select) -->
+                            <select multiple class="form-select variant-tomselect" data-attr-index="@i"
+                                    data-placeholder="Ara ve sec...">
+                                @foreach (var val in attr.CategoryAttributeValues)
+                                {
+                                    <option value="@val.Id" data-name="@val.Name">@val.Name</option>
+                                }
+                            </select>
+                            <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
                         </div>
                     }
                 </div>
@@ -166,71 +150,6 @@
 <script>
 (function () {
     'use strict';
-
-    // --- Tag Input ---
-    document.querySelectorAll('.variant-tag-input').forEach(function (container) {
-        var attrIndex = container.getAttribute('data-attr-index');
-        var input = container.querySelector('.tag-text-input');
-        var tagsContainer = container.querySelector('.tags-container');
-        var tagCount = 0;
-
-        tagsContainer.addEventListener('click', function () { input.focus(); });
-
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter' || e.key === ',') {
-                e.preventDefault();
-                var val = input.value.replace(/,/g, '').trim();
-                if (!val) return;
-                addTag(val);
-                input.value = '';
-            }
-        });
-
-        function addTag(value) {
-            tagCount++;
-
-            var badge = document.createElement('span');
-            badge.className = 'badge bg-blue-lt me-1 mb-1 d-inline-flex align-items-center';
-            badge.textContent = value;
-
-            var closeBtn = document.createElement('a');
-            closeBtn.href = '#';
-            closeBtn.className = 'btn-close btn-close-sm ms-1';
-            closeBtn.addEventListener('click', function (e) {
-                e.preventDefault();
-                badge.remove();
-                rebuildHiddenFields();
-            });
-            badge.appendChild(closeBtn);
-
-            tagsContainer.appendChild(badge);
-
-            rebuildHiddenFields();
-        }
-
-        function rebuildHiddenFields() {
-            // Remove existing hidden fields for this tag input
-            container.querySelectorAll('input[type="hidden"]').forEach(function (h) { h.remove(); });
-
-            var badges = tagsContainer.querySelectorAll('.badge');
-            badges.forEach(function (b, idx) {
-                // Get text content excluding the close button text
-                var text = b.childNodes[0].textContent.trim();
-
-                var nameField = document.createElement('input');
-                nameField.type = 'hidden';
-                nameField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].ValueName';
-                nameField.value = text;
-                container.appendChild(nameField);
-
-                var customField = document.createElement('input');
-                customField.type = 'hidden';
-                customField.name = 'VariantAttributeSelections[' + attrIndex + '].SelectedValues[' + idx + '].IsCustom';
-                customField.value = 'true';
-                container.appendChild(customField);
-            });
-        }
-    });
 
     // --- Tom Select Multi-Select Init ---
     document.querySelectorAll('.variant-tomselect').forEach(function(sel) {

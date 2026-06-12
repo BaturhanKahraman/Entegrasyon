@@ -8,7 +8,7 @@ public class AttributeKeyValueManager() : IAttributeKeyValueManager
     public void ClearEmptyAttributes(Product product)
     {
         product.AttributeKeyValues = product.AttributeKeyValues
-            .Where(x=>(x.AttributeValueId == 0 && !string.IsNullOrEmpty(x.CustomValue) || x.AttributeValueId>0))
+            .Where(x => x.AttributeValueId > 0)
             .ToList();
     }
 

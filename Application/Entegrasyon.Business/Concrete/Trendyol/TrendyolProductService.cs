@@ -345,7 +345,7 @@ public sealed class TrendyolProductService(
         {
             // Basit attribute string (variant ID bazlı)
             var attrString = variant.ProductVariantAttributes.Count > 0
-                ? string.Join(" / ", variant.ProductVariantAttributes.Select(a => a.CustomValue ?? a.CategoryAttributeValue ?? "—"))
+                ? string.Join(" / ", variant.ProductVariantAttributes.Select(a => a.CategoryAttributeValue ?? "—"))
                 : "Varyant";
 
             // Override fiyat varsa kullan, yoksa mevcut fiyatı kullan

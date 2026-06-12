@@ -51,7 +51,7 @@ public sealed class MarketplaceOverrideManager(
                 var label = v.ProductVariantAttributes is { Count: > 0 }
                     ? string.Join(" / ", v.ProductVariantAttributes
                         .Where(a => a.IsVarianter || a.IsSlicer)
-                        .Select(a => a.CategoryAttributeValue ?? a.CustomValue ?? "?"))
+                        .Select(a => a.CategoryAttributeValue ?? "?"))
                     : v.Barcode;
 
                 return new VariantPriceOverrideDetailDto

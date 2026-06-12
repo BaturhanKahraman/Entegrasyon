@@ -87,7 +87,6 @@ public class MatchedEntityImportIntegrationTests : IntegrationTestBase
             TemplateCategoryDataId = childCategory.Id,
             AttributeKey = "Renk",
             AttributeHumanized = "Renk",
-            AllowCustom = false,
             IsRequired = true,
             IsSlicer = false,
             IsVarianter = true,

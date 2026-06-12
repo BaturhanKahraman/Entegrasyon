@@ -36,8 +36,8 @@ public class DiscountManager(
                     v.ECommercePrice,
                     v.VatRate,
                     Attributes = v.ProductVariantAttributes
-                        .Where(a => a.IsVarianter && !string.IsNullOrEmpty(a.CategoryAttributeValue ?? a.CustomValue))
-                        .Select(a => a.CategoryAttributeValue ?? a.CustomValue)
+                        .Where(a => a.IsVarianter && !string.IsNullOrEmpty(a.CategoryAttributeValue))
+                        .Select(a => a.CategoryAttributeValue)
                         .ToList()
                 }).ToList(),
                 MarketplaceRecords = p.ProductMarketplaces.Select(pm => new

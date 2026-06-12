@@ -64,8 +64,7 @@ public sealed class N11ProductMapper(
 
         // 5. Özellik değeri eşleştirmeleri (opsiyonel — N11 string değer kabul eder)
         var valueIds = product.AttributeKeyValues
-            .Where(a => a.AttributeValueId.HasValue)
-            .Select(a => a.AttributeValueId!.Value)
+            .Select(a => a.AttributeValueId)
             .Distinct().ToList();
         var valueMatches = await dbContext.CategoryAttributeValueMarketPlaceMatches
             .AsNoTracking()
@@ -193,8 +192,6 @@ public sealed class N11ProductMapper(
 
             if (akv.AttributeValue?.Name is not null)
                 attrValue = akv.AttributeValue.Name;
-            else if (!string.IsNullOrEmpty(akv.CustomValue))
-                attrValue = akv.CustomValue;
 
             if (string.IsNullOrEmpty(attrValue))
                 continue;
@@ -220,7 +217,7 @@ public sealed class N11ProductMapper(
         foreach (var pva in variant.ProductVariantAttributes)
         {
             // CategoryAttributeValue alanı navigation property değil string olarak tutuluyor
-            var attrValue = pva.CustomValue ?? pva.CategoryAttributeValue;
+            var attrValue = pva.CategoryAttributeValue;
             if (string.IsNullOrEmpty(attrValue))
                 continue;
 

@@ -137,7 +137,6 @@ public class VariantAttributeSelectionVm
     public string AttributeName { get; set; } = "";
     public bool IsVarianter { get; set; }
     public bool IsSlicer { get; set; }
-    public bool AllowCustom { get; set; }
     public List<SelectedAttributeValueVm> SelectedValues { get; set; } = [];
 }
 
@@ -161,9 +160,7 @@ public class AttributeValueVm
     public int CategoryAttributeId { get; set; }
     public string AttributeName { get; set; } = "";
     public int? ValueId { get; set; }
-    public string? CustomValue { get; set; }
     public bool IsRequired { get; set; }
-    public bool AllowCustom { get; set; }
 }
 
 public class VariantImageAssignmentVm

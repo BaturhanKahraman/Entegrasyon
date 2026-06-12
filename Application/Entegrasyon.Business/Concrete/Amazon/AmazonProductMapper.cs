@@ -28,7 +28,7 @@ public sealed class AmazonProductMapper(
         var product = await dbContext.MainProducts
             .Include(p => p.ProductVariants).ThenInclude(v => v.Images)
             .Include(p => p.ProductVariants).ThenInclude(v => v.BranchOfficeStocks)
-            .Include(p => p.AttributeKeyValues)
+            .Include(p => p.AttributeKeyValues).ThenInclude(a => a.AttributeValue)
             .Include(p => p.Brand)
             .FirstOrDefaultAsync(p => p.Id == productId, ct);
 
@@ -93,8 +93,8 @@ public sealed class AmazonProductMapper(
         {
             if (attrMatches.TryGetValue(akv.CategoryAttributeId, out var amazonAttrId))
             {
-                if (!string.IsNullOrWhiteSpace(akv.CustomValue))
-                    attributes[amazonAttrId] = new[] { new { value = akv.CustomValue } };
+                if (!string.IsNullOrWhiteSpace(akv.AttributeValue?.Name))
+                    attributes[amazonAttrId] = new[] { new { value = akv.AttributeValue.Name } };
             }
         }
 
