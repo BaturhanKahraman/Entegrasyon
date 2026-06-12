@@ -160,6 +160,33 @@ EventChannel<CategoryUpdatedEvent> // publisher → subscriber
 
   Test olmadan özellik tamamlanmış SAYILMAZ. "Testleri sonra yazarız" KABUL EDİLMEZ.
 
+## Manuel Feature Geliştirme — Skill Rehberi (Rapor / MVC Sayfası)
+
+Ana oturumda (agent pipeline'sız, kullanıcı yönlendirmeli) bir MVC sayfası/rapor geliştirirken
+**doğru skill'i doğru adımda açıkça çağır** (otomatik aktive olmaz). Sıra:
+
+1. **Keşif (research-first):** Koda dokunmadan önce ilgili feature'ı bul/oku.
+   - `graphify query "<soru>"` (ham grep/büyük-dosya okuma yerine — bağlam tasarrufu).
+   - Bilinmeyen API/sürüm davranışı → `microsoft-docs` (microsoft-learn MCP, sürüme-özel) veya `context7`. Tahmin etme, doğrula.
+2. **Tasarım (Razor + Tabler + HTMX):**
+   - `aspnet-mvc-htmx` skill (`~/.claude/skills/aspnet-mvc-htmx/`) — PRG, `Request.IsHtmx()`, filter, tag-helper, feature-folder desenleri.
+   - **Tabler Strict Rule:** bileşen kullanmadan ÖNCE `https://tabler.io/docs/ui/<component>` — class tahmin yok.
+   - **Referans sayfalar (kopyala-uyarla):** `Features/Reports/Views/{StockAlerts,Inventory,Marketplace}.cshtml` + `Partials/_StockAlertTable.cshtml` — "Ürünler" tasarım dili: KPI kartları, tablo partial, filtre barı, empty state, ApexCharts grafik, doğru Türkçe diakritikler. Yeni rapor sayfası bunları örnek alır.
+   - Görsel doğrulama gerekiyorsa Chrome DevTools / Playwright MCP ile dev'i (`192.168.1.78:8085`) aç (develop'i servis eder; lokal değişiklik yansımaz).
+3. **Backend wiring (TDD-First):** Yukarıdaki "Development Workflow" sırası — RED→GREEN.
+   - Manager/Interface + FluentValidation + LogicRunner pipeline + çift loglama (salt-okuma raporlarda read-path log istisnası; **mutasyon** aksiyonlarında tam pipeline + PRG + yetki).
+   - DB tarafı (aggregate/index/GroupBy/migration) → "Data-Access İş Bölümü" tetikleyicileri geçerli.
+   - **EF Mutasyon Persist** + **Migration** strict-rule'larına uy (bkz. Key Patterns).
+4. **Bağımsız review gate (atlanmaz):** İş bittiğinde ilgili reviewer skill'ini çağır —
+   `ecc:csharp-reviewer` (her C# değişikliği), `ecc:database-reviewer` (sorgu/şema/migration), `ecc:security-reviewer` (kullanıcı girdisi/yetki/mutasyon).
+5. **Token yönlendirme:** Mekanik/tekrarlı işi (boilerplate, bulk pattern) yerel Ollama `entegrasyon-coder`'a offload; Opus düşünmeyi mimari/şema kararına ayır.
+
+**Not (2026-06-12):** Çok-agent pipeline (designer→db→swe→qa→devops) rapor sayfaları için denendi —
+deploy-güvenli ama salt-okuma sayfasında sayfa-başı Testcontainers integration test + QA fix-loop
+**overkill + yavaş + pahalı** kaldı. Salt-okuma rapor sayfalarında ana oturumda manuel (bu rehber) +
+unit test + migration yeterli; tam QA/integration yalnız **mutasyonlu** işlerde. Pipeline workflow'ları
+`.claude/workflows/` altında duruyor (rafa kaldırıldı, gerekirse tekrar).
+
 ## Multi-Tenant Design (Strict Rule)
 
   Bu sistem ileride **multi-tenant** yapılacak. Tüm yeni geliştirmelerde tenant izolasyonunu göz önünde bulundur:
