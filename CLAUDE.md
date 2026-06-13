@@ -44,6 +44,8 @@ dotnet ef migrations add <MigrationName> -p Application/Entegrasyon.DataAccess -
 
 **E2E Testleri:** Uygulama genelde debug modda ayaktadır. E2E testleri doğrudan `dotnet test` ile çalıştırılabilir — ayrı bir docker-compose ortamı başlatmaya gerek yoktur. Testler varsayılan olarak `http://localhost:5099` adresine bağlanır (`E2E_BASE_URL` env var ile değiştirilebilir).
 
+**Push Hedefi (Strict Rule):** Bu repoda İKİ remote var — `origin` (GitHub) ve `gitea` (`ssh://git@192.168.1.78:2222/baturhan/Entegrasyon.git`). Dev deploy **Gitea runner** ile tetiklenir (`develop` push → otomatik dev deploy, `192.168.1.78:8085`). Bu yüzden push ederken **HER İKİ remote'a da gönder** — sadece `origin`'e push dev'i güncellemez. Komut: `git push origin develop && git push gitea develop`. Yeni branch/commit'i unutma, ikisine de git.
+
 ## Architecture
 
 Klasik katmanlı mimari — Entity → DataAccess → Business → MVC:
