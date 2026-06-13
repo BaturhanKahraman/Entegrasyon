@@ -339,7 +339,7 @@ public class CategoryController(
             return RedirectToAction(nameof(Index));
         }
 
-        ViewData.SetPageTitle("Kategori Duzenle");
+        ViewData.SetPageTitle("Kategori Düzenle");
         ViewData.SetActiveNav("categories");
         return View(result.Data);
     }

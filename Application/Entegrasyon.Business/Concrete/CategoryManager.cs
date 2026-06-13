@@ -81,10 +81,11 @@ namespace Entegrasyon.Business.Concrete
         public async Task<IResult> UpdateCategory(EditCategoryDto dto)
         {
             await using var dbContext = await contextFactory.CreateDbContextAsync();
+            await applicationLogManager.AddLog("Kategori güncelleniyor.", LogType.Category, LogAction.Update, dto);
             await fluentValidator.ValidateAndThrowAsync(dto);
             var dbCategory = await dbContext.Categories.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id);
             if (dbCategory == null)
-                return new ErrorDataResult<CategoryDetailDto>(null!, "Kategori bulunamadı.");
+                return new ErrorResult("Kategori bulunamadı.");
 
             if (dto.SuperCategoryId is > 0)
             {
@@ -125,6 +126,7 @@ namespace Entegrasyon.Business.Concrete
             }
             cache.Remove(CategoryListCacheKey);
             await hybridCache.RemoveByTagAsync("categories");
+            await applicationLogManager.AddLog(Messages.CategoryUpdated, LogType.Category, LogAction.Update, new { dto.Id });
             return new SuccessResult(Messages.CategoryUpdated);
         }
 
