@@ -11,6 +11,8 @@ namespace Entegrasyon.MVC.Infrastructure.DevMode;
 /// Yapilan isler:
 ///   1. BaseUrl → DevMode:WireMockUrl (tum marketplace'ler)
 ///   2. Trendyol SellerId → DevMode:TrendyolSellerId (dev DB'de null olabilir)
+///   3. Trendyol ApiKey/ApiSecret → bos ise dummy (WireMock dogrulamaz; IsCredentialComplete()
+///      true olsun diye — gercek creds varsa dokunulmaz)
 ///
 /// Gercek sandbox API'ye gitmek isteyen marketplace icin
 /// appsettings.Development.json'da RealApiMarketplaces listesine adi ekle —
@@ -67,13 +69,34 @@ public static class DevWireMockSeeder
                         mp.Name, previous, wireMockUrl);
                 }
 
-                if (!string.IsNullOrEmpty(testSellerId) &&
-                    mp.Id == MarketPlaceConstants.TrendyolMarketPlaceId &&
-                    mp.SellerId != testSellerId)
+                if (mp.Id == MarketPlaceConstants.TrendyolMarketPlaceId)
                 {
-                    mp.SellerId = testSellerId;
-                    updatedIds.Add(mp.Id);
-                    logger.LogInformation("DevWireMockSeeder: Trendyol SellerId → {SellerId}", testSellerId);
+                    // SellerId: config'ten gelirse uygula; yoksa bos ise dummy ata.
+                    if (!string.IsNullOrEmpty(testSellerId) && mp.SellerId != testSellerId)
+                    {
+                        mp.SellerId = testSellerId;
+                        updatedIds.Add(mp.Id);
+                        logger.LogInformation("DevWireMockSeeder: Trendyol SellerId → {SellerId}", testSellerId);
+                    }
+                    else if (string.IsNullOrEmpty(mp.SellerId))
+                    {
+                        mp.SellerId = "dev-seller";
+                        updatedIds.Add(mp.Id);
+                    }
+
+                    // ApiKey/ApiSecret: WireMock credential dogrulamaz; IsCredentialComplete() true
+                    // olsun (sayfa/gating dev'de gercekci davransin) diye bos ise dummy ata.
+                    // Gercek creds varsa DOKUNMA.
+                    if (string.IsNullOrEmpty(mp.ApiKey))
+                    {
+                        mp.ApiKey = configuration["DevMode:TrendyolApiKey"] ?? "dev-wiremock-key";
+                        updatedIds.Add(mp.Id);
+                    }
+                    if (string.IsNullOrEmpty(mp.ApiSecret))
+                    {
+                        mp.ApiSecret = configuration["DevMode:TrendyolApiSecret"] ?? "dev-wiremock-secret";
+                        updatedIds.Add(mp.Id);
+                    }
                 }
             }
 

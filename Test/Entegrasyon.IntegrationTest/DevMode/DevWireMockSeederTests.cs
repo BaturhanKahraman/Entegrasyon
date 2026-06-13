@@ -1,3 +1,4 @@
+using Entegrasyon.Entity;
 using Entegrasyon.IntegrationTest.Fixtures;
 using Entegrasyon.MVC.Infrastructure.DevMode;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,42 @@ public class DevWireMockSeederTests : IntegrationTestBase
         using var dbCheck = CreateDbContext();
         var trendyol = await dbCheck.MarketPlaces.AsNoTracking().FirstAsync(m => m.Name == "Trendyol");
         trendyol.SellerId.Should().Be("existing-seller");
+    }
+
+    [Fact]
+    public async Task SeedAsync_WhenWireMockConfigured_SetsDummyTrendyolCredentials_SoCredentialComplete()
+    {
+        await SeedMarketPlaceAsync(1, "Trendyol");
+
+        await DevWireMockSeeder.SeedAsync(Services, BuildConfig(trendyolSellerId: "999111"), NullLogger.Instance);
+
+        using var db = CreateDbContext();
+        var trendyol = await db.MarketPlaces.AsNoTracking().FirstAsync(m => m.Name == "Trendyol");
+
+        trendyol.ApiKey.Should().NotBeNullOrEmpty();
+        trendyol.ApiSecret.Should().NotBeNullOrEmpty();
+        trendyol.SellerId.Should().NotBeNullOrEmpty();
+        trendyol.IsCredentialComplete().Should().BeTrue("dev'de WireMock ile Trendyol tam yapılandırılmış sayılmalı");
+    }
+
+    [Fact]
+    public async Task SeedAsync_DoesNotOverwriteExistingTrendyolApiKey()
+    {
+        await SeedMarketPlaceAsync(1, "Trendyol");
+        using (var db = CreateDbContext())
+        {
+            var mp = await db.MarketPlaces.AsTracking().FirstAsync(m => m.Name == "Trendyol");
+            mp.ApiKey = "real-key";
+            mp.ApiSecret = "real-secret";
+            await db.SaveChangesAsync();
+        }
+
+        await DevWireMockSeeder.SeedAsync(Services, BuildConfig(), NullLogger.Instance);
+
+        using var dbCheck = CreateDbContext();
+        var trendyol = await dbCheck.MarketPlaces.AsNoTracking().FirstAsync(m => m.Name == "Trendyol");
+        trendyol.ApiKey.Should().Be("real-key");
+        trendyol.ApiSecret.Should().Be("real-secret");
     }
 
     private static IConfiguration BuildConfig(string? trendyolSellerId = null)
