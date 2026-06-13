@@ -1,4 +1,27 @@
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.AttributeSyncVm
+@{
+    var mappedCount = Model.Attributes.Count(a => a.IsMapped);
+    var totalCount = Model.Attributes.Count;
+    var pct = totalCount > 0 ? (int)(mappedCount * 100.0 / totalCount) : 0;
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row align-items-center">
+            <div class="col-auto">
+                <span class="text-secondary">Eşleme Durumu:</span>
+            </div>
+            <div class="col">
+                <div class="progress" style="height: 8px;">
+                    <div class="progress-bar bg-success" style="width: @(pct)%"></div>
+                </div>
+            </div>
+            <div class="col-auto">
+                <strong>@mappedCount / @totalCount</strong> özellik eşlendi
+            </div>
+        </div>
+    </div>
+</div>
 
 <div class="card">
     <div class="card-header">
