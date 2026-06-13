@@ -1,6 +1,7 @@
 using Entegrasyon.AdminPanel.Infrastructure.Data;
 using Entegrasyon.AdminPanel.Infrastructure.Data.MasterCatalog;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Helpers;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Categories;
@@ -210,12 +211,24 @@ public class MasterCatalogImportService(
                                     }
                                 }
 
-                                // Attribute değerleri
+                                // Attribute değerleri — kanonik normalize + attribute içi dedup.
+                                // CategoryAttributeValue unique index (CategoryAttributeId, NormalizedName)
+                                // gereği NormalizedName ŞART; iki master değer aynı kanona düşerse (örn "Sarı"/"sarı")
+                                // ikincisi atlanır, yoksa SaveChanges unique-violation ile patlar.
+                                var seenValueKeys = new HashSet<string>(StringComparer.Ordinal);
                                 foreach (var masterVal in masterAttr.Values)
                                 {
+                                    var normalizedValue = AttributeValueNormalizer.Normalize(masterVal.Name);
+                                    if (normalizedValue.Length == 0 || !seenValueKeys.Add(normalizedValue))
+                                    {
+                                        valuesSkipped++;
+                                        continue;
+                                    }
+
                                     var attrValue = new CategoryAttributeValue
                                     {
-                                        Name = masterVal.Name
+                                        Name = masterVal.Name,
+                                        NormalizedName = normalizedValue
                                     };
                                     categoryAttribute.CategoryAttributeValues.Add(attrValue);
                                     valuesImported++;
