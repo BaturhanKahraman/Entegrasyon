@@ -186,6 +186,136 @@ public class N11OrderImportTests : Entegrasyon.UnitTest.BaseTest
     }
 
     // -----------------------------------------------------------------------
+    // Test 5: Kargo (Shipment) bilgisi dolu gelince Order'a yazılmalı (T061)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ImportN11OrdersAsync_WhenShipmentPresent_ShouldMapCargoToOrder()
+    {
+        // Arrange
+        var existingOrders = new List<Order>();
+        var existingVariants = new List<ProductVariant>();
+
+        SetupDbSets(existingOrders, existingVariants, warehouseIds: []);
+
+        var capturedOrders = new List<Order>();
+        mockIntegrationDbContext
+            .Setup(x => x.Orders.Add(It.IsAny<Order>()))
+            .Callback<Order>(capturedOrders.Add);
+
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var shipment = new N11ShipmentDto("Sürat Kargo", "N11-TRK-98765", "SHP-001");
+        var dto = BuildN11OrderDto("N11-CARGO-001", shipment: shipment);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExecuteN11ImportAsync(
+            mockIntegrationDbContext.Object, [dto]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedOrders.Should().HaveCount(1);
+        capturedOrders[0].CargoProviderName.Should().Be("Sürat Kargo");
+        capturedOrders[0].CargoTrackingNumber.Should().Be("N11-TRK-98765");
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 6: Kargo (Shipment) yokken NRE olmamalı, alanlar null kalmalı
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ImportN11OrdersAsync_WhenShipmentNull_ShouldLeaveCargoFieldsNull()
+    {
+        // Arrange
+        var existingOrders = new List<Order>();
+        var existingVariants = new List<ProductVariant>();
+
+        SetupDbSets(existingOrders, existingVariants, warehouseIds: []);
+
+        var capturedOrders = new List<Order>();
+        mockIntegrationDbContext
+            .Setup(x => x.Orders.Add(It.IsAny<Order>()))
+            .Callback<Order>(capturedOrders.Add);
+
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var dto = BuildN11OrderDto("N11-NOCARGO-001", shipment: null);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExecuteN11ImportAsync(
+            mockIntegrationDbContext.Object, [dto]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedOrders.Should().HaveCount(1);
+        capturedOrders[0].CargoProviderName.Should().BeNull();
+        capturedOrders[0].CargoTrackingNumber.Should().BeNull();
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 7: İlk non-null Shipment item'ı alınmalı (precedence kararı)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ImportN11OrdersAsync_WithMultipleItems_ShouldUseFirstNonNullShipment()
+    {
+        // Arrange
+        var existingOrders = new List<Order>();
+        var existingVariants = new List<ProductVariant>();
+
+        SetupDbSets(existingOrders, existingVariants, warehouseIds: []);
+
+        var capturedOrders = new List<Order>();
+        mockIntegrationDbContext
+            .Setup(x => x.Orders.Add(It.IsAny<Order>()))
+            .Callback<Order>(capturedOrders.Add);
+
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var dto = BuildN11OrderDto("N11-MULTI-001");
+        dto = dto with
+        {
+            OrderItems =
+            [
+                new N11OrderItemDto
+                {
+                    Id = 1L, ProductSellerCode = "BARK-A", Quantity = 1, Price = 10m,
+                    Shipment = null
+                },
+                new N11OrderItemDto
+                {
+                    Id = 2L, ProductSellerCode = "BARK-B", Quantity = 1, Price = 10m,
+                    Shipment = new N11ShipmentDto("PTT Kargo", "FIRST-TRK", "SHP-B")
+                },
+                new N11OrderItemDto
+                {
+                    Id = 3L, ProductSellerCode = "BARK-C", Quantity = 1, Price = 10m,
+                    Shipment = new N11ShipmentDto("Yurtiçi", "SECOND-TRK", "SHP-C")
+                },
+            ]
+        };
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExecuteN11ImportAsync(
+            mockIntegrationDbContext.Object, [dto]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedOrders.Should().HaveCount(1);
+        capturedOrders[0].CargoProviderName.Should().Be("PTT Kargo");
+        capturedOrders[0].CargoTrackingNumber.Should().Be("FIRST-TRK");
+    }
+
+    // -----------------------------------------------------------------------
     // Polling service existence test
     // -----------------------------------------------------------------------
 
@@ -224,7 +354,8 @@ public class N11OrderImportTests : Entegrasyon.UnitTest.BaseTest
         decimal totalAmount = 299.90m,
         string barcode = "SKU-001",
         int quantity = 2,
-        decimal price = 149.95m) => new()
+        decimal price = 149.95m,
+        N11ShipmentDto? shipment = null) => new()
     {
         Id = 123456L,
         OrderNumber = orderNumber,
@@ -245,7 +376,8 @@ public class N11OrderImportTests : Entegrasyon.UnitTest.BaseTest
                 Quantity = quantity,
                 Price = price,
                 VatRate = 18m,
-                Status = "New"
+                Status = "New",
+                Shipment = shipment
             }
         ]
     };

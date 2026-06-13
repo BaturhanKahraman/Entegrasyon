@@ -239,6 +239,15 @@ public class OrderManager(
                 GrossAmount = dto.OrderAmount,
             };
 
+            // Kargo bilgisi item düzeyinde gelir; ilk non-null kargo bilgisini al
+            var cargo = dto.Items?.Select(i => i.Cargo).FirstOrDefault(c => c is not null);
+            if (cargo is not null)
+            {
+                order.CargoProviderName = cargo.CompanyName;
+                order.CargoTrackingNumber = cargo.TrackingNumber;
+                order.CargoTrackingLink = cargo.TrackingUrl;
+            }
+
             // Kargo adresi
             if (dto.ShipmentAddress is not null)
             {
@@ -375,6 +384,14 @@ public class OrderManager(
                 CustomerLastName = dto.Buyer?.LastName,
                 CustomerEmail = dto.Buyer?.Email,
             };
+
+            // Kargo bilgisi item düzeyinde gelir; ilk non-null shipment bilgisini al
+            var shipment = dto.OrderItems.Select(i => i.Shipment).FirstOrDefault(s => s is not null);
+            if (shipment is not null)
+            {
+                order.CargoProviderName = shipment.CompanyName;
+                order.CargoTrackingNumber = shipment.TrackingNumber;
+            }
 
             // Adresler
             if (dto.BillingAddress is not null)

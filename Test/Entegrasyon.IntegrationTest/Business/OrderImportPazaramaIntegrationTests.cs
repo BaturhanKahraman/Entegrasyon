@@ -103,7 +103,8 @@ public class OrderImportPazaramaIntegrationTests : IntegrationTestBase
         long orderNumber,
         string? barcode = "PZR-BC-001",
         int quantity = 1,
-        string? customerName = "Ahmet Yilmaz")
+        string? customerName = "Ahmet Yilmaz",
+        PazaramaCargoDto? cargo = null)
         => new(
             OrderId: Guid.NewGuid().ToString(),
             OrderNumber: orderNumber,
@@ -143,7 +144,7 @@ public class OrderImportPazaramaIntegrationTests : IntegrationTestBase
                     DiscountAmount: null,
                     DiscountDescription: null,
                     TaxIncluded: true,
-                    Cargo: null,
+                    Cargo: cargo,
                     Product: new PazaramaOrderProductDto(
                         ProductId: "ext-prod-1",
                         Name: "Test Urun",
@@ -265,6 +266,33 @@ public class OrderImportPazaramaIntegrationTests : IntegrationTestBase
         {
             await dbContext.Database.ExecuteSqlRawAsync("SELECT pg_advisory_unlock({0})", 2005);
         }
+    }
+
+    [Fact]
+    public async Task ImportPazaramaOrders_ShouldPersistCargoInfo()
+    {
+        // Arrange — kargo bilgisi dolu sipariş (T061)
+        var (orderManager, scope) = GetScopedService<IOrderManager>();
+        using var _ = scope;
+
+        var cargo = new PazaramaCargoDto(
+            CompanyName: "Yurtici Kargo",
+            TrackingNumber: "PZR-TRK-5050",
+            TrackingUrl: "https://kargo.test/PZR-TRK-5050");
+        var orders = new List<PazaramaOrderDto> { BuildPazaramaOrder(5050, cargo: cargo) };
+
+        // Act
+        var result = await orderManager.ImportPazaramaOrdersAsync(orders);
+
+        // Assert — DB'den tekrar okuyup persist'i dogrula (no-tracking kurali)
+        result.Success.Should().BeTrue(result.Message);
+
+        using var dbContext = CreateDbContext();
+        var order = await dbContext.Orders.FirstAsync(o => o.OrderNumber == "5050" && o.MarketPlaceId == 5);
+
+        order.CargoProviderName.Should().Be("Yurtici Kargo");
+        order.CargoTrackingNumber.Should().Be("PZR-TRK-5050");
+        order.CargoTrackingLink.Should().Be("https://kargo.test/PZR-TRK-5050");
     }
 
     [Fact]

@@ -185,6 +185,128 @@ public class PazaramaOrderImportTests : Entegrasyon.UnitTest.BaseTest
     }
 
     // -----------------------------------------------------------------------
+    // Test 5: Kargo bilgisi dolu gelince Order'a yazılmalı (T061)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ImportPazaramaOrdersAsync_WhenCargoPresent_ShouldMapCargoToOrder()
+    {
+        // Arrange
+        var existingOrders = new List<Order>();
+        var existingVariants = new List<ProductVariant>();
+
+        SetupDbSets(existingOrders, existingVariants);
+
+        var capturedOrders = new List<Order>();
+        mockIntegrationDbContext
+            .Setup(x => x.Orders.Add(It.IsAny<Order>()))
+            .Callback<Order>(capturedOrders.Add);
+
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var cargo = new PazaramaCargoDto(
+            CompanyName: "Yurtiçi Kargo",
+            TrackingNumber: "PAZ-TRK-12345",
+            TrackingUrl: "https://kargo.test/PAZ-TRK-12345");
+        var dto = BuildPazaramaOrderDto(55555555L, cargo: cargo);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExecutePazaramaImportAsync(
+            mockIntegrationDbContext.Object, [dto]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedOrders.Should().HaveCount(1);
+        capturedOrders[0].CargoProviderName.Should().Be("Yurtiçi Kargo");
+        capturedOrders[0].CargoTrackingNumber.Should().Be("PAZ-TRK-12345");
+        capturedOrders[0].CargoTrackingLink.Should().Be("https://kargo.test/PAZ-TRK-12345");
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 6: Kargo bilgisi yokken (Cargo=null) NRE olmamalı, alanlar null kalmalı
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ImportPazaramaOrdersAsync_WhenCargoNull_ShouldLeaveCargoFieldsNull()
+    {
+        // Arrange
+        var existingOrders = new List<Order>();
+        var existingVariants = new List<ProductVariant>();
+
+        SetupDbSets(existingOrders, existingVariants);
+
+        var capturedOrders = new List<Order>();
+        mockIntegrationDbContext
+            .Setup(x => x.Orders.Add(It.IsAny<Order>()))
+            .Callback<Order>(capturedOrders.Add);
+
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var dto = BuildPazaramaOrderDto(66666666L, cargo: null);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExecutePazaramaImportAsync(
+            mockIntegrationDbContext.Object, [dto]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedOrders.Should().HaveCount(1);
+        capturedOrders[0].CargoProviderName.Should().BeNull();
+        capturedOrders[0].CargoTrackingNumber.Should().BeNull();
+        capturedOrders[0].CargoTrackingLink.Should().BeNull();
+    }
+
+    // -----------------------------------------------------------------------
+    // Test 7: İlk non-null item'ın kargo bilgisi alınmalı (precedence kararı)
+    // -----------------------------------------------------------------------
+
+    [Fact]
+    public async Task ImportPazaramaOrdersAsync_WithMultipleItems_ShouldUseFirstNonNullCargo()
+    {
+        // Arrange
+        var existingOrders = new List<Order>();
+        var existingVariants = new List<ProductVariant>();
+
+        SetupDbSets(existingOrders, existingVariants);
+
+        var capturedOrders = new List<Order>();
+        mockIntegrationDbContext
+            .Setup(x => x.Orders.Add(It.IsAny<Order>()))
+            .Callback<Order>(capturedOrders.Add);
+
+        mockIntegrationDbContext
+            .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(1);
+
+        var firstCargo = new PazaramaCargoDto("Aras Kargo", "FIRST-TRK", "https://kargo.test/FIRST");
+        var secondCargo = new PazaramaCargoDto("MNG Kargo", "SECOND-TRK", "https://kargo.test/SECOND");
+        var dto = BuildPazaramaOrderDtoWithItems(77777777L,
+        [
+            BuildPazaramaItem("ITEM-A", "BARK-A", cargo: null),
+            BuildPazaramaItem("ITEM-B", "BARK-B", cargo: firstCargo),
+            BuildPazaramaItem("ITEM-C", "BARK-C", cargo: secondCargo),
+        ]);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.ExecutePazaramaImportAsync(
+            mockIntegrationDbContext.Object, [dto]);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        capturedOrders.Should().HaveCount(1);
+        capturedOrders[0].CargoProviderName.Should().Be("Aras Kargo");
+        capturedOrders[0].CargoTrackingNumber.Should().Be("FIRST-TRK");
+        capturedOrders[0].CargoTrackingLink.Should().Be("https://kargo.test/FIRST");
+    }
+
+    // -----------------------------------------------------------------------
     // Yardımcı metodlar
     // -----------------------------------------------------------------------
 
@@ -211,7 +333,18 @@ public class PazaramaOrderImportTests : Entegrasyon.UnitTest.BaseTest
         decimal orderAmount = 299.99m,
         string barcode = "PAZ-SKU-001",
         int quantity = 1,
-        decimal salePrice = 299.99m) => new(
+        decimal salePrice = 299.99m,
+        PazaramaCargoDto? cargo = null) => BuildPazaramaOrderDtoWithItems(
+            orderNumber,
+            [BuildPazaramaItem("ITEM-001", barcode, orderStatus, quantity, salePrice, cargo)],
+            orderStatus,
+            orderAmount);
+
+    private static PazaramaOrderDto BuildPazaramaOrderDtoWithItems(
+        long orderNumber,
+        List<PazaramaOrderItemDto> items,
+        int orderStatus = 1,
+        decimal orderAmount = 299.99m) => new(
             OrderId: "ORD-" + orderNumber,
             OrderNumber: orderNumber,
             OrderDate: "2024-01-15",
@@ -253,34 +386,39 @@ public class PazaramaOrderImportTests : Entegrasyon.UnitTest.BaseTest
                 TaxNumber: null,
                 TaxOffice: null,
                 IsEInvoiceObliged: null),
-            Items:
-            [
-                new PazaramaOrderItemDto(
-                    OrderItemId: "ITEM-001",
-                    OrderItemStatus: orderStatus,
-                    ShipmentCode: null,
-                    ShipmentCost: null,
-                    DeliveryType: 1,
-                    DeliveryDetail: null,
-                    Quantity: quantity,
-                    ListPrice: new PazaramaMoneyDto(salePrice, (int)salePrice, salePrice.ToString(), "TRY"),
-                    SalePrice: new PazaramaMoneyDto(salePrice, (int)salePrice, salePrice.ToString(), "TRY"),
-                    TaxAmount: null,
-                    ShipmentAmount: null,
-                    TotalPrice: null,
-                    DiscountAmount: null,
-                    DiscountDescription: null,
-                    TaxIncluded: true,
-                    Cargo: null,
-                    Product: new PazaramaOrderProductDto(
-                        ProductId: "PROD-001",
-                        Name: "Test Ürünü",
-                        Title: "Test Ürünü Başlığı",
-                        Url: null,
-                        ImageUrl: null,
-                        VariantOptionDisplay: null,
-                        StockCode: barcode,
-                        Code: barcode,
-                        VatRate: 18))
-            ]);
+            Items: items);
+
+    private static PazaramaOrderItemDto BuildPazaramaItem(
+        string orderItemId,
+        string barcode,
+        int orderStatus = 1,
+        int quantity = 1,
+        decimal salePrice = 299.99m,
+        PazaramaCargoDto? cargo = null) => new(
+            OrderItemId: orderItemId,
+            OrderItemStatus: orderStatus,
+            ShipmentCode: null,
+            ShipmentCost: null,
+            DeliveryType: 1,
+            DeliveryDetail: null,
+            Quantity: quantity,
+            ListPrice: new PazaramaMoneyDto(salePrice, (int)salePrice, salePrice.ToString(), "TRY"),
+            SalePrice: new PazaramaMoneyDto(salePrice, (int)salePrice, salePrice.ToString(), "TRY"),
+            TaxAmount: null,
+            ShipmentAmount: null,
+            TotalPrice: null,
+            DiscountAmount: null,
+            DiscountDescription: null,
+            TaxIncluded: true,
+            Cargo: cargo,
+            Product: new PazaramaOrderProductDto(
+                ProductId: "PROD-001",
+                Name: "Test Ürünü",
+                Title: "Test Ürünü Başlığı",
+                Url: null,
+                ImageUrl: null,
+                VariantOptionDisplay: null,
+                StockCode: barcode,
+                Code: barcode,
+                VatRate: 18));
 }

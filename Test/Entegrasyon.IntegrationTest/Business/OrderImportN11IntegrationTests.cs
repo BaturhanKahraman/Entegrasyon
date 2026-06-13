@@ -99,7 +99,9 @@ public class OrderImportN11IntegrationTests : IntegrationTestBase
         await dbContext.SaveChangesAsync();
     }
 
-    private static N11OrderDto BuildN11Order(long id, string orderNumber, string? barcode = "N11-BC-001", int quantity = 1)
+    private static N11OrderDto BuildN11Order(
+        long id, string orderNumber, string? barcode = "N11-BC-001", int quantity = 1,
+        N11ShipmentDto? shipment = null)
         => new()
         {
             Id = id,
@@ -119,7 +121,8 @@ public class OrderImportN11IntegrationTests : IntegrationTestBase
                     ProductSellerCode = barcode,
                     ProductName = "Test Urun",
                     Quantity = quantity,
-                    Price = 200
+                    Price = 200,
+                    Shipment = shipment
                 }
             ]
         };
@@ -233,6 +236,29 @@ public class OrderImportN11IntegrationTests : IntegrationTestBase
         {
             await dbContext.Database.ExecuteSqlRawAsync("SELECT pg_advisory_unlock({0})", 2002);
         }
+    }
+
+    [Fact]
+    public async Task ImportN11Orders_ShouldPersistCargoInfo()
+    {
+        // Arrange — kargo (shipment) bilgisi dolu sipariş (T061)
+        var (orderManager, scope) = GetScopedService<IOrderManager>();
+        using var _ = scope;
+
+        var shipment = new N11ShipmentDto("Surat Kargo", "N11-TRK-3050", "SHP-3050");
+        var orders = new List<N11OrderDto> { BuildN11Order(3050, "N11-CARGO-001", shipment: shipment) };
+
+        // Act
+        var result = await orderManager.ImportN11OrdersAsync(orders);
+
+        // Assert — DB'den tekrar okuyup persist'i dogrula (no-tracking kurali)
+        result.Success.Should().BeTrue(result.Message);
+
+        using var dbContext = CreateDbContext();
+        var order = await dbContext.Orders.FirstAsync(o => o.OrderNumber == "N11-CARGO-001" && o.MarketPlaceId == 2);
+
+        order.CargoProviderName.Should().Be("Surat Kargo");
+        order.CargoTrackingNumber.Should().Be("N11-TRK-3050");
     }
 
     [Fact]
