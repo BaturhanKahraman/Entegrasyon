@@ -19,8 +19,7 @@
       "10. Ürün Export ve Fiyat Export için de aynı tarih filtresi akışını tekrarla — her ikisinde de daralma çalışmalı"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T001"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Depo (BranchOffice) Yönetimi — Tam CRUD + Stok Devri + Marketplace Etkisi",
@@ -42,8 +41,7 @@
       "IsDefaultMarketPlaceStock olan depo silinirken yeni default seçimi istediğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T002"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Marketplace Adapter Pattern Migration",
@@ -54,8 +52,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T003"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Finbuckle MultiTenant Migration",
@@ -66,8 +63,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T004"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": ".NET Aspire Orchestration Migration",
@@ -78,8 +74,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T005"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Scrutor Auto-Scan DI Registration",
@@ -90,8 +85,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T006"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "WireMock.Net Marketplace Contract Tests",
@@ -102,8 +96,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T007"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Mapperly Migration (Mapster → Mapperly)",
@@ -114,8 +107,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T008"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Admin Auth Improvements (Lockout + bcrypt + 2FA + Reset Token)",
@@ -126,8 +118,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T009"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "OpenTelemetry + Aspire Dashboard (Faz 1 — Auto-instrumentation)",
@@ -138,8 +129,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T010"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "All imports columns should be assignable by user",
@@ -150,37 +140,34 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T011"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "e2e category add full path",
     "description": "Kategori ekleme E2E testi — UI'dan DB'ye tam akış + marketplace sync.",
     "status": "deferred",
     "notes": "Playwright E2E — uygulama debug modda ayakta olmalı. Kategori wizard değişti, test buna göre yazılacak.",
-    "priority": "high",
+    "priority": "High",
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T012"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "e2e product add full path",
     "description": "Ürün ekleme E2E testi — UI'dan DB'ye tam akış + marketplace sync.",
     "status": "deferred",
     "notes": "Playwright E2E — uygulama debug modda ayakta olmalı.",
-    "priority": "high",
+    "priority": "High",
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T013"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Authentication Bug fix",
     "description": "Everytime we refresh the page, the user gets logged out. We need to fix this issue to ensure a better user experience.",
-    "status": "done",
+    "status": "completed",
     "notes": "Root cause: @attribute [Authorize] in root _Imports.razor applied to App.razor, causing HTTP-level 302 redirect before Blazor starts. Fix: moved [Authorize] from root _Imports.razor to Features/_Imports.razor so only page components are protected, not the App shell. AuthorizeRouteView + RedirectToLogin still enforces auth at Blazor level.",
     "priority": "critical",
     "plan": false,
@@ -190,20 +177,18 @@
       "Observe whether the user remains logged in or gets logged out."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T014"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Prepare the project for local development and testing",
     "description": "We have many external dependencies because of the nature of the project. We need to set up a local development environment that allows us to test the project without relying on external services. It seems for local developments it is safe for now howevery for these external marketplaces, they never trigger the webhooks or send a order in our system. So testing orders would be a problem. We need to find a way to simulate these interactions in our local environment.",
-    "status": "done",
+    "status": "completed",
     "notes": "Arastirma sonucu: Proje zaten kapsamli bir mock altyapisina sahip. Tum marketplace'ler icin UseMock konfigurasyonu mevcut (varsayilan true): Trendyol:UseMock, Hepsiburada:UseMock, N11:UseMock, Pazarama:UseMock, Amazon:UseMock, Ciceksepeti:UseMock, Pttavm:UseMock, Temu:UseMock, EInvoice:UseMock. Her marketplace icin MockXxxOrderService, MockXxxProductService gibi mock implementasyonlar var. DI'da ApplicationDependencyExtension.cs icinde configuration'a gore otomatik swap yapiliyor. Integration testleri Testcontainers+Respawn ile calisiyor. Trendyol webhook endpoint'i /api/trendyol/webhook'ta mevcut. Background servisler TenantAwarePollingService base class kullanarak multi-tenant polling yapiyor. Ek gelistirme: Webhook test endpointleri (diger marketplace'ler icin) ve mock order data zenginlestirme ileride yapilab ilir.",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T015"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Import Export Functionality",
@@ -214,8 +199,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T016"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Matching process optimization",
@@ -226,20 +210,18 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T017"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Bugfix: Review page closes the sidebar menu",
     "description": "When a user presses the \"degerlendir\" button on the side bar, the menu in the side bar just closes. We need to fix this.",
-    "status": "done",
+    "status": "completed",
     "notes": "Root cause: NavMenu.razor.cs sectionRoutes dictionary storefront section sadece 'settings/storefront' route'unu iceriyordu ama /storefront/reviews gibi URL'ler 'settings/' prefix'i olmadan basliyordu. UpdateMenuStateByLocation() tum section'lari kapatip hicbirini tekrar acamiyordu. Fix: storefront section'a 'storefront' route eklendi. Ayni sorun /admin/notifications icin de users section'a 'admin/notifications' eklenerek duzeltildi.",
     "priority": "low",
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T018"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Turkish chars",
@@ -250,8 +232,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T019"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "In category matching there is only one attribute matching",
@@ -262,8 +243,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T020"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Brand matching needs a UX",
@@ -274,25 +254,23 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T021"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "User management settings needs a UX",
     "description": "We had a user management page. unfortunetly I can not see it now. It may be because of the admin user hasn't got any permissions or we have deleted it from sidebar menu. We need to find a way to make it accessible for the admin user and design a user-friendly interface for the user management page that allows admins to easily manage users, assign roles and permissions, and perform other user-related tasks. This could include features such as search functionality, filters, and an intuitive layout that makes it easy for admins to navigate and complete their tasks efficiently.",
-    "status": "done",
+    "status": "completed",
     "notes": "Root cause: AuthService.LoginAsync missing .ThenInclude(r => r.RoleClaims) — permissions were never loaded for non-Admin roles. Fixed login permission loading, RoleService AddRole/UpdateRole now saves permission claims. UX improvements: role column in user list, QuickFilter search, multi-role selection in UserEdit, active/passive toggle from list.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T022"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Permission restrictions for everything in the system",
     "description": "Users who do not have any permission for the page also they still can not see the menu item for that page. We need to implement permission restrictions for all pages and features in the system to ensure that users only have access to the functionalities that they are authorized to use. This will help improve security and prevent unauthorized access to sensitive information or critical features. We should also consider implementing a role-based access control system that allows us to easily manage permissions and assign them to different user roles based on their responsibilities and needs within the organization. But in the future we can sell them module by module maybe we might show them as passive options. This will allow users to see the available features and understand what they are missing out on, which could potentially encourage them to upgrade their permissions or purchase additional modules. However, we need to ensure that the passive options are clearly marked as unavailable and do not cause confusion for users who do not have access to those features. so in this case for specific roles we can show the menu items but they will be passive and when user clicks on them, we can show a pop-up that explains why they can not access that page and what they need to do to gain access. This will help improve the user experience and provide clear guidance for users who may be interested in accessing additional features or functionalities within the system. For other specific roles the menu items and the feature itself will not be visible. This will help ensure that users only see the options that are relevant to their role and prevent confusion or frustration for users who may be overwhelmed by too many options or features that they do not have access to.",
-    "status": "done",
+    "status": "completed",
     "notes": "PermissionGuardedNavLink component (hidden/disabled/upgrade-popup modes). All ~35 NavMenu items protected with permission-based AuthorizeView. 48 page files got [Authorize(Policy=...)] attributes. UpgradePromptDialog for tenant feature upsell. AccessDenied fallback page. 8 new tests (bUnit + security).",
     "priority": "medium",
     "plan": true,
@@ -303,32 +281,29 @@
       "Log in with a user account that has full permissions and verify that all menu items and features are visible and accessible."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T023"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Investigation: Notification for the users",
     "description": "Users can normally take notifications. We should consider implementing a notification management system that allows users to customize their notification preferences, such as choosing which types of notifications they want to receive and how they want to receive them (e.g., email, in-app, SMS). Additionally, we should ensure that the notification system is reliable and delivers notifications in a timely manner to keep users informed about important updates and events within the system. Notifications can be sent to a single user, a group of users, or all users in the system. This will allow us to effectively communicate important information and updates to the relevant users and ensure that they are aware of any changes or actions that may require their attention. We should also consider implementing a notification history feature that allows users to view their past notifications and manage them as needed. This will help users keep track of their notifications and ensure that they do not miss any important information or updates.",
-    "status": "done",
+    "status": "completed",
     "notes": "3 fazli plan implement edildi: Faz 1 — Sender hata izolasyonu (Task.WhenAll bug fix), EmailSender SMTP implementasyonu (StorefrontEmailService pattern), per-user bildirim dismiss (NotificationsUsers.IsDismissed), INotificationSender DI kayit duzeltmesi. Faz 2 — Admin bildirim yonetimi sayfasi (/admin/notifications), SendNotificationDialog (role/sube/tum Kullanıcılar hedefleme), NotificationRecipientResolver, AppPermissions.Notifications.Create/Manage. Faz 3 — SMS stub (SmsSender, throw etmez), NotificationSetting'e SMS alanlari, SenderType.Sms. 23 yeni unit test, 1361 toplam test gecti. Migration: AddNotificationDismissAndSmsFields.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T024"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Realtime chat system for users for our blazor system.",
     "description": "We should consider implementing a real-time chat system that allows users to communicate with each other within our Blazor system. This could be particularly useful for collaboration and support purposes, allowing users to easily ask questions, share information, and provide assistance to one another. The chat system should be designed to be user-friendly and intuitive, with features such as message notifications, typing indicators, and the ability to send attachments or links. Additionally, we should ensure that the chat system is secure and properly integrated with our existing blazor system. This will help enhance the overall user experience and foster a sense of community and collaboration among our users.",
-    "status": "done",
+    "status": "completed",
     "notes": "Tam kapsamli realtime chat sistemi implement edildi. Entity: ChatConversation (Direct/Group), ChatMessage (Text/System/Link + reply), ChatParticipant (LastReadAt okunmamis takibi), ChatMessageReadReceipt. Business: ChatManager (7 metot, 3-adim pipeline), SendChatMessageDtoValidator. Altyapi: Ayri ChatHub (/ChatHub, typing indicator SignalR group), EventChannel + ChatEventPublisher + InProcessChatDeliveryService, UserOnlineStatusTracker. UI: /chat sayfasi (iki panel), ChatButton (AppBar unread badge), NewChatDialog, mesaj balonlari, cursor-based pagination. Migration: 4 tablo + indexler DB'ye uygulandı.",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T025"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "N11 SOAP → REST API Migration",
@@ -339,8 +314,7 @@
     "plan": true,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T026"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "production-audit.md'yi koda göre güncelle (stale-audit fix)",
@@ -356,8 +330,7 @@
       "Kalan gerçek gap'leri tasks.json'a taşı"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T027"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Sipariş → Kargo Etiketi Oluşturma (merchant panel akışı)",
@@ -374,9 +347,7 @@
       "Integration test: kargo servisi mock ile akış"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T028",
-    "spec": "docs/superpowers/specs/2026-06-10-order-fulfillment-flow-design.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Trendyol E-Fatura: Toplu Gönderim UI + Durum Takibi",
@@ -392,8 +363,7 @@
       "Integration test mock ile"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T029"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Storefront E2E: Müşteri Yolculuğu (kayıt→ürün→sepet→ödeme→sipariş)",
@@ -411,8 +381,7 @@
       "CI'da geçer"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T030"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Dashboard: Kanal Bazlı Satış Özeti Widget'ları",
@@ -429,8 +398,7 @@
       "Integration test: aggregation N+1 içermez"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T031"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Integration test altyapısı: ApplicationStarted Roles race (42P01) — tüm integration testleri kırıyor",
@@ -446,8 +414,7 @@
       "Seeder yine de admin izinlerini doğru kuruyor"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T032"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Testcontainers uzak Docker: Docker.DotNet ssh:// desteklemiyor → tcp/socat proxy",
@@ -462,8 +429,7 @@
       "BulkExportHttpTests yeşil"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T033"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Multi-tenant provisioning: PostgresOptimizations migration fresh DB'de index üretmiyor",
@@ -480,8 +446,7 @@
       "Fix sonrası yeni tenant DB'sinde tüm optimizasyon index'leri + doğru tipler (BRIN) var"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T034"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Stage/Prod CI-CD deploy onarımı: MVC stage 2 aydır kırık (DB host + network + ADMIN_DB_CONNECTION)",
@@ -499,8 +464,7 @@
       "tenant çözümü + ürün listesi geliyor"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T035"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "M1 — Matview refresh ölçeklenmesi (multi-tenant DB-per-tenant): koşullu/idle-skip refresh",
@@ -516,9 +480,7 @@
       "pg_stat_activity / connection sayısının refresh penceresinde düştüğünü gözle"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T036",
-    "code": "M1"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "M2 — Connection pool / PgBouncer planı (DB-per-tenant ölçek)",
@@ -535,9 +497,7 @@
       "Önerilen ayarlarla yük altında 'too many connections' alınmadığını doğrula"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T037",
-    "code": "M2"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "M3 — ReportManager.GetInventoryReportAsync: in-memory agregasyon → SQL (paginasyon)",
@@ -553,9 +513,7 @@
       "Pagination eklendiyse sayfa sayfa doğru satır geldiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T038",
-    "code": "M3"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "M4 — OrderManager.GetPreviouslyPurchasedProductsAsync: SQL SUM projeksiyonu",
@@ -569,9 +527,7 @@
       "Üretilen SQL'de stok toplamının server-side SUM olduğunu (ToQueryString) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T039",
-    "code": "M4"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "M5 — OrderManager marketplace import döngüsü: context/admin-id batch scope",
@@ -586,9 +542,7 @@
       "Stok düşümü ve bildirimlerin eski davranışla birebir aynı olduğunu doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T040",
-    "code": "M5"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "WireMock T1 — Dev ortamında WireMock'u DEFAULT açık yap (offline pazaryeri mock)",
@@ -606,9 +560,7 @@
       "Prod/stage ortam değişkeniyle başlatınca seeder'ın HİÇ çalışmadığını (log'da seeder satırı yok) doğrula"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T041",
-    "code": "T1"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "WireMock T2 — Eksik mock mapping'lerini tamamla (kargo, e-fatura, temu, iade/QnA)",
@@ -628,9 +580,7 @@
       "VALIDATION-ERROR: Zorunlu alanı eksik / formatı yanlış bir ürün gönder → mock'ın gerçek API gibi 400 + dokümandaki hata kodu/gövdesi döndürdüğünü ve uygulamanın bu hatayı kullanıcıya gösterdiğini doğrula"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T042",
-    "code": "T2"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "WireMock T3 — Background polling kill-switch / WireMock yoksa gerçek API'ye gitme guard",
@@ -647,9 +597,7 @@
       "Switch/config ile polling kapatılıp açıldığında HostedService'lerin buna uyduğunu doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T043",
-    "code": "T3"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "WireMock T4 — Stateful mock davranışı (gönderilen ürün/stok/sipariş mock'ta yansısın)",
@@ -667,9 +615,7 @@
       "Tüm bu akış boyunca hiçbir gerçek pazaryeri API'sine çıkış yapılmadığını (:8080 __admin/requests) doğrula"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T044",
-    "code": "T4"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "E1 — Pazaryeri-bazlı açıklama/başlık TRANSFORM (HTML↔düz metin) + önizlemeli gönderim",
@@ -687,10 +633,7 @@
       "Düz metin açıklamalı bir ürünü Pazarama'ya gönder → minimal <p>/<br> sarmalama yapıldığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T045",
-    "code": "E1",
-    "spec": "docs/superpowers/specs/2026-06-10-per-marketplace-product-customization-design.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "E2 — Pazaryeri kural motoru (kod/config) — magic-number limitleri merkezîleştir + uyarı",
@@ -707,9 +650,7 @@
       "Yeni bir pazaryeri kuralının tek yerde tanımlanıp tüm mapper'a yansıdığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T046",
-    "code": "E2"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "E6 — Amazon variant fiyat override bug-fix (override sessizce yok sayılıyor)",
@@ -724,9 +665,7 @@
       "Override girilmemiş variant için orijinal fiyatın gittiğini (regresyon yok) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T047",
-    "code": "E6"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "E5 — Per-marketplace override/düzenleme UI'ını 8 pazaryerine yay (şu an sadece Trendyol)",
@@ -743,9 +682,7 @@
       "Mevcut Trendyol gönderiminin bozulmadığını (regresyon) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T048",
-    "code": "E5"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "E3/E4 [V2] — Görsel + attribute per-marketplace override (ertelendi)",
@@ -760,8 +697,7 @@
       "Override girilmemişte ürünün kendi görsel/attribute değerlerinin gittiğini (regresyon yok) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T049"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "S1 — Storefront sipariş iptali stok event'i KOPUK (pazaryerlerine yansımıyor)",
@@ -778,10 +714,7 @@
       "İptal sonrası pazaryerindeki stoğun arttığını (eski düşük değerde kalmadığını) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T050",
-    "code": "S1",
-    "spec": "docs/superpowers/specs/2026-06-10-multi-platform-sync-design.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "S2 — Storefront checkout overselling/stoksuz-sipariş bug'ı (atomik sonuç yok sayılıyor + depo hardcoded)",
@@ -799,9 +732,7 @@
       "Normal stoklu satışta regresyon olmadığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T051",
-    "code": "S2"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "S3 — Amazon stok/fiyat sync implementasyonu YOK (feed gönderimi TODO)",
@@ -817,9 +748,7 @@
       "Fiyat değişikliğinin de feed'e yansıdığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T052",
-    "code": "S3"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "S4 — Temu stok/fiyat sync servisi YOK",
@@ -835,9 +764,7 @@
       "Fiyat değişikliğinin de yansıdığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T053",
-    "code": "S4"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "S5 — Fiyat-only değişiklik anlık event yaymıyor (sadece polling ile yansıyor)",
@@ -853,9 +780,7 @@
       "Stok değişikliğinin event davranışında regresyon olmadığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T054",
-    "code": "S5"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "D1 — Pazaryerinden yayından kaldırma akışı KOPUK (Trendyol endpoint yok, Hepsiburada UI yok)",
@@ -872,10 +797,7 @@
       "Kaldırma sonrası UI'da durumun doğru gösterildiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T055",
-    "code": "D1",
-    "spec": "docs/superpowers/specs/2026-06-10-marketplace-product-editing-lifecycle-design.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "D2 — Hepsiburada + Pazarama içerik GÜNCELLEME servisi YOK (gönderilmiş ürün düzenlenemiyor)",
@@ -891,9 +813,7 @@
       "Güncellemenin mükerrer ürün oluşturmadığını (mevcut listing güncellendi) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T056",
-    "code": "D2"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "D3 — İçerik değişince otomatik pazaryeri güncelleme tetikleme YOK (elle senkron gerekiyor)",
@@ -909,13 +829,7 @@
       "Birden çok pazaryerine gönderilmiş üründe hepsinin güncellendiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T057",
-    "code": "D3",
-    "dependsOn": [
-      "T045",
-      "T056"
-    ]
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "D4 — Ürün arşivleme YAZMA aksiyonu yok (sadece okuma) + toplu yayından kaldırma yok",
@@ -931,9 +845,7 @@
       "Arşivlenen ürünün stok/fiyat sync'ten çıkarıldığını (gereksiz push olmadığını) doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T058",
-    "code": "D4"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "D5 — N11 title güncelleme + Pttavm gerçek-update tracing netleştir (kapsam denetimi)",
@@ -947,9 +859,7 @@
       "Pttavm'da gönderilmiş ürünü güncelle → mükerrer oluşmadan mevcut ürünün (ExternalProductId eşleşmesiyle) güncellendiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T059",
-    "code": "D5"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "F1 — Sipariş→fatura OTOMATİK tetikleme yok + müşteri tipine göre e-arşiv/e-fatura seçimi yok",
@@ -966,10 +876,7 @@
       "Taslak/onay akışı seçildiyse esnaf onaylamadan GİB'e gitmediğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T060",
-    "code": "F1",
-    "spec": "docs/superpowers/specs/2026-06-10-order-fulfillment-flow-design.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "F2 — N11 kargo bilgisi çekilmiyor + Pazarama cargo import'da kaydedilmiyor",
@@ -984,9 +891,7 @@
       "Trendyol kargo bilgisi çekiminin regresyona uğramadığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T061",
-    "code": "F2"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "F3 — Genel e-fatura GİB gönderimi placeholder + diğer pazaryeri invoice upload manuel",
@@ -1001,9 +906,7 @@
       "Gönderim hatasında durumun doğru raporlandığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T062",
-    "code": "F3"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "F4 — İade faturası YOK (SaleReturn'de Invoice ilişkisi yok)",
@@ -1018,13 +921,7 @@
       "İade tutarı/kalemlerinin orijinal faturayla tutarlı olduğunu doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T063",
-    "code": "F4",
-    "dependsOn": [
-      "T060",
-      "T062"
-    ]
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "F5 — Sipariş SLA/termin panosu YOK (geciken kargo = pazaryeri cezası)",
@@ -1040,9 +937,7 @@
       "Pazaryeri başına farklı SLA eşiklerinin uygulandığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T064",
-    "code": "F5"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "F6 — Toplu kargo etiketi + toplu fatura (rakip paritesi)",
@@ -1058,13 +953,7 @@
       "Kısmi başarısızlıkta (1 sipariş hatalı) diğerlerinin etkilenmediğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T065",
-    "code": "F6",
-    "dependsOn": [
-      "T028",
-      "T029"
-    ]
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "F8 — POS/fiziksel satış e-arşiv fişi YOK",
@@ -1079,12 +968,7 @@
       "Bireysel müşteride e-arşiv türünün doğru seçildiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T066",
-    "code": "F8",
-    "dependsOn": [
-      "T060"
-    ]
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "C1 — Repricing / rakip fiyat takibi (rakiplerin en güçlü silahı — bizde YOK)",
@@ -1101,9 +985,7 @@
       "Kural devre dışıyken otomatik güncelleme olmadığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T067",
-    "code": "C1"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "C2 — Maliyet/kâr-marjı bazlı dinamik fiyatlandırma (mevcut PricingRule statik oran)",
@@ -1119,9 +1001,7 @@
       "Platform-bazlı farklı marj stratejisinin uygulandığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T068",
-    "code": "C2"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "C3 — Set/Paket (Bundle/Kit) yönetimi (bizde YOK, Cin7/Linnworks standardı)",
@@ -1137,9 +1017,7 @@
       "Bundle'ın pazaryerine/storefront'a tek ürün olarak gittiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T069",
-    "code": "C3"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "C4 — Satın Alma Siparişi (Purchase Order) + min-stok uyarı + tedarikçi (bizde YOK)",
@@ -1155,9 +1033,7 @@
       "PO mal girişi yap → stoğun (IncreaseStockAtomic ile) arttığını ve event yayıldığını doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T070",
-    "code": "C4"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "C5 [LOW] — AI içerik üretimi (ürün açıklaması/görsel — Ollama/Claude)",
@@ -1173,8 +1049,7 @@
       "Esnafın üretilen metni düzenleyip kaydedebildiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T071"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "C6 [LOW] — B2B / toptan satış portalı (bizde YOK)",
@@ -1189,8 +1064,7 @@
       "Min sipariş miktarı altında sipariş engellendiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T072"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "C7 [LOW] — Pazaryeri reklam yönetimi (Trendyol/Amazon kampanya — bizde YOK)",
@@ -1204,8 +1078,7 @@
       "Kampanya performans/bütçe raporunun gösterildiğini doğrula"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T073"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kategori Detay Sayfası (`/categories/{id}`)",
@@ -1227,9 +1100,7 @@
       "10. 'Sil' butonuna tıkla, onay dialog'unu onayla — kategori silinmeli ve /categories'e redirect olunmalı"
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T074",
-    "spec": "docs/superpowers/specs/2026-06-11-category-detail-page.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Kategori Detay Sayfası — Header/Layout Polish (Ürünler Tarzı Hizalama)",
@@ -1248,8 +1119,7 @@
       "7. Sayfa tasarımını Products/Views/Index.cshtml referans alarak karşılaştır — genel stil tutarlı olmalı."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T075"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Ürün Detay — Storefront Ayarlarını Ayrı Sayfaya Taşı (/products/{id}/storefront)",
@@ -1270,9 +1140,7 @@
       "9. SEO slug alanına 'Türkçe Karakter Testi' gir → kayıt sonrası 'turkce-karakter-testi' normalize edilmeli."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T076",
-    "spec": "docs/superpowers/specs/2026-06-11-urun-detay-storefront-split.md"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Ürün Detay — Performans KPI Kartları + Header Redesign",
@@ -1291,8 +1159,7 @@
       "7. _Product360 partial sekmeleri hâlâ çalışıyor olmalı (Aktivite, Siparişler, Stok Hareketleri sekmelerine tıkla)."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T077"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Markalar Sayfası — Ürünler Tarzında Redesign",
@@ -1310,8 +1177,7 @@
       "6. Marka ekle modal'ı hâlâ açılıyor olmalı, form gönderimi çalışmalı."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T078"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "İade Yönetimi Sayfası — KPI Kartları + Ürünler Tarzında Redesign",
@@ -1329,8 +1195,7 @@
       "6. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T079"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Sipariş Hazırlama Sayfası — KPI Kartları + Ürünler Tarzında Redesign",
@@ -1347,8 +1212,7 @@
       "5. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T080"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kargo Takip Sayfası — KPI Kartları + Ürünler Tarzında Redesign",
@@ -1365,8 +1229,7 @@
       "5. Sayfa genel görünümü Ürünler sayfasıyla tutarlı olmalı."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T081"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Marketplace Sync — Eksik API Credential Durumunda Disabled Kart + Popover",
@@ -1387,9 +1250,7 @@
       "9. Unit test: IsCredentialComplete helper — trendyol-tam, trendyol-sellerId-eksik, oauth-tam, oauth-refreshToken-eksik, diger-tam senaryoları."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T082",
-    "spec": "docs/superpowers/specs/2026-06-11-marketplace-sync-credential-disabled.md"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Sidebar Kapsamlı Audit — Tüm Menü Sayfalarının Tasarım Durumu",
@@ -1404,8 +1265,7 @@
       "TL tabloyu inceleyip öncelik sırası belirler."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T083"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "POS Terminal — UX Spec + Redesign",
@@ -1429,9 +1289,7 @@
       "L. Mobil 768px: paneller dikey, barkod input tam genişlik, Satışı Tamamla erişilebilir."
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T084",
-    "spec": "docs/superpowers/specs/2026-06-11-pos-terminal-redesign.md"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Musteri Raporu - RFM Segmentasyon (VIP / Risk / Yeni etiketleri)",
@@ -1448,8 +1306,7 @@
       "Segmente gore filtre calismali."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T085"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Musteri Raporu - Cohort Analizi (Aylik musteri tutma orani)",
@@ -1464,8 +1321,7 @@
       "3. En az 2 sipariş olan müşteri varsa cohort satırının Size > 0 ve RetentionPct[0]=100 olduğunu kontrol et"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T086"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Musteri Raporu - Rapordan Direkt Indirim Kodu Gonder",
@@ -1483,8 +1339,7 @@
       "6. DiscountVouchers tablosunda o müşteriye bağlı yeni kupon kaydının oluştuğunu doğrula"
     ],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T087"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Musteri Raporu - Dormant Musteri Listesi (90+ gun gelmemis)",
@@ -1500,8 +1355,7 @@
       "Toplam harcamaya gore siralama calismali."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T088"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Iade Raporu - Nedensel Trend Grafigi",
@@ -1512,8 +1366,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T089"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Iade Raporu - Urun Bazli Iade Orani Uyarisi",
@@ -1529,8 +1382,7 @@
       "Urune tiklaninca urun detayina gitmeli."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T090"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Iade Raporu - Iade Maliyet Hesabi (Kargo + Surec)",
@@ -1541,8 +1393,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T091"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Iade Raporu - Tedarikciye Yuksek Iadeli Urun Bildirimi",
@@ -1553,8 +1404,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T092"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Vergi Raporu - KDV Beyani Ozeti (KDV Orani Bazli Tablo)",
@@ -1570,8 +1420,7 @@
       "Toplam satiri tum oranlarin toplamini gostermeli."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": true,
-    "id": "T093"
+    "addOrUpdateIntegrationTests": true
   },
   {
     "task": "Vergi Raporu - Donem Karsilastirmasi (Bu Ceyrek vs Gecen Ceyrek)",
@@ -1582,8 +1431,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T094"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Vergi Raporu - PDF Export (Muhasebeye Gonderilecek Format)",
@@ -1594,8 +1442,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T095"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Vergi Raporu - E-Fatura / E-Arsiv / Faturasiz Ayrimi",
@@ -1606,8 +1453,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T096"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kategori Satislari - Sezonsal Trend (Gecen Yil Ayni Donem Karsilastirmasi)",
@@ -1618,8 +1464,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T097"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kategori Satislari - Kanal Bazli Karsilastirma (Trendyol vs Storefront vs Magaza)",
@@ -1634,8 +1479,7 @@
       "Kanal filtresine gore filtreleme calismali."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T098"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kategori Satislari - Yavas Hareket Uyarisi (30+ Gun Dusus)",
@@ -1646,8 +1490,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T099"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kategori Satislari - Fiyat Araligi Dagilimi",
@@ -1658,8 +1501,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T100"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kargo Raporu - Kargo Firmasi Performans Karsilastirmasi",
@@ -1674,8 +1516,7 @@
       "Ortalama teslim suresi ve basari orani hesaplanmali."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T101"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kargo Raporu - Bolge Bazli Teslimat Yogunlugu",
@@ -1686,8 +1527,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T102"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kargo Raporu - Gecikme Trend Grafigi",
@@ -1698,8 +1538,7 @@
     "plan": false,
     "manual_test_steps": [],
     "addOrUpdateUnitTests": false,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T103"
+    "addOrUpdateIntegrationTests": false
   },
   {
     "task": "Kargo Raporu - Gecikme Listesi + Toplu Musteri Bilgilendirme",
@@ -1715,7 +1554,6 @@
       "Toplu sec + bildirim gonder aksiyonu calismali."
     ],
     "addOrUpdateUnitTests": true,
-    "addOrUpdateIntegrationTests": false,
-    "id": "T104"
+    "addOrUpdateIntegrationTests": false
   }
 ]

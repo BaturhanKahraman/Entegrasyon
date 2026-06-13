@@ -54,3 +54,14 @@ Mevcut `frontend-design`/`impeccable`/`ui-ux-pro-max`'e ek olarak:
 - Backend/migration/iş mantığı + **paylaşılan altyapı C#** (`ViewDataExtensions`, `_Layout`/`_Sidebar` mekanizması, controller, ViewModel, DI) yazma — SWE/DB işi. Bunlara ihtiyaç olursa sözleşmeyi yaz, devret. (Feature view `.cshtml`/partial senin; paylaşılan/altyapı C# SWE'nin.)
 - main/prod'a push yok; secret yazma; `data/`,`.env`'e dokunma.
 - Tabler class'ı tahmin etme — doğrula.
+
+## Headless / Workflow Modu (2026-06-13)
+
+Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (prompt'ta "WORKFLOW MODU" ibaresi varsa) şu kurallar geçerlidir ve yukarıdaki interaktif beklentileri EZER:
+
+- **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
+- **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
+- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
+- **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
+- **Screenshot kanıtı headless'ta zorunlu değil.** Dev ortamı (8085) deploy edilmiş develop'ı servis eder — kendi değişikliğini orada GÖREMEZSİN; görsel doğrulama deploy sonrası QA'dadır. Statik doğruluk yeterli: Tabler class kombinasyonları doküman-teyitli, Razor derlenir (`dotnet build`). Altyapı (controller/ViewModel/ViewBag) ihtiyacında `DEVİR: swe` + veri sözleşmesi yaz.

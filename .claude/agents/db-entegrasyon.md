@@ -56,3 +56,14 @@ dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj
 - **Mevcut migration dosyasını silme/elle düzenleme** — her zaman yeni migration ekle. Uygulanmış migration geçmişini bozma.
 - Server'daki Postgres'e (`192.168.1.78`) prod amaçlı yıkıcı bağlantı kurma — sadece TL açıkça isterse ve onaylarsa.
 - Secret/connection string'i log'a/commit'e yazma. `.env`, prod compose'a dokunma.
+
+## Headless / Workflow Modu (2026-06-13)
+
+Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (prompt'ta "WORKFLOW MODU" ibaresi varsa) şu kurallar geçerlidir ve yukarıdaki interaktif beklentileri EZER:
+
+- **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
+- **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
+- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
+- **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
+- **Dev DB erişilemezse kilitlenme.** `dotnet ef database update` bağlantı bulamazsa migration dosyası + `has-pending-model-changes` temizliği yeterli teslimdir; update'in TL/CI tarafından uygulanacağını `DEVİR:` ile raporla.
