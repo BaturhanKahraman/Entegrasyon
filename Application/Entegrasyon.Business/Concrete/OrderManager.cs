@@ -94,8 +94,13 @@ public class OrderManager(
     public async Task<IDataResult<Order>> GetOrderByIdAsync(Guid orderId)
     {
         await using var dbContext = await contextFactory.CreateDbContextAsync();
+        // Brand zinciri "eski (güncel)" gösterimi için yüklenir: snapshot OrderItem.BrandName'de,
+        // güncel ad ise ProductVariant→Product→Brand üzerinden okunur.
         var order = await dbContext.Orders.AsNoTracking()
             .Include(o => o.OrderItems)
+                .ThenInclude(i => i.Product)
+                    .ThenInclude(v => v!.Product)
+                        .ThenInclude(p => p!.Brand)
             .FirstOrDefaultAsync(o => o.Id == orderId);
 
         if (order is null)
@@ -209,10 +214,20 @@ public class OrderManager(
             .Distinct()
             .ToArray();
 
-        var barcodeMap = await dbContext.ProductVariants
+        // Tek sorguda barkod→variantId VE barkod→marka adı (sipariş-anı snapshot için).
+        // Marka adı ProductVariant→Product→Brand zincirinden gelir; marka yoksa/silinmişse null.
+        var variantInfo = await dbContext.ProductVariants
             .AsNoTracking()
             .Where(v => allBarcodes.Contains(v.Barcode))
-            .ToDictionaryAsync(v => v.Barcode!, v => v.Id);
+            .Select(v => new
+            {
+                Barcode = v.Barcode!,
+                v.Id,
+                BrandName = v.Product != null && v.Product.Brand != null ? v.Product.Brand.Name : null
+            })
+            .ToListAsync();
+        var barcodeMap = variantInfo.ToDictionary(v => v.Barcode, v => v.Id);
+        var brandByBarcode = variantInfo.ToDictionary(v => v.Barcode, v => v.BrandName);
 
         foreach (var dto in orders)
         {
@@ -296,6 +311,7 @@ public class OrderManager(
                         Quantity = item.Quantity,
                         UnitPrice = item.SalePrice?.Value ?? 0,
                         Barcode = barcode,
+                        BrandName = barcode is not null ? brandByBarcode.GetValueOrDefault(barcode) : null,
                         VatRate = item.Product is not null ? (decimal?)item.Product.VatRate : null,
                     });
 
@@ -361,10 +377,20 @@ public class OrderManager(
             .Distinct()
             .ToArray();
 
-        var barcodeMap = await dbContext.ProductVariants
+        // Tek sorguda barkod→variantId VE barkod→marka adı (sipariş-anı snapshot için).
+        // Marka adı ProductVariant→Product→Brand zincirinden gelir; marka yoksa/silinmişse null.
+        var variantInfo = await dbContext.ProductVariants
             .AsNoTracking()
             .Where(v => allBarcodes.Contains(v.Barcode))
-            .ToDictionaryAsync(v => v.Barcode!, v => v.Id);
+            .Select(v => new
+            {
+                Barcode = v.Barcode!,
+                v.Id,
+                BrandName = v.Product != null && v.Product.Brand != null ? v.Product.Brand.Name : null
+            })
+            .ToListAsync();
+        var barcodeMap = variantInfo.ToDictionary(v => v.Barcode, v => v.Id);
+        var brandByBarcode = variantInfo.ToDictionary(v => v.Barcode, v => v.BrandName);
 
         foreach (var dto in orders)
         {
@@ -438,6 +464,7 @@ public class OrderManager(
                     UnitPrice = item.Price,
                     Barcode = item.ProductSellerCode,
                     MerchantSku = item.ProductSellerCode,
+                    BrandName = item.ProductSellerCode is not null ? brandByBarcode.GetValueOrDefault(item.ProductSellerCode) : null,
                 });
 
                 // Stok düşme: N11 marketplace satışı gerçekleşti
@@ -503,10 +530,20 @@ public class OrderManager(
             .Distinct()
             .ToArray();
 
-        var barcodeMap = await dbContext.ProductVariants
+        // Tek sorguda barkod→variantId VE barkod→marka adı (sipariş-anı snapshot için).
+        // Marka adı ProductVariant→Product→Brand zincirinden gelir; marka yoksa/silinmişse null.
+        var variantInfo = await dbContext.ProductVariants
             .AsNoTracking()
             .Where(v => allBarcodes.Contains(v.Barcode))
-            .ToDictionaryAsync(v => v.Barcode!, v => v.Id);
+            .Select(v => new
+            {
+                Barcode = v.Barcode!,
+                v.Id,
+                BrandName = v.Product != null && v.Product.Brand != null ? v.Product.Brand.Name : null
+            })
+            .ToListAsync();
+        var barcodeMap = variantInfo.ToDictionary(v => v.Barcode, v => v.Id);
+        var brandByBarcode = variantInfo.ToDictionary(v => v.Barcode, v => v.BrandName);
 
         foreach (var pkg in packages)
         {
@@ -594,6 +631,7 @@ public class OrderManager(
                         UnitPrice = line.Price,
                         LineId = line.LineId,
                         Barcode = line.Barcode,
+                        BrandName = line.Barcode is not null ? brandByBarcode.GetValueOrDefault(line.Barcode) : null,
                         MerchantSku = line.MerchantSku,
                         ProductColor = line.ProductColor,
                         ProductSize = line.ProductSize,

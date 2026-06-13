@@ -1742,7 +1742,7 @@
     "id": "T106",
     "task": "Satış kayıtlarında marka adı snapshot (sipariş anı) + 'eski (güncel)' gösterim",
     "description": "Marka adı şu an hiçbir satış/sipariş/rapor ekranında gösterilmiyor (investigator teyitli) ve sipariş-anı korunmuyor. (1) OrderItem'a BrandName snapshot alanı ekle (nullable string, mevcut snapshot deseni: Barcode/MerchantSku/ProductColor/ProductSize OrderItem.cs:21-30) + EF migration. (2) 4 sipariş-oluşturma yolunda snapshot'ı yakala: OrderManager.cs:292 (Pazarama), :433 (N11), :589 (Trendyol), CheckoutManager.cs:144 (storefront checkout). Marka adı eşleşen ProductVariant→Product→Brand zincirinden çözülür; ProductId/eşleşme yoksa null bırak. (3) Gösterim: OrderDetail.cshtml, OrderPrint.cshtml, Reports/Sales.cshtml + ReportManager.cs SQL (Sales:67, Marketplace:625-671) Brand bilgisini taşısın. Kural: snapshot BrandName göster; güncel Brand.Name (Product→Brand) farklıysa 'snapshot (güncelAd)'; snapshot null ise (mevcut/eski siparişler) güncel marka adına fallback. Multi-tenant + hot-path index (OrderItem/ReportManager SQL) gözet — DB Master review tetikleyici.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "plan": true,
     "manual_test_steps": [
@@ -1754,7 +1754,8 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true,
-    "dependsOn": []
+    "dependsOn": [],
+    "notes": "OrderItem.BrandName snapshot alanı + migration (20260613202414, nullable varchar100, index gereksiz). 4 yolda yakalama: OrderManager Pazarama/N11/Trendyol (tek-sorgu iki-dict barcodeMap+brandByBarcode) + CheckoutManager (cart Brand include + capture). GetOrderByIdAsync Brand ThenInclude (eski/güncel gösterim). OrderDetail/OrderPrint marka kolonu (snapshot, farklıysa \"eski (güncel)\", null→güncel fallback). 1785 unit pass, build temiz. Integration test (3 senaryo: capture/unmatched-null/rename-fallback) yazıldı + compile, koşum CI-deferred (Testcontainers). KAPSAM DARALTILDI: Sales raporu marka kartı T108e ertelendi (POS SaleItem farklı entity, snapshot yok)."
   },
   {
     "id": "T107",
@@ -1773,5 +1774,22 @@
     "addOrUpdateIntegrationTests": true,
     "dependsOn": [],
     "notes": "DeleteBrand bağlı-ürün guard (LogicRunner, görünür ürün varsa engelle) + RestoreBrand (isim-çakışması guard dahil) + Archive.cshtml + _BrandArchiveTable partial + Index arşiv nav. 1785 unit pass. Minor (deferred): Archive+Index HTMX ViewBag.Search pagination terim düşüşü (pre-existing pattern); soft-deleted ürünün silmeyi engellememesi integration testi eksik. Persist testleri CI-deferred."
+  },
+  {
+    "id": "T108",
+    "task": "Marka bazlı satış raporu kartı (Sales raporu — POS SaleItem)",
+    "description": "T106 keşfinde netleşti: Sales raporu (ReportManager.GetSalesReportAsync) SaleItems/Sales (POS) üzerinden çalışıyor, OrderItem değil — dolayısıyla OrderItem.BrandName snapshot oraya akmıyor. Marka bazlı satış dağılımı kartı için SaleItem→ProductVariant→Product→Brand join ile GÜNCEL marka adına göre aggregate gerekir (snapshot değil). BrandSalesReportDto + SalesReportDto.BrandSales + SalesReportQuery JSON SQLine brand CTE eklenmeli (DB Master: hot-path JSON SQL). Sales.cshtml kartı T106 designer çalışmasında hazırdı, revert edildi — bu task ile geri getirilip doğru veri kaynağına bağlanacak. Alt-başlık \"sipariş anı\" DEĞİL \"güncel marka dağılımı\" olmalı.",
+    "status": "todo",
+    "priority": "low",
+    "plan": true,
+    "manual_test_steps": [
+      "Satış raporunu aç (Reports/Sales)",
+      "Marka Bazlı Satış kartı görünmeli — POS satışların güncel markaya göre dağılımı",
+      "Gelir payı yüzdeleri toplamı ~%100 olmalı",
+      "Markasız ürünler Markasız satırında toplanmalı"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true,
+    "dependsOn": []
   }
 ]

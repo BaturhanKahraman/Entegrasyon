@@ -19,6 +19,23 @@
     var displayStatus = Model.MarketplaceOrderStatus
         ?? Model.StorefrontOrderStatus?.ToString()
         ?? null;
+
+    // Marka gösterimi: sipariş anındaki snapshot. Snapshot ile güncel marka adı
+    // farklıysa "snapshot (güncelAd)"; snapshot yoksa güncel marka adına düşülür; o da yoksa "-".
+    string BrandDisplay(Entegrasyon.Entity.Orders.OrderItem item)
+    {
+        var snapshot = string.IsNullOrWhiteSpace(item.BrandName) ? null : item.BrandName!.Trim();
+        var current = item.Product?.Product?.Brand?.Name?.Trim();
+        current = string.IsNullOrWhiteSpace(current) ? null : current;
+
+        if (snapshot is null)
+            return current ?? "-";
+
+        if (current is not null && !string.Equals(snapshot, current, StringComparison.Ordinal))
+            return $"{snapshot} ({current})";
+
+        return snapshot;
+    }
 }
 <!DOCTYPE html>
 <html lang="tr">
@@ -243,6 +260,7 @@
             <thead>
                 <tr>
                     <th>Ürün (SKU)</th>
+                    <th>Marka</th>
                     <th>Barkod</th>
                     <th>Renk / Beden</th>
                     <th class="text-right">Adet</th>
@@ -255,6 +273,7 @@
                 {
                     <tr>
                         <td>@(item.MerchantSku ?? "-")</td>
+                        <td>@BrandDisplay(item)</td>
                         <td>@(item.Barcode ?? "-")</td>
                         <td>@(item.ProductColor ?? "-") / @(item.ProductSize ?? "-")</td>
                         <td class="text-right">@item.Quantity</td>

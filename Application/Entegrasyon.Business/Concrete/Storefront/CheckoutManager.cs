@@ -28,6 +28,7 @@ public class CheckoutManager(
             .Include(c => c.Items)
                 .ThenInclude(i => i.ProductVariant)
                     .ThenInclude(v => v.Product)
+                        .ThenInclude(p => p!.Brand)
             .Include(c => c.Items)
                 .ThenInclude(i => i.ProductVariant)
                     .ThenInclude(v => v.BranchOfficeStocks)
@@ -147,7 +148,8 @@ public class CheckoutManager(
             ProductId = item.ProductVariantId,
             Quantity = item.Quantity,
             UnitPrice = item.UnitPrice,
-            Barcode = item.ProductVariant.Barcode
+            Barcode = item.ProductVariant.Barcode,
+            BrandName = item.ProductVariant.Product?.Brand?.Name
         }).ToList();
 
         order.OrderItems = orderItems;

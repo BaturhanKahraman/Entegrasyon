@@ -23,6 +23,14 @@ public sealed class OrderItem : BaseEntity
     [StringLength(100)]
     public string? MerchantSku { get; set; }
 
+    /// <summary>
+    /// Sipariş anındaki marka adı snapshot'ı. Ürün eşleşmesinden (ProductVariant→Product→Brand)
+    /// sipariş oluşturulurken kopyalanır; eşleşme yoksa null. Marka sonradan yeniden adlandırılsa
+    /// veya silinse bile satış kaydı sipariş-anı markasını korur (raporlamada "eski (güncel)" gösterimi).
+    /// </summary>
+    [StringLength(100)]
+    public string? BrandName { get; set; }
+
     [StringLength(100)]
     public string? ProductColor { get; set; }
 

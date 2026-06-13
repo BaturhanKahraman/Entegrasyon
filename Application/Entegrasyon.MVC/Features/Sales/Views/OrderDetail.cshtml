@@ -32,6 +32,24 @@
     var displayStatus = Model.MarketplaceOrderStatus
         ?? Model.StorefrontOrderStatus?.ToString()
         ?? null;
+
+    // Marka gösterimi: sipariş anındaki snapshot temel alınır.
+    // Snapshot ile güncel marka adı farklıysa "snapshot (güncelAd)" formatında gösterilir.
+    // Snapshot null (eski sipariş) ise güncel marka adına düşülür; o da yoksa "-".
+    (string Display, bool Changed) BrandDisplay(Entegrasyon.Entity.Orders.OrderItem item)
+    {
+        var snapshot = string.IsNullOrWhiteSpace(item.BrandName) ? null : item.BrandName!.Trim();
+        var current = item.Product?.Product?.Brand?.Name?.Trim();
+        current = string.IsNullOrWhiteSpace(current) ? null : current;
+
+        if (snapshot is null)
+            return (current ?? "-", false);
+
+        if (current is not null && !string.Equals(snapshot, current, StringComparison.Ordinal))
+            return ($"{snapshot} ({current})", true);
+
+        return (snapshot, false);
+    }
 }
 
 <div class="d-flex justify-content-end mb-3">
@@ -185,6 +203,7 @@
                             <thead>
                                 <tr>
                                     <th>Ürün</th>
+                                    <th>Marka</th>
                                     <th>Barkod</th>
                                     <th>Renk / Beden</th>
                                     <th class="text-end">Adet</th>
@@ -195,8 +214,29 @@
                             <tbody>
                                 @foreach (var item in Model.OrderItems)
                                 {
+                                    var brand = BrandDisplay(item);
                                     <tr>
                                         <td>@(item.MerchantSku ?? "-")</td>
+                                        <td>
+                                            @if (brand.Changed)
+                                            {
+                                                var snap = item.BrandName!.Trim();
+                                                var curr = item.Product!.Product!.Brand!.Name.Trim();
+                                                <span>@snap</span>
+                                                <span class="text-secondary ms-1"
+                                                      title="Sipariş anındaki marka: @snap — güncel marka: @curr">
+                                                    (@curr)
+                                                </span>
+                                            }
+                                            else if (brand.Display == "-")
+                                            {
+                                                <span class="text-secondary">-</span>
+                                            }
+                                            else
+                                            {
+                                                @brand.Display
+                                            }
+                                        </td>
                                         <td class="text-secondary">@(item.Barcode ?? "-")</td>
                                         <td class="text-secondary">
                                             @(item.ProductColor ?? "-") / @(item.ProductSize ?? "-")
@@ -209,7 +249,7 @@
                             </tbody>
                             <tfoot>
                                 <tr>
-                                    <td colspan="5" class="text-end fw-bold">Genel Toplam</td>
+                                    <td colspan="6" class="text-end fw-bold">Genel Toplam</td>
                                     <td class="text-end fw-bold text-primary">@Model.TotalPrice.ToString("N2") TL</td>
                                 </tr>
                             </tfoot>
