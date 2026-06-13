@@ -93,6 +93,13 @@
                 {
                     <span class="badge bg-green-lt ms-2">@addable.Count uygun</span>
                 }
+                <div class="card-actions">
+                    <a href="/attributes/create?returnUrl=@Uri.EscapeDataString($"/categories/{Model.CategoryId}/attributes")"
+                       class="btn btn-outline-primary btn-sm">
+                        <i class="ti ti-plus icon"></i>
+                        Yeni Özellik Oluştur
+                    </a>
+                </div>
             </div>
             @if (addable.Count == 0)
             {
@@ -103,6 +110,13 @@
                         </div>
                         <p class="empty-title">Tümü eklendi</p>
                         <p class="empty-subtitle text-secondary">Eklenebilecek başka özellik yok.</p>
+                        <div class="empty-action">
+                            <a href="/attributes/create?returnUrl=@Uri.EscapeDataString($"/categories/{Model.CategoryId}/attributes")"
+                               class="btn btn-primary">
+                                <i class="ti ti-plus icon"></i>
+                                Yeni Özellik Oluştur
+                            </a>
+                        </div>
                     </div>
                 </div>
             }
@@ -131,10 +145,6 @@
                                     <label class="form-check form-check-inline mb-0">
                                         <input class="form-check-input" type="radio" name="slicerId" value="@p.Id">
                                         <span class="form-check-label small">Dilimleyici</span>
-                                    </label>
-                                    <label class="form-check form-check-inline mb-0">
-                                        <input class="form-check-input" type="checkbox" name="allowCustomIds" value="@p.Id">
-                                        <span class="form-check-label small">Özel Değer</span>
                                     </label>
                                 </div>
                             </div>

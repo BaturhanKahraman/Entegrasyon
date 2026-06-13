@@ -2,59 +2,153 @@
 @using Entegrasyon.Entity.Categories
 @model Pageable<CategoryAttribute>
 
-<div class="d-flex justify-content-end mb-3">
-    <form method="get" action="/attributes" class="d-flex gap-2">
-        <input type="text" name="search" value="@ViewBag.Search" class="form-control"
-               placeholder="Özellik ara..." style="max-width:250px;" />
-        <button type="submit" class="btn btn-primary">Ara</button>
-    </form>
-</div>
+@{
+    ViewData.SetPageSubtitle("Ürün özelliklerini ve kontrollü değer listelerini yönet.");
 
-        <div class="row">
-            <!-- Attribute List -->
-            <div class="col-lg-5">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">Özellik Listesi</h3>
-                        <div class="card-actions">
-                            <span class="badge bg-secondary-lt">@(Model?.TotalItemCount ?? 0) özellik</span>
-                        </div>
-                    </div>
-                    <div class="list-group list-group-flush">
-                        @if (Model?.Items != null)
-                        {
-                            @foreach (var attr in Model.Items)
-                            {
-                                <a href="#attr-@attr.Id" class="list-group-item list-group-item-action"
-                                   hx-get="/attributes/@attr.Id/detail" hx-target="#attribute-detail" hx-swap="innerHTML">
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div>
-                                            <strong>@attr.CategoryAttributeHumanized</strong>
-                                            <div class="text-secondary small">@attr.CategoryAttributeKey</div>
-                                        </div>
-                                    </div>
-                                </a>
-                            }
-                        }
-                        else
-                        {
-                            <div class="list-group-item text-center text-secondary py-4">
-                                Henüz özellik tanımlanmamış.
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
+    // "Toplam Özellik" GERÇEK veriden gelir (Pageable.TotalItemCount). Diğer KPI'lar sayfa
+    // genelinde aggregate gerektirir — şu an mevcut DEĞİL. ViewBag'den null-safe okunur;
+    // backend aggregate eklenince otomatik dolar. Hiçbir sayı hardcode edilmez.
+    int? totalValues = ViewBag.TotalValueCount as int?;
+    int? matchedAttributes = ViewBag.MatchedAttributeCount as int?;
+    int? unusedAttributes = ViewBag.UnusedAttributeCount as int?;
+}
 
-            <!-- Detail Panel -->
-            <div class="col-lg-7">
-                <div id="attribute-detail">
-                    <div class="card">
-                        <div class="card-body text-center py-5">
-                            <h3 class="text-secondary">Detay görüntüleme</h3>
-                            <p class="text-secondary">Sol listeden bir özellik seçin.</p>
-                        </div>
+@section PageActions {
+    <a href="/marketplace/sync/attributes?returnUrl=%2Fattributes" class="btn btn-outline-primary">
+        <i class="ti ti-link icon"></i>
+        Pazaryeri Eşleme
+    </a>
+    <a href="/attributes/create" class="btn btn-primary">
+        <i class="ti ti-plus icon"></i>
+        Yeni Özellik
+    </a>
+}
+
+@* ── Özet / KPI satırı ── *@
+<div class="row row-deck row-cards mb-3">
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-primary-lt avatar avatar-lg rounded">
+                            <i class="ti ti-adjustments-alt fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@((Model?.TotalItemCount ?? 0).ToString("N0"))</div>
+                        <div class="text-secondary">Toplam Özellik</div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-green-lt avatar avatar-lg rounded">
+                            <i class="ti ti-list-details fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(totalValues?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Toplam Değer</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-azure-lt avatar avatar-lg rounded">
+                            <i class="ti ti-link fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(matchedAttributes?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Pazaryeri Eşlenen</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-sm-6 col-lg-3">
+        <div class="card card-sm">
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-auto">
+                        <span class="bg-yellow-lt avatar avatar-lg rounded">
+                            <i class="ti ti-alert-triangle fs-2"></i>
+                        </span>
+                    </div>
+                    <div class="col">
+                        <div class="font-weight-medium fs-1 lh-1">@(unusedAttributes?.ToString("N0") ?? "—")</div>
+                        <div class="text-secondary">Kategorisiz Özellik</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Özellik Listesi -->
+    <div class="col-lg-5">
+        <div class="card">
+            <div class="card-header">
+                <div class="row g-2 w-100 align-items-center">
+                    <div class="col">
+                        <h3 class="card-title mb-0">Özellik Listesi</h3>
+                        <div class="text-secondary mt-1 small">
+                            Toplam <strong>@((Model?.TotalItemCount ?? 0).ToString("N0"))</strong> özellik
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-auto ms-md-auto">
+                        <div class="input-icon">
+                            <span class="input-icon-addon">
+                                <i class="ti ti-search"></i>
+                            </span>
+                            <input type="text"
+                                   class="form-control"
+                                   name="search"
+                                   placeholder="Özellik ara…"
+                                   autocomplete="off"
+                                   aria-label="Özellik ara"
+                                   value="@ViewBag.Search"
+                                   hx-get="/attributes"
+                                   hx-trigger="keyup changed delay:300ms, search"
+                                   hx-target="#attribute-list"
+                                   hx-swap="outerHTML"
+                                   hx-include="this" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <partial name="Partials/_AttributeList" model="Model" />
+        </div>
+    </div>
+
+    <!-- Detay Paneli -->
+    <div class="col-lg-7">
+        <div id="attribute-detail">
+            <div class="card">
+                <div class="card-body">
+                    <div class="empty py-5">
+                        <div class="empty-icon">
+                            <i class="ti ti-click" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <p class="empty-title">Bir özellik seçin</p>
+                        <p class="empty-subtitle text-secondary">
+                            Soldaki listeden bir özellik seçtiğinizde detayları burada görüntülenir.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

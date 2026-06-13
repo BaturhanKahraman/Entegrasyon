@@ -19,14 +19,84 @@ public class AttributeController(
     [HttpGet("/attributes")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
     {
-        ViewData.SetPageTitle("Ozellikler");
+        ViewData.SetPageTitle("Özellikler");
         ViewData.SetActiveNav("attributes");
 
         var result = await categoryAttributeManager.GetCategoryAttributesPageable(
             new SearchablePageDto(search ?? "", page - 1, 50));
 
         ViewBag.Search = search;
+
+        // HTMX arama/sayfalama: yalnız liste paneli yenilenir.
+        if (Request.IsHtmx())
+            return PartialView($"{viewBase}/Partials/_AttributeList.cshtml", result.Data);
+
         return View($"{viewBase}/Index.cshtml", result.Data);
+    }
+
+    private void SetCreateViewData()
+    {
+        ViewData.SetPageTitle("Yeni Özellik");
+        ViewData.SetActiveNav("attributes");
+        ViewData.SetBreadcrumb(("Özellikler", "/attributes"), ("Yeni Özellik", (string?)null));
+    }
+
+    [HttpGet("/attributes/create")]
+    public IActionResult Create(string? returnUrl = null)
+    {
+        SetCreateViewData();
+
+        var vm = new CreateAttributeVm
+        {
+            // Open-redirect koruması: yalnız local URL taşınır.
+            ReturnUrl = !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ? returnUrl : null
+        };
+        return View($"{viewBase}/Create.cshtml", vm);
+    }
+
+    [HttpPost("/attributes/create")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CreateAttribute([FromForm] CreateAttributeVm model)
+    {
+        var name = model.Name.Trim();
+        var values = (model.Values ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(v => new CategoryAttributeValue { Id = 0, Name = v })
+            .ToList();
+
+        // Key = Humanized = ad; junction bayrakları (IsRequired/IsVarianter/IsSlicer) burada anlamsız → false.
+        var dto = new AddCategoryAttributeDto(0, false, false, name, false, name, values);
+        var result = await categoryAttributeManager.AddCategoryAttribute(dto);
+
+        var safeReturnUrl = !string.IsNullOrEmpty(model.ReturnUrl) && Url.IsLocalUrl(model.ReturnUrl)
+            ? model.ReturnUrl
+            : null;
+
+        if (Request.IsHtmx())
+        {
+            if (result.Success)
+            {
+                Response.HtmxTriggerWithData("showToast",
+                    new { message = $"\"{name}\" özelliği oluşturuldu.", type = "success" });
+                Response.Headers["HX-Redirect"] = safeReturnUrl ?? "/attributes";
+                return Content("");
+            }
+
+            Response.HtmxTriggerWithData("showToast",
+                new { message = result.Message ?? "Özellik oluşturulamadı.", type = "danger" });
+            return StatusCode(422);
+        }
+
+        if (result.Success)
+        {
+            TempData.SetSuccess($"\"{name}\" özelliği oluşturuldu.");
+            return safeReturnUrl is not null ? Redirect(safeReturnUrl) : RedirectToAction(nameof(Index));
+        }
+
+        // Hata (örn. duplicate anahtar): girilen değerler korunarak form yeniden gösterilir.
+        TempData.SetError(result.Message ?? "Özellik oluşturulamadı.");
+        SetCreateViewData();
+        return View($"{viewBase}/Create.cshtml", model);
     }
 
     [HttpGet("/attributes/{id:int}/detail")]
@@ -98,20 +168,20 @@ public class AttributeController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Ozellik guncellendi.", type = "success" });
+                    new { message = "Özellik güncellendi.", type = "success" });
                 // Reload the detail panel with fresh data
                 return await Detail(id);
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Guncelleme başarısız.", type = "danger" });
+                new { message = result.Message ?? "Güncelleme başarısız.", type = "danger" });
             return StatusCode(422);
         }
 
         if (result.Success)
-            TempData.SetSuccess("Ozellik basariyla guncellendi.");
+            TempData.SetSuccess("Özellik başarıyla güncellendi.");
         else
-            TempData.SetError(result.Message ?? "Ozellik guncellenemedi.");
+            TempData.SetError(result.Message ?? "Özellik güncellenemedi.");
 
         return RedirectToAction(nameof(Index));
     }
@@ -126,8 +196,8 @@ public class AttributeController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Ozellik silindi.", type = "success" });
-                return Content("<div class='card'><div class='card-body text-center py-5'><h3 class='text-secondary'>Ozellik silindi</h3><p class='text-secondary'>Sol listeden baska bir ozellik secin.</p></div></div>", "text/html");
+                    new { message = "Özellik silindi.", type = "success" });
+                return Content("<div class='card'><div class='card-body text-center py-5'><h3 class='text-secondary'>Özellik silindi</h3><p class='text-secondary'>Sol listeden başka bir özellik seçin.</p></div></div>", "text/html");
             }
 
             Response.HtmxTriggerWithData("showToast",
@@ -136,9 +206,9 @@ public class AttributeController(
         }
 
         if (result.Success)
-            TempData.SetSuccess("Ozellik basariyla silindi.");
+            TempData.SetSuccess("Özellik başarıyla silindi.");
         else
-            TempData.SetError(result.Message ?? "Ozellik silinemedi.");
+            TempData.SetError(result.Message ?? "Özellik silinemedi.");
 
         return RedirectToAction(nameof(Index));
     }

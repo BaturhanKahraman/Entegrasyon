@@ -16,7 +16,7 @@
             <div class="alert alert-success">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>Eslendi:</strong> Pazaryeri Özellik ID: @Model.AttributeMatch.MarketPlaceCategoryAttributeId
+                        <strong>Eşlendi:</strong> Pazaryeri Özellik ID: @Model.AttributeMatch.MarketPlaceCategoryAttributeId
                         @if (!string.IsNullOrEmpty(Model.AttributeMatch.MarketPlaceCategoryAttributeExternalId))
                         {
                             <span class="text-muted ms-1">(External: @Model.AttributeMatch.MarketPlaceCategoryAttributeExternalId)</span>
@@ -50,7 +50,7 @@
                         <small class="form-hint">Özellik adı yazmaya başlayın (örn: "Renk").</small>
                     </div>
                     <div class="col-auto">
-                        <button type="submit" class="btn btn-primary btn-sm">Esle</button>
+                        <button type="submit" class="btn btn-primary btn-sm">Eşle</button>
                     </div>
                 </form>
             </div>
@@ -115,11 +115,11 @@
                                 <td>
                                     @if (val.IsMapped)
                                     {
-                                        <span class="badge bg-success-lt">Eslendi</span>
+                                        <span class="badge bg-success-lt">Eşlendi</span>
                                     }
                                     else
                                     {
-                                        <span class="badge bg-secondary-lt">Eslenmedi</span>
+                                        <span class="badge bg-secondary-lt">Eşlenmedi</span>
                                     }
                                 </td>
                                 <td>
@@ -140,7 +140,7 @@
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#mapValueModal"
                                                 onclick="openValueMapModal(@val.ValueId, '@val.ValueName.Replace("'", "\\'")' )">
-                                            Esle
+                                            Eşle
                                         </button>
                                     }
                                 </td>
@@ -162,7 +162,7 @@
     <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Değer Esle</h5>
+                <h5 class="modal-title">Değer Eşle</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form id="mapValueForm" method="post" hx-swap="none"
@@ -181,8 +181,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
-                    <button type="submit" class="btn btn-primary">Esle</button>
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Eşle</button>
                 </div>
             </form>
         </div>

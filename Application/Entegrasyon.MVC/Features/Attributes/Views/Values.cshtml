@@ -31,10 +31,17 @@
         <div class="card">
             <div class="card-header">
                 <div>
-                    <h3 class="card-title">@Model.AttributeName — Tanımlı Değerler</h3>
+                    <h3 class="card-title">
+                        @Model.AttributeName — Tanımlı Değerler
+                        <span class="badge bg-azure-lt ms-2">@Model.Values.Count değer</span>
+                    </h3>
                     <p class="text-secondary m-0">Bu özelliğe ait kapalı değer listesi</p>
                 </div>
                 <div class="card-actions">
+                    <a href="/marketplace/sync/attributes?attributeId=@Model.AttributeId&returnUrl=@Uri.EscapeDataString($"/attributes/{Model.AttributeId}/values")"
+                       class="btn btn-ghost-secondary btn-sm">
+                        <i class="ti ti-link me-1"></i>Pazaryeri Eşle
+                    </a>
                     <a href="/attributes" class="btn btn-ghost-secondary btn-sm">
                         <i class="ti ti-arrow-left me-1"></i>Özelliklere Dön
                     </a>

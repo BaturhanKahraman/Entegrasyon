@@ -15,9 +15,9 @@ public class AttributeSyncController(
     private const string ViewBase = "~/Features/MarketplaceSync/Views/AttributeSync";
 
     [HttpGet("/marketplace/sync/attributes")]
-    public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null)
+    public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null, int? attributeId = null)
     {
-        ViewData.SetPageTitle("Ozellik Eslemesi");
+        ViewData.SetPageTitle("Özellik Eşlemesi");
         ViewData.SetActiveNav("marketplace-sync");
 
         var marketPlaces = await marketPlaceManager.GetAllAsync();
@@ -34,6 +34,7 @@ public class AttributeSyncController(
             MarketPlaces = marketPlaces.Data ?? [],
             SearchTerm = search,
             ReturnUrl = returnUrl,
+            PreselectAttributeId = attributeId,
             Attributes = attributes.Select(a => new AttributeListItemVm
             {
                 Id = a.Id,
@@ -100,19 +101,19 @@ public class AttributeSyncController(
                 if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
                 {
                     Response.HtmxTriggerWithData("showToast",
-                        new { message = "Ozellik Eşleşmesi kaydedildi. Yonlendiriliyorsunuz...", type = "success" });
+                        new { message = "Özellik eşleşmesi kaydedildi. Yönlendiriliyorsunuz...", type = "success" });
                     Response.Headers["HX-Redirect"] = returnUrl;
                     return Content("");
                 }
 
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Ozellik Eşleşmesi kaydedildi.", type = "success" });
+                    new { message = "Özellik eşleşmesi kaydedildi.", type = "success" });
                 Response.HtmxTrigger("refreshList");
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Eslestirme kaydedilemedi.", type = "danger" });
+                new { message = result.Message ?? "Eşleştirme kaydedilemedi.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -132,13 +133,13 @@ public class AttributeSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Ozellik Eşleşmesi kaldirildi.", type = "success" });
+                    new { message = "Özellik eşleşmesi kaldırıldı.", type = "success" });
                 Response.HtmxTrigger("refreshList");
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Eslestirme kaldirilamadi.", type = "danger" });
+                new { message = result.Message ?? "Eşleştirme kaldırılamadı.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -155,12 +156,12 @@ public class AttributeSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Deger Eşleşmesi kaydedildi.", type = "success" });
+                    new { message = "Değer eşleşmesi kaydedildi.", type = "success" });
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Eslestirme kaydedilemedi.", type = "danger" });
+                new { message = result.Message ?? "Eşleştirme kaydedilemedi.", type = "danger" });
             return StatusCode(422);
         }
 
@@ -177,12 +178,12 @@ public class AttributeSyncController(
             if (result.Success)
             {
                 Response.HtmxTriggerWithData("showToast",
-                    new { message = "Deger Eşleşmesi kaldirildi.", type = "success" });
+                    new { message = "Değer eşleşmesi kaldırıldı.", type = "success" });
                 return Content("");
             }
 
             Response.HtmxTriggerWithData("showToast",
-                new { message = result.Message ?? "Eslestirme kaldirilamadi.", type = "danger" });
+                new { message = result.Message ?? "Eşleştirme kaldırılamadı.", type = "danger" });
             return StatusCode(422);
         }
 

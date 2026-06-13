@@ -1,8 +1,8 @@
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.AttributeSyncVm
 @{
-    ViewData.SetPageTitle("Özellik Eslemesi");
+    ViewData.SetPageTitle("Özellik Eşlemesi");
     ViewData.SetActiveNav("marketplace-sync");
-    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Özellik Eslemesi", null));
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Özellik Eşlemesi", null));
 
     var mappedCount = Model.Attributes.Count(a => a.IsMapped);
     var totalCount = Model.Attributes.Count;
@@ -15,10 +15,10 @@
                 <div class="d-flex align-items-center">
                     <i class="ti ti-info-circle icon me-2"></i>
                     <div class="flex-fill">
-                        Eşleştirmeyi tamamladiginizda otomatik olarak geri yonlendirileceksiniz.
+                        Eşleştirmeyi tamamladığınızda otomatik olarak geri yönlendirileceksiniz.
                     </div>
                     <a href="@Model.ReturnUrl" class="btn btn-sm btn-outline-primary ms-2">
-                        <i class="ti ti-arrow-left me-1"></i>Geri Don
+                        <i class="ti ti-arrow-left me-1"></i>Geri Dön
                     </a>
                 </div>
             </div>
@@ -50,7 +50,7 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        <span class="text-secondary">Esleme Durumu:</span>
+                        <span class="text-secondary">Eşleme Durumu:</span>
                     </div>
                     <div class="col">
                         <div class="progress" style="height: 8px;">
@@ -58,7 +58,7 @@
                         </div>
                     </div>
                     <div class="col-auto">
-                        <strong>@mappedCount / @totalCount</strong> özellik eslendi
+                        <strong>@mappedCount / @totalCount</strong> özellik eşlendi
                     </div>
                 </div>
             </div>
@@ -75,21 +75,38 @@
 
             <!-- Match Panel -->
             <div class="col-lg-7">
-                <div id="attribute-detail-panel">
-                    <div class="card">
-                        <div class="card-body">
-                            <div class="empty py-5">
-                                <div class="empty-icon">
-                                    <i class="ti ti-arrows-exchange" style="font-size:2.5rem;"></i>
-                                </div>
-                                <p class="empty-title">Bir özellik seçin</p>
-                                <p class="empty-subtitle text-secondary">
-                                    Soldaki listeden bir özellik sectiginizde esleme detaylari burada goruntulenecektir.
-                                </p>
+                @if (Model.PreselectAttributeId is int preselectId)
+                {
+                    @* Özellik detayından gelindi: ilgili özelliğin eşleme paneli otomatik yüklenir. *@
+                    <div id="attribute-detail-panel"
+                         hx-get="/marketplace/sync/attributes/@preselectId/detail?mp=@Model.SelectedMarketPlaceId@(string.IsNullOrEmpty(Model.ReturnUrl) ? "" : $"&returnUrl={Uri.EscapeDataString(Model.ReturnUrl)}")"
+                         hx-trigger="load"
+                         hx-swap="innerHTML">
+                        <div class="card">
+                            <div class="card-body text-center py-5">
+                                <div class="spinner-border text-secondary" role="status"></div>
                             </div>
                         </div>
                     </div>
-                </div>
+                }
+                else
+                {
+                    <div id="attribute-detail-panel">
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="empty py-5">
+                                    <div class="empty-icon">
+                                        <i class="ti ti-arrows-exchange" style="font-size:2.5rem;"></i>
+                                    </div>
+                                    <p class="empty-title">Bir özellik seçin</p>
+                                    <p class="empty-subtitle text-secondary">
+                                        Soldaki listeden bir özellik seçtiğinizde eşleme detayları burada görüntülenecektir.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
 

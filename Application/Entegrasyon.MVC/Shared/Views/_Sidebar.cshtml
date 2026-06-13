@@ -23,7 +23,7 @@
 
                 @* ── Yonetim ── *@
                 @{
-                    var yonetimKeys = new[] { "products", "categories", "brands", "pos", "sales", "orders", "returns", "picking", "shipping", "bulk-operations", "branch-offices", "stock-movements", "discounts", "pricing" };
+                    var yonetimKeys = new[] { "products", "categories", "attributes", "brands", "pos", "sales", "orders", "returns", "picking", "shipping", "bulk-operations", "branch-offices", "stock-movements", "discounts", "pricing" };
                     var yonetimActive = yonetimKeys.Contains(activeNav);
                 }
                 <li class="nav-item mt-2">
@@ -38,6 +38,7 @@
                         <ul class="navbar-nav ps-3">
                             <li class="nav-item"><a class="nav-link @(activeNav == "products" ? "active" : "")" require-permission="Permissions.Products.View" href="/products"><span class="nav-link-icon"><i class="ti ti-package"></i></span><span class="nav-link-title">Ürünler</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "categories" ? "active" : "")" require-permission="Permissions.Categories.View" href="/categories"><span class="nav-link-icon"><i class="ti ti-category"></i></span><span class="nav-link-title">Kategoriler</span></a></li>
+                            <li class="nav-item"><a class="nav-link @(activeNav == "attributes" ? "active" : "")" require-permission="Permissions.Categories.View" href="/attributes"><span class="nav-link-icon"><i class="ti ti-adjustments-alt"></i></span><span class="nav-link-title">Özellikler</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "brands" ? "active" : "")" require-permission="Permissions.Brands.View" href="/brands"><span class="nav-link-icon"><i class="ti ti-award"></i></span><span class="nav-link-title">Markalar</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "pos" ? "active" : "")" require-permission="Permissions.Sales.Create" href="/pos"><span class="nav-link-icon"><i class="ti ti-device-desktop"></i></span><span class="nav-link-title">POS Terminal</span></a></li>
                             <li class="nav-item"><a class="nav-link @(activeNav == "sales" ? "active" : "")" require-permission="Permissions.Sales.View" href="/sales"><span class="nav-link-icon"><i class="ti ti-receipt"></i></span><span class="nav-link-title">Satışlar</span></a></li>

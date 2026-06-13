@@ -1,0 +1,67 @@
+@using Entegrasyon.Entity
+@using Entegrasyon.Entity.Categories
+@model Pageable<CategoryAttribute>
+@{
+    var items = Model?.Items ?? new List<CategoryAttribute>();
+    var hasSearch = !string.IsNullOrEmpty((string?)ViewBag.Search);
+}
+
+<div id="attribute-list">
+    @if (items.Count == 0)
+    {
+        <div class="card-body">
+            @if (hasSearch)
+            {
+                <div class="empty">
+                    <div class="empty-icon">
+                        <i class="ti ti-search-off" style="font-size: 2.5rem;"></i>
+                    </div>
+                    <p class="empty-title">Sonuç bulunamadı</p>
+                    <p class="empty-subtitle text-secondary">"@ViewBag.Search" aramasıyla eşleşen özellik yok.</p>
+                </div>
+            }
+            else
+            {
+                <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                         model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                         {
+                             Title = "Henüz özellik tanımlanmamış",
+                             Subtitle = "Ürünlerde kullanılacak ilk özelliği oluşturarak başlayın.",
+                             ActionUrl = "/attributes/create",
+                             ActionText = "Yeni Özellik Oluştur"
+                         }' />
+            }
+        </div>
+    }
+    else
+    {
+        <div class="list-group list-group-flush">
+            @foreach (var attr in items)
+            {
+                <a href="#attr-@attr.Id" class="list-group-item list-group-item-action"
+                   hx-get="/attributes/@attr.Id/detail" hx-target="#attribute-detail" hx-swap="innerHTML">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <strong>@attr.CategoryAttributeHumanized</strong>
+                            <div class="text-secondary small">@attr.CategoryAttributeKey</div>
+                        </div>
+                        <span class="badge bg-azure-lt">@(attr.CategoryAttributeValues?.Count ?? 0) değer</span>
+                    </div>
+                </a>
+            }
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model!.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/attributes",
+                     TargetId = "#attribute-list",
+                     QueryParams = ViewBag.Search != null
+                         ? new Dictionary<string, string> { ["search"] = (string)ViewBag.Search }
+                         : new()
+                 }' />
+    }
+</div>

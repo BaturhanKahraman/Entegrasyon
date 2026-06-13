@@ -1,0 +1,61 @@
+@model Entegrasyon.MVC.Features.Attributes.ViewModels.CreateAttributeVm
+@{
+    ViewData.SetPageSubtitle("Ürünlerde kullanılacak yeni bir özellik ve değerlerini tanımla.");
+    var cancelUrl = string.IsNullOrEmpty(Model.ReturnUrl) ? "/attributes" : Model.ReturnUrl;
+}
+
+@if (!string.IsNullOrEmpty(Model.ReturnUrl))
+{
+    <div class="alert alert-info" role="alert">
+        <div class="d-flex align-items-center">
+            <i class="ti ti-info-circle icon alert-icon"></i>
+            <div>
+                Kategori sayfasından geldiniz — özellik oluşturulduğunda otomatik olarak geri yönlendirileceksiniz.
+            </div>
+            <a href="@Model.ReturnUrl" class="btn btn-sm btn-outline-primary ms-auto">
+                <i class="ti ti-arrow-left icon"></i>
+                Geri Dön
+            </a>
+        </div>
+    </div>
+}
+
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-8">
+        <form method="post" action="/attributes/create">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="ReturnUrl" value="@Model.ReturnUrl" />
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="ti ti-adjustments-alt text-primary me-2"></i>
+                        Yeni Özellik
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label required">Özellik Adı</label>
+                        <input type="text" class="form-control" name="Name" value="@Model.Name"
+                               placeholder="Örn: Renk, Beden, Kumaş Tipi" required autocomplete="off" autofocus />
+                        <small class="form-hint">Anahtar (key) bu addan üretilir ve sonradan değiştirilemez.</small>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label required">Değerler</label>
+                        <input type="text" class="form-control" name="Values" value="@Model.Values"
+                               placeholder="Kırmızı, Mavi, Yeşil" required autocomplete="off" />
+                        <small class="form-hint">Virgül ile ayırın. Aynı (büyük/küçük harf farklı) değerler otomatik tekilleştirilir.</small>
+                    </div>
+                </div>
+                <div class="card-footer text-end">
+                    <div class="btn-list justify-content-end">
+                        <a href="@cancelUrl" class="btn btn-link">İptal</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-check icon"></i>
+                            Oluştur
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

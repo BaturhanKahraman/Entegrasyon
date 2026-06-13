@@ -11,6 +11,9 @@ public class AttributeSyncVm
     public List<AttributeListItemVm> Attributes { get; set; } = [];
     public string? SearchTerm { get; set; }
     public string? ReturnUrl { get; set; }
+
+    /// <summary>Sayfa açılışında detayı otomatik yüklenecek özellik (örn. /attributes detayından gelindiğinde).</summary>
+    public int? PreselectAttributeId { get; set; }
 }
 
 public class AttributeListItemVm
