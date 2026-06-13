@@ -1,12 +1,32 @@
+@using Entegrasyon.Entity
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.AttributeSyncVm
 @{
     ViewData.SetPageTitle("Özellik Eşlemesi");
     ViewData.SetActiveNav("marketplace-sync");
     ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Özellik Eşlemesi", null));
+}
 
-    var mappedCount = Model.Attributes.Count(a => a.IsMapped);
-    var totalCount = Model.Attributes.Count;
-    var pct = totalCount > 0 ? (int)(mappedCount * 100.0 / totalCount) : 0;
+@if (!Model.AnyCredentialed)
+{
+    <div class="card">
+        <div class="card-body">
+            <div class="empty">
+                <div class="empty-icon">
+                    <i class="ti ti-plug-connected-x" style="font-size:2.5rem;"></i>
+                </div>
+                <p class="empty-title">Aktif pazaryeri yok</p>
+                <p class="empty-subtitle text-secondary">
+                    Özellik eşlemesi yapabilmek için en az bir pazaryerinin API bilgilerini girmelisiniz.
+                </p>
+                <div class="empty-action">
+                    <a href="/settings/integrations" class="btn btn-primary">
+                        <i class="ti ti-settings me-1"></i>Pazaryeri Ayarları
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    return;
 }
 
         @if (!string.IsNullOrEmpty(Model.ReturnUrl))
@@ -31,36 +51,28 @@
                     @foreach (var mp in Model.MarketPlaces)
                     {
                         var isActive = mp.Id == Model.SelectedMarketPlaceId;
+                        var hasCreds = mp.IsCredentialComplete();
                         <li class="nav-item">
-                            <a class="nav-link @(isActive ? "active" : "")"
-                               href="/marketplace/sync/attributes?mp=@mp.Id"
-                               hx-get="/marketplace/sync/attributes?mp=@mp.Id"
-                               hx-target="#attribute-list-container"
-                               hx-push-url="true">
-                                @mp.Name
-                            </a>
+                            @if (hasCreds)
+                            {
+                                <a class="nav-link @(isActive ? "active" : "")"
+                                   href="/marketplace/sync/attributes?mp=@mp.Id"
+                                   hx-get="/marketplace/sync/attributes?mp=@mp.Id"
+                                   hx-target="#attribute-list-container"
+                                   hx-push-url="true">
+                                    @mp.Name
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="nav-link disabled" title="API bilgisi eksik">
+                                    @mp.Name
+                                    <i class="ti ti-lock ms-1"></i>
+                                </span>
+                            }
                         </li>
                     }
                 </ul>
-            </div>
-        </div>
-
-        <!-- Summary Bar -->
-        <div class="card mb-3">
-            <div class="card-body">
-                <div class="row align-items-center">
-                    <div class="col-auto">
-                        <span class="text-secondary">Eşleme Durumu:</span>
-                    </div>
-                    <div class="col">
-                        <div class="progress" style="height: 8px;">
-                            <div class="progress-bar bg-success" style="width: @(pct)%"></div>
-                        </div>
-                    </div>
-                    <div class="col-auto">
-                        <strong>@mappedCount / @totalCount</strong> özellik eşlendi
-                    </div>
-                </div>
             </div>
         </div>
 
