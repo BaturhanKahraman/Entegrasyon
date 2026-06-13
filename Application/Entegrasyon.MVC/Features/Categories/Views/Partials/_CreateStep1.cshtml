@@ -27,6 +27,10 @@
                             </option>
                         }
                     </select>
+                    <div id="root-category-note" class="alert alert-info mt-2 py-2 small d-none">
+                        <i class="ti ti-info-circle me-1"></i>
+                        Kök kategoriler <strong>özellik içeremez</strong>; ürünler alt kategorilere eklenir.
+                    </div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Varsayılan KDV Oranı (%)</label>
@@ -59,5 +63,13 @@
     if (el && !el.tomselect) {
         new TomSelect(el, { maxOptions: null, allowEmptyOption: true, placeholder: 'Üst kategori seçin...' });
     }
+    // Kök kategori seçilince (üst kategori yok) özellik kısıtı notunu göster.
+    var rootNote = document.getElementById('root-category-note');
+    function toggleRootNote() {
+        var val = el && el.tomselect ? el.tomselect.getValue() : (el ? el.value : '');
+        if (rootNote) rootNote.classList.toggle('d-none', val !== '');
+    }
+    if (el && el.tomselect) { el.tomselect.on('change', toggleRootNote); }
+    toggleRootNote();
 })();
 </script>

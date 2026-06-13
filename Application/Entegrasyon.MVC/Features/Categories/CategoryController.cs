@@ -346,17 +346,21 @@ public class CategoryController(
 
     [HttpPost("/categories/{id:int}/edit")]
     public async Task<IActionResult> Edit(int id, [FromForm] string name, [FromForm] int? superCategoryId,
-        [FromForm] bool isFavorite, [FromForm] decimal? defaultVatRate, [FromForm] bool isImported)
+        [FromForm] bool isFavorite, [FromForm] decimal? defaultVatRate, [FromForm] bool isImported,
+        [FromForm] uint rowVersion = 0)
     {
-        var dto = new EditCategoryDto(id, name, superCategoryId, isFavorite, isImported, defaultVatRate);
+        var dto = new EditCategoryDto(id, name, superCategoryId, isFavorite, isImported, defaultVatRate, rowVersion);
         var result = await categoryService.UpdateCategory(dto);
 
         if (result.Success)
-            TempData.SetSuccess("Kategori basariyla guncellendi.");
-        else
-            TempData.SetError(result.Message ?? "Kategori guncellenemedi.");
+        {
+            TempData.SetSuccess("Kategori başarıyla güncellendi.");
+            return RedirectToAction(nameof(Index));
+        }
 
-        return RedirectToAction(nameof(Index));
+        // Concurrency / iş kuralı hatası → edit sayfasına dön (kullanıcı güncel formla tekrar dener)
+        TempData.SetError(result.Message ?? "Kategori güncellenemedi.");
+        return RedirectToAction(nameof(Edit), new { id });
     }
 
     // ── Import ────────────────────────────────────────────────────────

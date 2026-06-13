@@ -5,9 +5,15 @@
     // page-header'ında render edilir (Ürünler sayfası deseni). Pretitle bilinçli boş:
     // breadcrumb zaten "Kategoriler > {ad}" bağlamını veriyor, üst kategoriyi subtitle'da
     // gösteriyoruz; pretitle'da grup adını tekrar etmek gürültü olur.
-    var subtitleText = !string.IsNullOrEmpty(Model.SuperCategoryName)
-        ? $"{Model.SuperCategoryName} · Kategori detayları ve performans"
-        : "Ana kategori · Kategori detayları ve performans";
+    // Tip-duyarlı subtitle: yaprak kategoride üst kategori bağlamı + "Yaprak kategori";
+    // ana kategoride alt kategori sayısı vurgulanır (özellik/ürün barındırmaz).
+    var subtitleText = Model.IsLeaf
+        ? (!string.IsNullOrEmpty(Model.SuperCategoryName)
+            ? $"{Model.SuperCategoryName} · Yaprak kategori"
+            : "Yaprak kategori")
+        : (!string.IsNullOrEmpty(Model.SuperCategoryName)
+            ? $"{Model.SuperCategoryName} · Ana kategori · {Model.SubCategoryCount} alt kategori"
+            : $"Ana kategori · {Model.SubCategoryCount} alt kategori");
     ViewData.SetPageSubtitle(subtitleText);
 
     decimal totalRevenue = Model.Performance.TotalRevenue;
@@ -43,9 +49,12 @@
             <a class="dropdown-item" href="/categories/@Model.CategoryId/edit">
                 <i class="ti ti-edit dropdown-item-icon"></i> Düzenle
             </a>
-            <a class="dropdown-item" href="/categories/@Model.CategoryId/attributes">
-                <i class="ti ti-list-details dropdown-item-icon"></i> Özellikleri Düzenle
-            </a>
+            @if (Model.IsLeaf)
+            {
+                <a class="dropdown-item" href="/categories/@Model.CategoryId/attributes">
+                    <i class="ti ti-list-details dropdown-item-icon"></i> Özellikleri Düzenle
+                </a>
+            }
             <span class="dropdown-item disabled" aria-disabled="true">
                 <i class="ti ti-building-store dropdown-item-icon"></i>
                 Pazaryeri Ayarları
@@ -313,13 +322,31 @@
         <div class="card">
             <div class="card-header">
                 <h3 class="card-title">Özellikler</h3>
-                <div class="card-actions">
-                    <a href="/categories/@Model.CategoryId/attributes" class="btn btn-primary btn-sm">
-                        <i class="ti ti-list-details me-1"></i> Özellikleri Düzenle
-                    </a>
-                </div>
+                @if (Model.IsLeaf)
+                {
+                    <div class="card-actions">
+                        <a href="/categories/@Model.CategoryId/attributes" class="btn btn-primary btn-sm">
+                            <i class="ti ti-list-details me-1"></i> Özellikleri Düzenle
+                        </a>
+                    </div>
+                }
             </div>
-            @if (Model.Attributes.Count == 0)
+            @if (!Model.IsLeaf)
+            {
+                @* Ana kategori: özellik barındıramaz — açıklayıcı boş durum, "Özellik Ekle" yok *@
+                <div class="card-body">
+                    <div class="empty">
+                        <div class="empty-icon">
+                            <i class="ti ti-folder" style="font-size: 2.5rem;"></i>
+                        </div>
+                        <p class="empty-title">Ana kategori</p>
+                        <p class="empty-subtitle text-secondary">
+                            Ana kategoriler özellik içermez. Özellikler yalnızca yaprak (alt) kategorilere bağlanır.
+                        </p>
+                    </div>
+                </div>
+            }
+            else if (Model.Attributes.Count == 0)
             {
                 <div class="card-body">
                     <div class="empty">

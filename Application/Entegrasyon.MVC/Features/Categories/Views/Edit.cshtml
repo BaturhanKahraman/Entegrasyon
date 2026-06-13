@@ -11,6 +11,18 @@
 }
 
 @section PageActions {
+    @if (Model.IsLeaf)
+    {
+        <span class="badge bg-green-lt me-2">
+            <i class="ti ti-leaf me-1"></i> Yaprak Kategori
+        </span>
+    }
+    else
+    {
+        <span class="badge bg-azure-lt me-2">
+            <i class="ti ti-folder me-1"></i> Ana Kategori
+        </span>
+    }
     <a href="/categories/@Model.Category.Id" class="btn btn-outline-secondary">
         <i class="ti ti-arrow-left icon"></i> Detaya Dön
     </a>
@@ -29,6 +41,8 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="Id" value="@Model.Category.Id" />
                     <input type="hidden" name="IsImported" value="@Model.Category.IsImported" />
+                    @* Optimistic concurrency — form yüklendiğindeki xmin; POST'ta eş zamanlı edit tespiti *@
+                    <input type="hidden" name="RowVersion" value="@Model.Category.RowVersion" />
 
                     <div class="row">
                         <div class="col-md-6 mb-3">

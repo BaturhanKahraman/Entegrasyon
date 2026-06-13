@@ -28,4 +28,7 @@ public sealed class CategoryDetailPageVm
 
     /// <summary>Bu kategoride hiç satış var mı — empty state kararı.</summary>
     public bool HasSales => Performance.TotalOrderCount > 0 || Performance.TotalSoldQuantity > 0;
+
+    /// <summary>Yaprak kategori mi (alt kategorisi yok). Özellik/ürün yalnız yaprakta olur.</summary>
+    public bool IsLeaf => SubCategoryCount == 0;
 }
