@@ -175,12 +175,35 @@ public class CategoryManagerTests : BaseTest
     }
 
     [Fact]
+    public async Task SoftDelete_Should_Archive_CategoryMarketplace_Mappings()
+    {
+        // Arrange — ürünsüz ama pazaryerine eşli kategori
+        int categoryId = 3;
+        IList<Category> categories = [new Category { Id = categoryId, Name = "Eşli" }];
+        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
+        _mockProductService.Setup(p => p.GetProductCountByCategoryId(categoryId)).ReturnsAsync(0);
+
+        var mapping = new CategoryMarketplace { CategoryId = categoryId, MarketPlaceId = 1, IsActive = true };
+        IList<CategoryMarketplace> mappings = [mapping];
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(mappings);
+        mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
+        // Act
+        var result = await _categoryManager.SoftDelete(categoryId);
+
+        // Assert — kategori arşivlenince pazaryeri eşleşmesi de soft-delete edilmeli (stale kalmasın)
+        result.Success.Should().BeTrue(result.Message);
+        mapping.IsDeleted.Should().BeTrue("kategori arşivlenince pazaryeri eşleşmesi de arşivlenmeli");
+    }
+
+    [Fact]
     public async Task SoftDelete_Should_Succeed_If_No_Products_Exist()
     {
         // Arrange
         int categoryId = 2;
         IList<Category> categories = [new Category { Id = categoryId, Name = "Test2" }];
         mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(new List<CategoryMarketplace>());
         mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
         _mockProductService.Setup(p => p.GetProductCountByCategoryId(categoryId)).ReturnsAsync(0);
 

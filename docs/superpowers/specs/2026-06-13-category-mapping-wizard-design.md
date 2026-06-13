@@ -235,3 +235,40 @@ Mekanik/boilerplate (view iskeleti, partial kopya-uyarla, mapper) → yerel Olla
 7. Eşleme tamamlanınca "Gönderime Hazır" yeşil durum.
 8. Yetkisiz kullanıcıyla "Eşlemeyi Kaldır" butonu **görünmez**; doğrudan POST → 403.
 9. Yetkiliyle unmap → onay modalı → silince kategori durur, attr/value eşleşmeleri gider.
+
+---
+
+# FAZ 3 — Kategori / Eşleşme / Ürün Yaşam Döngüsü (tasarım)
+
+**Soru (kullanıcı):** Kategori silme/düzenlemede önceki kayıtlarımız (eşleşmeler **ve ürünler**) ne olacak? Ayrıca **karşı taraf (Trendyol kategorisi) parent'a dönüşürse** ne yapacağız?
+
+**Mevcut koruma deseni:** soft-delete (`IsDeleted`/`DeletedAt` + query filter), ürün guard'ı (`SoftDelete` → `CategoryHasProducts` engeli). Geçmiş kaybolmaz, ürünlü kategori silinemez.
+
+**Felsefe (mevcut desenle tutarlı):** *Veri kaybetme. Soft + guard + UYARI. Pazaryerindeki gönderilmiş ürüne otomatik dokunma (geri çekme riskli, kullanıcı kararı). Stale durumu sessizce silme — TESPIT ET + BİLDİR.*
+
+## Senaryolar ve önerilen davranış
+
+### 1. Bizim kategori SİLİNİRSE (soft-delete)
+- **Ürünler:** ürün guard'ı korunur — ürünlü kategori silinemez (gönderilmiş ürünlü kategori de dolayısıyla silinemez). Kullanıcı önce ürünleri taşır/siler.
+- **Eşleşmeler:** kategori `IsDeleted` olunca `CategoryMarketplace` + attribute/value match'leri **de soft-delete edilir** (orphan/stale kalmasın; katalog/validation görmez). Restore → eşleşmeler de restore edilebilir. *(Faz 1 unmap cascade mantığı yeniden kullanılır, hard yerine soft.)*
+- **Pazaryeri:** Trendyol'daki ürüne dokunulmaz.
+
+### 2. Eşleşme KALDIRILIRSA (unmap — Faz 1'de yapıldı)
+- Orphan-safe attribute/value match temizliği ✓.
+- **Eklenecek:** o kategoride **gönderilmiş ürün** (`ProductMarketplace.Status=Published`, `ExternalProductId` dolu) varsa unmap'te **UYAR**: "Bu kategoride N gönderilmiş ürün var; eşlemeyi kaldırırsanız bu ürünleri pazaryerinde güncelleyemezsiniz." Trendyol'daki ürün geri çekilmez (isteyene ayrı "arşivle/geri çek" aksiyonu — Trendyol `IsArchived` alanı var).
+
+### 3. Bizim leaf → PARENT'a dönüşürse (alt kategori ekleme)
+- `parentHasAttrs` guard'ı eşli kategorilerin çoğunu zaten blokluyor (eşli kategori genelde zorunlu attribute taşır).
+- **Açık kenar durum:** eşli-ama-attribute'suz kategori parent olabilir → mapping stale (Trendyol non-leaf kabul etmez). **Davranış:** alt kategori eklerken o kategorinin **aktif eşleşmesi** varsa **UYAR** (otomatik unmap değil — kullanıcı kararı). Gönderilmiş ürün varsa uyarıyı güçlendir.
+
+### 4. KARŞI taraf (Trendyol kategorisi) PARENT'a dönüşürse
+- Trendyol "Oyuncak"a alt kategori ekler → eşleştiğimiz kategori artık **non-leaf** → gönderim reddedilir.
+- **Tespit:** `MasterCatalogSyncService` günlük sync'te `MarketplaceReference.ParentExternalId` tutuyor → bir external id başka kategori tarafından parent olarak gösteriliyorsa o kategori non-leaf. Mapped tenant kategorilerinden Trendyol'da non-leaf'e dönenler tespit edilir.
+- **Davranış:** eşleşmeyi **"geçersiz/uyarı" işaretle** + kullanıcıya **BİLDİRİM** ("Trendyol '{kategori}' kategorisi alt kategorilere bölündü; daha spesifik bir alt kategoriye yeniden eşleyin"). Otomatik silme yok. Cross-DB tespit → Faz 2 geri-besleme döngüsüyle aynı altyapı (admin sync → tenant bildirimi).
+
+### 5. Ürün taşıma / kategori değişimi (edit)
+- Ürünün kategorisi değişirse yeni kategorinin eşleşme/attribute'ları geçerli olmalı; gönderilmiş ürün ise re-validate gerekir. (Ürün-tarafı; ayrı ele alınır.)
+
+## Uygulama fazlaması
+- **Hemen (Faz 1 uzantısı):** (1) soft-delete eşleşmeleri de soft-temizlesin, (2) unmap'te sent-ürün uyarısı, (3) eşli kategoriye alt kategori eklerken uyarı.
+- **Faz 2/3 (daha büyük):** Trendyol-taraf non-leaf tespiti + bildirim (sync + cross-DB), ürün geri-çek/arşivle aksiyonu, ürün kategori-değişim re-validate.

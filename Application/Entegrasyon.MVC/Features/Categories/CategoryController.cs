@@ -16,8 +16,16 @@ public class CategoryController(
     ICategoryPerformanceManager categoryPerformanceManager,
     IProductService productService,
     IMasterCatalogImportService masterCatalogImportService,
+    ICategoryMatchService categoryMatchService,
     ITenantContext tenantContext) : Controller
 {
+    /// <summary>Üst kategori dropdown'ını + eşli (mapped) parent id'lerini ViewBag'e koyar (create wizard).</summary>
+    private async Task LoadParentsViewBagAsync()
+    {
+        ViewBag.Parents = await categoryService.GetValidParentCandidatesAsync();
+        ViewBag.MappedParentIds = await categoryMatchService.GetMappedCategoryIdsAsync();
+    }
+
     /// <summary>Split layout: tree on left, detail on right</summary>
     [HttpGet("/categories")]
     public async Task<IActionResult> Index()
@@ -188,8 +196,7 @@ public class CategoryController(
         ViewData.SetActiveNav("categories");
         ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Yeni Kategori", null));
 
-        var parents = await categoryService.GetValidParentCandidatesAsync();
-        ViewBag.Parents = parents;
+        await LoadParentsViewBagAsync();
         return View(new CategoryCreateVm());
     }
 
@@ -199,8 +206,7 @@ public class CategoryController(
     {
         if (string.IsNullOrWhiteSpace(vm.Name))
         {
-            var parents = await categoryService.GetValidParentCandidatesAsync();
-            ViewBag.Parents = parents;
+            await LoadParentsViewBagAsync();
 
             if (Request.IsHtmx())
                 return PartialView("Partials/_CreateStep1", vm);
@@ -328,7 +334,7 @@ public class CategoryController(
         // Bunun yerine Step 1 partial'ını döndür (veri korunur, kullanıcı üst kategoriyi düzeltebilir) + toast.
         if (Request.IsHtmx())
         {
-            ViewBag.Parents = await categoryService.GetValidParentCandidatesAsync();
+            await LoadParentsViewBagAsync();
             Response.HtmxTriggerWithData("showToast", new { message = errorMsg, type = "danger" });
             return PartialView("Partials/_CreateStep1", vm);
         }

@@ -1,6 +1,9 @@
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CategoryMappingWizardVm
 @{
     var wizardUrl = $"/marketplace/sync/categories/{Model.CategoryId}/wizard?mp={Model.MarketPlaceId}";
+    var unmapConfirm = Model.SentProductCount > 0
+        ? $"DİKKAT: Bu kategoride pazaryerine gönderilmiş {Model.SentProductCount} ürün var. Eşlemeyi kaldırırsanız bu ürünleri pazaryerinde güncelleyemezsiniz (pazaryerindeki ürünler kalır). Kategoriye bağlı özellik/değer eşleşmeleri de (başka kategori kullanmıyorsa) temizlenecek. Devam edilsin mi?"
+        : "Bu eşlemeyi kaldırmak üzeresiniz. Kategoriye bağlı özellik ve değer eşleşmeleri de (başka kategori kullanmıyorsa) temizlenecek. Emin misiniz?";
 }
 
 <div class="row g-3">
@@ -107,13 +110,26 @@
                         <div class="col-auto" require-permission="Permissions.Categories.DeleteMapping">
                             <button class="btn btn-outline-danger"
                                     hx-post="/marketplace/sync/categories/@Model.CategoryId/unmap?mp=@Model.MarketPlaceId"
-                                    hx-confirm="Bu eşlemeyi kaldırmak üzeresiniz. Kategoriye bağlı özellik ve değer eşleşmeleri de (başka kategori kullanmıyorsa) temizlenecek. Emin misiniz?"
+                                    hx-confirm="@unmapConfirm"
                                     hx-swap="none"
                                     hx-on::after-request="if(event.detail.successful){ window.location.href='@wizardUrl'; }">
                                 <i class="ti ti-unlink me-1"></i>Eşlemeyi Kaldır
                             </button>
                         </div>
                     </div>
+                    @if (Model.SentProductCount > 0)
+                    {
+                        <div class="alert alert-warning mt-3 mb-0" role="alert">
+                            <div class="d-flex">
+                                <i class="ti ti-package-export icon alert-icon"></i>
+                                <div>
+                                    Bu kategoride pazaryerine gönderilmiş <strong>@Model.SentProductCount ürün</strong> var.
+                                    Eşlemeyi kaldırırsanız bu ürünleri pazaryerinde güncelleyemezsiniz
+                                    (pazaryerindeki ürünler otomatik geri çekilmez).
+                                </div>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>

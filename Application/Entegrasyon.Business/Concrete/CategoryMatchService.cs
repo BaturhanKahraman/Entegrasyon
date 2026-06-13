@@ -142,6 +142,27 @@ public class CategoryMatchService(
         return new SuccessResult("Kategori mapping başarıyla oluşturuldu.");
     }
 
+    public async Task<int> GetPublishedProductCountAsync(int categoryId, int marketPlaceId)
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        return await dbContext.ProductMarketplaces
+            .Where(pm => pm.MarketPlaceId == marketPlaceId
+                      && pm.Status == Entity.Products.MarketplaceProductStatus.Published
+                      && pm.Product.CategoryId == categoryId)
+            .CountAsync();
+    }
+
+    public async Task<HashSet<int>> GetMappedCategoryIdsAsync()
+    {
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+        var ids = await dbContext.CategoryMarketplaces
+            .Where(x => x.IsActive)
+            .Select(x => x.CategoryId)
+            .Distinct()
+            .ToListAsync();
+        return ids.ToHashSet();
+    }
+
     public async Task<IDataResult<BulkCategoryMatchResultDto>> BulkCreateCategoryMappingsAsync(BulkCategoryMatchDto dto)
     {
         // 1. Validation

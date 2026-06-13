@@ -148,6 +148,19 @@ namespace Entegrasyon.Business.Concrete
             var deletedName = category.Name ?? string.Empty;
             category.IsDeleted = true;
             category.DeletedAt = DateTimeOffset.UtcNow;
+
+            // Arşivle: kategori soft-delete olunca pazaryeri eşleşmeleri de soft-delete edilir.
+            // (!IsDeleted query filter'ı sayesinde katalog/validation onları görmez — orphan/stale kalmaz.)
+            // Attribute/value match'leri attribute-seviyesi PAYLAŞIMLI olduğundan dokunulmaz (restore-simetrik).
+            var categoryMappings = await dbContext.CategoryMarketplaces
+                .AsTracking()
+                .Where(x => x.CategoryId == categoryId)
+                .ToListAsync();
+            foreach (var mapping in categoryMappings)
+            {
+                mapping.IsDeleted = true;
+                mapping.DeletedAt = DateTimeOffset.UtcNow;
+            }
             if (notificationFlags.Value.PublishEnabled)
             {
                 dbContext.AddDomainEvent(new CategoryDeletedEvent(

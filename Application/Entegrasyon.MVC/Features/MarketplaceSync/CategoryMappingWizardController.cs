@@ -35,11 +35,14 @@ public class CategoryMappingWizardController(
         var isMapped = mapping is not null;
 
         Entegrasyon.Entity.Dtos.Category.CategoryMatchValidationResultDto? validation = null;
+        var sentProductCount = 0;
         if (isMapped)
         {
             var validationResult = await validationService.ValidateCategoryMatchAsync(categoryId, mp);
             if (validationResult.Success)
                 validation = validationResult.Data;
+
+            sentProductCount = await categoryMatchService.GetPublishedProductCountAsync(categoryId, mp);
         }
 
         var vm = new CategoryMappingWizardVm
@@ -52,7 +55,8 @@ public class CategoryMappingWizardController(
             IsMapped = isMapped,
             MarketPlaceCategoryId = mapping?.MarketPlaceCategoryId,
             MarketPlaceCategoryName = mapping?.MarketPlaceCategoryName,
-            Validation = validation
+            Validation = validation,
+            SentProductCount = sentProductCount
         };
 
         ViewData.SetPageTitle($"Eşleme: {vm.CategoryName}");

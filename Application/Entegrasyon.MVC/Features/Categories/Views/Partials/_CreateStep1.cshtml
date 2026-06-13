@@ -3,6 +3,7 @@
 @{
     var parents = ViewBag.Parents as List<Entegrasyon.Entity.Categories.Category>
                   ?? new List<Entegrasyon.Entity.Categories.Category>();
+    var mappedParentIds = ViewBag.MappedParentIds as HashSet<int> ?? new HashSet<int>();
 }
 
 <form hx-post="/categories/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
@@ -22,6 +23,7 @@
                         @foreach (var parent in parents.OrderBy(p => p.Name))
                         {
                             <option value="@parent.Id"
+                                    data-mapped="@(mappedParentIds.Contains(parent.Id) ? "true" : "false")"
                                     selected="@(parent.Id == Model.SuperCategoryId)">
                                 @parent.Name
                             </option>
@@ -30,6 +32,12 @@
                     <div id="root-category-note" class="alert alert-info mt-2 py-2 small d-none">
                         <i class="ti ti-info-circle me-1"></i>
                         Kök kategoriler <strong>özellik içeremez</strong>; ürünler alt kategorilere eklenir.
+                    </div>
+                    <div id="mapped-parent-note" class="alert alert-warning mt-2 py-2 small d-none">
+                        <i class="ti ti-alert-triangle me-1"></i>
+                        Seçtiğiniz üst kategori bir pazaryerine <strong>eşli</strong>. Altına kategori
+                        eklerseniz bu kategori artık "yaprak" olmaktan çıkar ve pazaryeri eşleşmesi
+                        gönderim için geçersizleşir.
                     </div>
                 </div>
                 <div class="col-md-6 mb-3">
@@ -65,11 +73,19 @@
     }
     // Kök kategori seçilince (üst kategori yok) özellik kısıtı notunu göster.
     var rootNote = document.getElementById('root-category-note');
-    function toggleRootNote() {
-        var val = el && el.tomselect ? el.tomselect.getValue() : (el ? el.value : '');
-        if (rootNote) rootNote.classList.toggle('d-none', val !== '');
+    var mappedNote = document.getElementById('mapped-parent-note');
+    function currentVal() {
+        return el && el.tomselect ? el.tomselect.getValue() : (el ? el.value : '');
     }
-    if (el && el.tomselect) { el.tomselect.on('change', toggleRootNote); }
-    toggleRootNote();
+    function toggleNotes() {
+        var val = currentVal();
+        if (rootNote) rootNote.classList.toggle('d-none', val !== '');
+        // Seçilen üst kategori pazaryerine eşli mi? → uyar (eşli kategori parent olunca mapping geçersizleşir)
+        var opt = val ? el.querySelector('option[value="' + val + '"]') : null;
+        var mapped = !!(opt && opt.getAttribute('data-mapped') === 'true');
+        if (mappedNote) mappedNote.classList.toggle('d-none', !mapped);
+    }
+    if (el && el.tomselect) { el.tomselect.on('change', toggleNotes); }
+    toggleNotes();
 })();
 </script>

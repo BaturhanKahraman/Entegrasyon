@@ -23,6 +23,9 @@ public class CategoryMappingWizardVm
     /// <summary>Eşli ise zorunlu/varianter özellik tamlık durumu (UI progress'i besler).</summary>
     public CategoryMatchValidationResultDto? Validation { get; set; }
 
+    /// <summary>Bu kategoride pazaryerine gönderilmiş (Published) ürün sayısı — unmap uyarısı için.</summary>
+    public int SentProductCount { get; set; }
+
     public string? ReturnUrl { get; set; }
 
     // ── Hesaplanan adım durumu ──
