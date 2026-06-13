@@ -19,6 +19,7 @@ public sealed class TrendyolMarketplaceSearchService(
     IDbContextFactory<IntegrationDbContext> dbContextFactory,
     ITrendyolCategoryImportService categoryImportService,
     IHttpClientFactory httpClientFactory,
+    ITrendyolAttributeCatalog attributeCatalog,
     ILogger<TrendyolMarketplaceSearchService> logger) : IMarketplaceSearchService
 {
     private const int TrendyolMarketPlaceId = 1;
@@ -64,19 +65,13 @@ public sealed class TrendyolMarketplaceSearchService(
     public async Task<IDataResult<List<MarketplaceAttributeSearchResult>>> SearchAttributesAsync(
         int marketPlaceId, string query, CancellationToken ct = default)
     {
+        if (marketPlaceId != TrendyolMarketPlaceId)
+            return new SuccessDataResult<List<MarketplaceAttributeSearchResult>>([]);
+
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
-
-            var attrs = await dbContext.CategoryAttributes
-                .Where(a => string.IsNullOrWhiteSpace(query) ||
-                            a.CategoryAttributeHumanized!.Contains(query) ||
-                            a.CategoryAttributeKey!.Contains(query))
-                .Take(20)
-                .Select(a => new MarketplaceAttributeSearchResult(a.Id, a.CategoryAttributeHumanized!))
-                .ToListAsync(ct);
-
-            return new SuccessDataResult<List<MarketplaceAttributeSearchResult>>(attrs);
+            var attrs = await attributeCatalog.SearchAttributesAsync(query, ct);
+            return new SuccessDataResult<List<MarketplaceAttributeSearchResult>>(attrs.ToList());
         }
         catch (Exception ex)
         {
@@ -86,25 +81,19 @@ public sealed class TrendyolMarketplaceSearchService(
     }
 
     public async Task<IDataResult<List<MarketplaceOption>>> SearchAttributeValuesAsync(
-        int marketPlaceId, int attributeId, string query, CancellationToken ct = default)
+        int marketPlaceId, int marketplaceAttributeId, string query, CancellationToken ct = default)
     {
+        if (marketPlaceId != TrendyolMarketPlaceId)
+            return new SuccessDataResult<List<MarketplaceOption>>([]);
+
         try
         {
-            await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
-
-            var values = await dbContext.CategoryAttributeValues
-                .Where(v => v.CategoryAttributeId == attributeId &&
-                            (string.IsNullOrWhiteSpace(query) || v.Name!.Contains(query)))
-                .OrderBy(v => v.Name)
-                .Take(20)
-                .Select(v => new MarketplaceOption(v.Id, v.Name!))
-                .ToListAsync(ct);
-
-            return new SuccessDataResult<List<MarketplaceOption>>(values);
+            var values = await attributeCatalog.SearchValuesAsync(marketplaceAttributeId, query, ct);
+            return new SuccessDataResult<List<MarketplaceOption>>(values.ToList());
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Trendyol özellik değeri arama hatası. AttributeId={AttributeId}", attributeId);
+            logger.LogError(ex, "Trendyol özellik değeri arama hatası. AttributeId={AttributeId}", marketplaceAttributeId);
             return new ErrorDataResult<List<MarketplaceOption>>([], "Özellik değeri arama sırasında hata oluştu.");
         }
     }

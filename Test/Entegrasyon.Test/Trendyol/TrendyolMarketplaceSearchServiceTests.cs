@@ -3,8 +3,8 @@ using System.Text.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.Utility.Constants;
-using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
+using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Matches;
 using Entegrasyon.Test.Fixtures;
 using Microsoft.Extensions.Logging;
@@ -26,6 +26,7 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     private readonly Mock<ITrendyolCategoryImportService> _categoryImportMock = new();
     private readonly Mock<ILogger<TrendyolMarketplaceSearchService>> _loggerMock = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
+    private readonly Mock<ITrendyolAttributeCatalog> _attributeCatalogMock = new();
 
     public TrendyolMarketplaceSearchServiceTests(WireMockFixture wm)
     {
@@ -41,6 +42,7 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
         mockContextFactory.Object,
         _categoryImportMock.Object,
         _httpClientFactoryMock.Object,
+        _attributeCatalogMock.Object,
         _loggerMock.Object);
 
     /// <summary>
@@ -276,47 +278,30 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
-    public async Task SearchAttributesAsync_ReturnsMatchingAttributes()
+    public async Task SearchAttributesAsync_Trendyol_DelegatesToCatalog()
     {
-        // Arrange
-        var attrs = new List<CategoryAttribute>
-        {
-            new() { Id = 1, CategoryAttributeKey = "color", CategoryAttributeHumanized = "Renk" },
-            new() { Id = 2, CategoryAttributeKey = "size", CategoryAttributeHumanized = "Beden" },
-            new() { Id = 3, CategoryAttributeKey = "material", CategoryAttributeHumanized = "Malzeme" }
-        };
+        _attributeCatalogMock
+            .Setup(c => c.SearchAttributesAsync("Renk", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<MarketplaceAttributeSearchResult> { new(348, "Renk") });
 
-        mockIntegrationDbContext.Setup(x => x.CategoryAttributes).ReturnsDbSet(attrs);
         var sut = CreateSut();
 
-        // Act
         var result = await sut.SearchAttributesAsync(1, "Renk");
 
-        // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(1);
-        result.Data[0].Name.Should().Be("Renk");
+        result.Data.Should().ContainSingle();
+        result.Data[0].Id.Should().Be(348);
     }
 
     [Fact]
-    public async Task SearchAttributesAsync_EmptyQuery_ReturnsAll()
+    public async Task SearchAttributesAsync_NonTrendyol_ReturnsEmpty()
     {
-        // Arrange
-        var attrs = new List<CategoryAttribute>
-        {
-            new() { Id = 1, CategoryAttributeKey = "color", CategoryAttributeHumanized = "Renk" },
-            new() { Id = 2, CategoryAttributeKey = "size", CategoryAttributeHumanized = "Beden" }
-        };
-
-        mockIntegrationDbContext.Setup(x => x.CategoryAttributes).ReturnsDbSet(attrs);
         var sut = CreateSut();
 
-        // Act
-        var result = await sut.SearchAttributesAsync(1, "");
+        var result = await sut.SearchAttributesAsync(2, "Renk");
 
-        // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(2);
+        result.Data.Should().BeEmpty();
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -324,49 +309,29 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
-    public async Task SearchAttributeValuesAsync_FiltersByAttributeIdAndName()
+    public async Task SearchAttributeValuesAsync_Trendyol_DelegatesToCatalog()
     {
-        // Arrange — 3 degerimiz var, 2'si attribute 1'e ait
-        var values = new List<CategoryAttributeValue>
-        {
-            new() { Id = 1, Name = "Kirmizi", CategoryAttributeId = 1 },
-            new() { Id = 2, Name = "Mavi", CategoryAttributeId = 1 },
-            new() { Id = 3, Name = "Kirmizi", CategoryAttributeId = 2 } // farkli attribute — hariç tutulmalı
-        };
+        _attributeCatalogMock
+            .Setup(c => c.SearchValuesAsync(348, "Kır", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<MarketplaceOption> { new(1002, "Kırmızı") });
 
-        mockIntegrationDbContext.Setup(x => x.CategoryAttributeValues).ReturnsDbSet(values);
         var sut = CreateSut();
 
-        // Act
-        var result = await sut.SearchAttributeValuesAsync(1, attributeId: 1, query: "Kir");
+        var result = await sut.SearchAttributeValuesAsync(1, marketplaceAttributeId: 348, query: "Kır");
 
-        // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(1);
-        result.Data[0].Id.Should().Be(1);
-        result.Data[0].Name.Should().Be("Kirmizi");
+        result.Data.Should().ContainSingle();
+        result.Data[0].Id.Should().Be(1002);
     }
 
     [Fact]
-    public async Task SearchAttributeValuesAsync_EmptyQuery_ReturnsAllForAttribute()
+    public async Task SearchAttributeValuesAsync_NonTrendyol_ReturnsEmpty()
     {
-        // Arrange
-        var values = new List<CategoryAttributeValue>
-        {
-            new() { Id = 1, Name = "Kirmizi", CategoryAttributeId = 1 },
-            new() { Id = 2, Name = "Mavi", CategoryAttributeId = 1 },
-            new() { Id = 3, Name = "Kirmizi", CategoryAttributeId = 2 }
-        };
-
-        mockIntegrationDbContext.Setup(x => x.CategoryAttributeValues).ReturnsDbSet(values);
         var sut = CreateSut();
 
-        // Act
-        var result = await sut.SearchAttributeValuesAsync(1, attributeId: 1, query: "");
+        var result = await sut.SearchAttributeValuesAsync(2, marketplaceAttributeId: 348, query: "Kır");
 
-        // Assert
         result.Success.Should().BeTrue();
-        result.Data.Should().HaveCount(2, "bos query de attribute filtresi korunmali");
-        result.Data.Select(v => v.Id).Should().BeEquivalentTo(new[] { 1, 2 });
+        result.Data.Should().BeEmpty();
     }
 }
