@@ -46,4 +46,10 @@ public sealed class Category : BaseEntity
     public string? SeoDescription { get; set; }
     public string? SeoSlug { get; set; }
     public string? SeoKeywords { get; set; }
+
+    /// <summary>
+    /// PostgreSQL xmin sistem kolonu — optimistic concurrency token.
+    /// Her UPDATE'te otomatik değişir; eş zamanlı düzenlemeyi tespit eder.
+    /// </summary>
+    public uint RowVersion { get; set; }
 }

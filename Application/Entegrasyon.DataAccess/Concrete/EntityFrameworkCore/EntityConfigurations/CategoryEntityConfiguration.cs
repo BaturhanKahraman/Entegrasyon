@@ -21,5 +21,12 @@ public class CategoryEntityConfiguration:IEntityTypeConfiguration<Category>
         builder.HasQueryFilter(x => !x.IsDeleted);
 
         builder.HasIndex(x => x.SeoSlug).IsUnique().HasFilter("\"SeoSlug\" IS NOT NULL");
+
+        // Optimistic concurrency — PostgreSQL xmin sistem kolonu (DDL gerektirmez).
+        builder.Property(x => x.RowVersion)
+            .HasColumnName("xmin")
+            .HasColumnType("xid")
+            .ValueGeneratedOnAddOrUpdate()
+            .IsConcurrencyToken();
     }
 }

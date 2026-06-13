@@ -194,4 +194,28 @@ public class CategoryManagerIntegrationTests : IntegrationTestBase
         result.Data!.Should().Contain(c => c.Name == "Listeleme Test 1");
         result.Data!.Should().Contain(c => c.Name == "Listeleme Test 2");
     }
+
+    [Fact]
+    public async Task UpdateCategory_ThrowsOrReturnsError_WhenRowVersionStale()
+    {
+        // Arrange — seed category via DbContext (sibling test pattern)
+        using var dbContext = CreateDbContext();
+        var cat = new Category { Name = "OriginalName" };
+        dbContext.Categories.Add(cat);
+        await dbContext.SaveChangesAsync();
+
+        // İlk form yüklendiğindeki stale RowVersion (gerçek xmin asla 0 olmaz)
+        var staleRowVersion = 0u;
+
+        var dto = new EditCategoryDto(cat.Id, "UpdatedName", null, false, false, null, staleRowVersion);
+
+        // Act
+        var (categoryService, scope) = GetScopedService<ICategoryService>();
+        using var _ = scope;
+        var result = await categoryService.UpdateCategory(dto);
+
+        // Assert — xmin 0 olmayacağından concurrency hatası bekleniyor
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("değiştirildi");
+    }
 }

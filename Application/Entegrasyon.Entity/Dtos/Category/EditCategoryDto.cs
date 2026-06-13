@@ -1,4 +1,4 @@
-﻿namespace Entegrasyon.Entity.Dtos.Category;
+namespace Entegrasyon.Entity.Dtos.Category;
 
 public sealed record EditCategoryDto(
     int Id,
@@ -6,5 +6,6 @@ public sealed record EditCategoryDto(
     int? SuperCategoryId,
     bool IsFavorite,
     bool IsImported,
-    decimal? DefaultVatRate = null
+    decimal? DefaultVatRate = null,
+    uint RowVersion = 0
     );

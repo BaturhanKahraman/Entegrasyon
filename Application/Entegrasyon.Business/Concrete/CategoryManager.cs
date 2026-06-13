@@ -99,6 +99,10 @@ namespace Entegrasyon.Business.Concrete
                     return new ErrorResult("Seçilen üst kategori pazar yeri eşleştirmesi içerdiğinden bu işlem yapılamaz.");
             }
 
+            // Optimistic concurrency: formdaki xmin DB'dekiyle eşleşmeli.
+            // EF, UPDATE'e WHERE xmin = @original ekler → eş zamanlı düzenleme tespit edilir.
+            dbContext.Entry(dbCategory).Property(x => x.RowVersion).OriginalValue = dto.RowVersion;
+
             dbCategory.SuperCategoryId = dto.SuperCategoryId;
             dbCategory.Name = dto.Name;
             dbCategory.IsFavorite = dto.IsFavorite;
@@ -111,7 +115,14 @@ namespace Entegrasyon.Business.Concrete
                     "Kategori güncellendi",
                     currentUser.UserId ?? Guid.Empty));
             }
-            await dbContext.SaveChangesAsync();
+            try
+            {
+                await dbContext.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                return new ErrorResult("Kategori bu sırada başkası tarafından değiştirildi. Sayfayı yenileyin.");
+            }
             cache.Remove(CategoryListCacheKey);
             await hybridCache.RemoveByTagAsync("categories");
             return new SuccessResult(Messages.CategoryUpdated);
