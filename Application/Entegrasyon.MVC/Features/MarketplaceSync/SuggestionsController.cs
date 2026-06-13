@@ -59,10 +59,13 @@ public class SuggestionsController(IMarketplaceSearchService searchService) : Co
         return Ok(items);
     }
 
-    [HttpGet("/marketplace/sync/suggestions/attributes/{attributeId:int}/values")]
-    public async Task<IActionResult> AttributeValues(int attributeId, int mp = 1, string q = "", CancellationToken ct = default)
+    [HttpGet("/marketplace/sync/suggestions/attributes/values")]
+    public async Task<IActionResult> AttributeValues(int mp = 1, int mpAttributeId = 0, string q = "", CancellationToken ct = default)
     {
-        var result = await searchService.SearchAttributeValuesAsync(mp, attributeId, q, ct);
+        if (mpAttributeId <= 0)
+            return Ok(Array.Empty<object>());
+
+        var result = await searchService.SearchAttributeValuesAsync(mp, mpAttributeId, q, ct);
         if (!result.Success)
             return Ok(Array.Empty<object>());
 
