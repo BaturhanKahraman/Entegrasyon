@@ -1717,5 +1717,60 @@
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": false,
     "id": "T104"
+  },
+  {
+    "id": "T105",
+    "task": "Brand güncelleme: Edit endpoint eksik + unique-name self-exclude bug",
+    "description": "İki kritik bug birlikte düzeltilir. RİSK-1: Edit.cshtml formu POST /brands/{id}/edit'e gönderiyor ama BrandController.cs'de bu route yok → marka hiç güncellenemiyor (404). CategoryController/CustomerController edit pattern'ini örnek alarak GET+POST /brands/{id}/edit action çifti + EditBrandDto + BrandService.UpdateBrand çağrısı ekle; Detail.cshtml'e 'Düzelt' butonu (Edit'e nav) ekle. RİSK-2: BrandService.cs:206 CheckIfTheSameNameExits sadece Name kontrol ediyor, güncellenen markanın kendi Id'sini hariç tutmuyor → marka adı değiştirilmeden (sadece SeoSlug) kaydedilince 'Bu isimde bir marka zaten mevcut' hatası. Update yolu için Id != brand.Id koşulu ekle (Add yolu mevcut davranışı korusun). Çift loglama + FluentValidation pipeline korunur.",
+    "status": "done",
+    "priority": "high",
+    "plan": false,
+    "manual_test_steps": [
+      "admin/123456789 ile giriş yap, Markalar listesine git",
+      "Bir markaya tıkla → Detail sayfasında 'Düzelt' butonu görünmeli",
+      "Düzelt'e bas → Edit formu açılmalı (404 OLMAMALI)",
+      "Adı DEĞİŞTİRMEDEN sadece SeoSlug gir → Kaydet → hata gelmemeli, başarı mesajı + persist",
+      "Marka adını değiştir → Kaydet → liste/detayda yeni ad görünmeli",
+      "Başka bir markanın adıyla aynı ada güncellemeyi dene → 'zaten mevcut' hatası gelmeli"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true,
+    "dependsOn": [],
+    "notes": "Edit endpoint (GET+POST /brands/{id}/edit) + EditBrandDto(SeoSlug) + CheckIfTheSameNameExits self-exclude (NormalizedName tabanlı) + SeoSlug benzersizlik business-rule + Detail Düzelt butonu. AddBrand NormalizedName boşluğu da kapatıldı. Dual-logging eklendi. 1780 unit pass. Integration persist testleri CI-deferred."
+  },
+  {
+    "id": "T106",
+    "task": "Satış kayıtlarında marka adı snapshot (sipariş anı) + 'eski (güncel)' gösterim",
+    "description": "Marka adı şu an hiçbir satış/sipariş/rapor ekranında gösterilmiyor (investigator teyitli) ve sipariş-anı korunmuyor. (1) OrderItem'a BrandName snapshot alanı ekle (nullable string, mevcut snapshot deseni: Barcode/MerchantSku/ProductColor/ProductSize OrderItem.cs:21-30) + EF migration. (2) 4 sipariş-oluşturma yolunda snapshot'ı yakala: OrderManager.cs:292 (Pazarama), :433 (N11), :589 (Trendyol), CheckoutManager.cs:144 (storefront checkout). Marka adı eşleşen ProductVariant→Product→Brand zincirinden çözülür; ProductId/eşleşme yoksa null bırak. (3) Gösterim: OrderDetail.cshtml, OrderPrint.cshtml, Reports/Sales.cshtml + ReportManager.cs SQL (Sales:67, Marketplace:625-671) Brand bilgisini taşısın. Kural: snapshot BrandName göster; güncel Brand.Name (Product→Brand) farklıysa 'snapshot (güncelAd)'; snapshot null ise (mevcut/eski siparişler) güncel marka adına fallback. Multi-tenant + hot-path index (OrderItem/ReportManager SQL) gözet — DB Master review tetikleyici.",
+    "status": "todo",
+    "priority": "high",
+    "plan": true,
+    "manual_test_steps": [
+      "Bir sipariş oluştur/import et (markası olan ürünle) → OrderItem.BrandName dolmalı",
+      "Sipariş Detay (OrderDetail) ekranında marka adı görünmeli",
+      "Markanın adını Edit'ten değiştir → aynı siparişin detayında 'eskiAd (yeniAd)' görünmeli",
+      "Satış raporu (Reports/Sales) marka kolonunda snapshot görünmeli, değişmişse parantezde güncel",
+      "Snapshot'ı olmayan eski bir siparişte güncel marka adı (fallback) görünmeli"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true,
+    "dependsOn": []
+  },
+  {
+    "id": "T107",
+    "task": "Brand silme: bağlı ürün guard (engelle) + arşiv sayfası + geri yükle",
+    "description": "BrandService.cs:110 DeleteBrand şu an guard'sız soft-delete yapıyor → ürünlü marka silinince ürünler markasız kalıyor (RİSK-3). (1) DeleteBrand'a LogicRunner business rule: markaya bağlı görünür (query-filter'lı) ürün varsa silmeyi ENGELLE, 'X ürün bu markaya bağlı, önce taşıyın/kaldırın' ErrorResult dön. Soft-delete davranışı korunur (AsTracking zaten doğru, BrandService.cs:113). (2) Arşiv sayfası: soft-deleted markaları listele (IgnoreQueryFilters().Where(b=>b.IsDeleted)), her satırda 'Geri Yükle' butonu. (3) RestoreBrand(int id) metodu: AsTracking ile yükle, IsDeleted=false + DeletedAt=null, çift loglama + cache invalidation (brands tag). Index.cshtml'e Arşiv sayfasına nav linki. Tabler bileşenleri için class doğrula.",
+    "status": "todo",
+    "priority": "medium",
+    "plan": true,
+    "manual_test_steps": [
+      "Ürünü olan bir markayı silmeyi dene → reddedilmeli, 'X ürün bu markaya bağlı' mesajı",
+      "Ürünü olmayan bir markayı sil → başarılı, listeden kalkmalı",
+      "Markalar > Arşiv sayfasına git → silinen marka listede görünmeli",
+      "Arşivde 'Geri Yükle' bas → marka aktif listeye dönmeli, arşivden kalkmalı"
+    ],
+    "addOrUpdateUnitTests": true,
+    "addOrUpdateIntegrationTests": true,
+    "dependsOn": []
   }
 ]

@@ -13,5 +13,9 @@ public class EditBrandDtoValidator : AbstractValidator<EditBrandDto>
         RuleFor(b => b.Name)
             .NotEmpty().WithMessage("Marka adı boş geçilemez.")
             .MaximumLength(55).WithMessage("Marka adı en fazla 55 karakter olabilir.");
+
+        RuleFor(b => b.SeoSlug)
+            .MaximumLength(100).WithMessage("SEO slug en fazla 100 karakter olabilir.")
+            .When(b => !string.IsNullOrEmpty(b.SeoSlug));
     }
 }

@@ -27,6 +27,9 @@ public class BrandServiceTests : BaseTest
         MockValidator
             .Setup(v => v.ValidateAndThrowAsync(It.IsAny<AddBrandDto>()))
             .Returns(Task.CompletedTask);
+        MockValidator
+            .Setup(v => v.ValidateAndThrowAsync(It.IsAny<EditBrandDto>()))
+            .Returns(Task.CompletedTask);
 
         mockIntegrationDbContext
             .Setup(x => x.Brands)
@@ -46,7 +49,8 @@ public class BrandServiceTests : BaseTest
             mockHybridCache.Object,
             mockTenantContext.Object,
             notificationFlags,
-            currentUser.Object);
+            currentUser.Object,
+            new Mock<Microsoft.Extensions.Logging.ILogger<BrandService>>().Object);
     }
 
     [Fact]
@@ -67,9 +71,11 @@ public class BrandServiceTests : BaseTest
     public async Task AddBrand_WithDuplicateName_ReturnsError()
     {
         // Arrange — mevcut markalar arasında aynı isimde var
+        // Duplicate kontrolu DB unique kisitiyla (NormalizedName) ortusur; mevcut kayitlarin
+        // NormalizedName'i backfill/Add ile dolu olur.
         var existingBrands = new List<Brand>
         {
-            new() { Id = 1, Name = "Mevcut Marka" }
+            new() { Id = 1, Name = "Mevcut Marka", NormalizedName = "MEVCUT MARKA" }
         };
         mockIntegrationDbContext
             .Setup(x => x.Brands)
@@ -83,5 +89,188 @@ public class BrandServiceTests : BaseTest
         // Assert
         result.Success.Should().BeFalse();
         result.Message.Should().Contain("zaten mevcut");
+    }
+
+    [Fact]
+    public async Task UpdateBrand_OnlySeoSlugChanged_SameNameSameId_DoesNotReturnDuplicateError()
+    {
+        // Arrange — markanın kendi adı DB'de var; yalnızca SeoSlug değişiyor.
+        // Self-exclude sayesinde "aynı isim" çakışması TETİKLENMEMELİ (kabul kriteri 3).
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", SeoSlug = "nike" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "Nike", "nike-turkiye");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        existingBrands.Single(b => b.Id == 7).SeoSlug.Should().Be("nike-turkiye");
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task UpdateBrand_RenameToAnotherExistingBrandName_ReturnsDuplicateError()
+    {
+        // Arrange — 7 numaralı markayı, BAŞKA bir markanın (id 9) adına güncellemeye çalış.
+        // Farklı Id + aynı isim → çakışma hatası DÖNMELİ (kabul kriteri 4).
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", NormalizedName = "NIKE", SeoSlug = "nike" },
+            new() { Id = 9, Name = "Adidas", NormalizedName = "ADIDAS", SeoSlug = "adidas" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "Adidas", "nike-yeni");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("zaten mevcut");
+    }
+
+    [Fact]
+    public async Task UpdateBrand_BrandNotFound_ReturnsError()
+    {
+        // Arrange — verilen Id'de marka yok.
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(new List<Brand>());
+
+        var dto = new EditBrandDto(404, "Yok", null);
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task UpdateBrand_NameChanged_SetsNormalizedNameConsistentWithIndex()
+    {
+        // Arrange — ad değişince NormalizedName de DB index formülüyle (UPPER(TRIM(Name)))
+        // tutarlı set edilmeli; aksi halde arama/eşleştirme bayat sonuç döner.
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", NormalizedName = "NIKE", SeoSlug = "nike" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "  puma  ", "puma");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var brand = existingBrands.Single(b => b.Id == 7);
+        brand.Name.Should().Be("  puma  ");
+        brand.NormalizedName.Should().Be("PUMA");
+    }
+
+    [Fact]
+    public async Task UpdateBrand_RenameDiffersOnlyByCaseOrWhitespace_FromAnotherBrand_ReturnsDuplicateError()
+    {
+        // Arrange — yeni ad mevcut başka markadan yalnızca büyük/küçük harf + boşlukla farklı.
+        // App kontrolü Name exact yerine NormalizedName üzerinden olmalı ki DB unique
+        // (IX_Brands_NormalizedName, UPPER/TRIM) kısıtıyla örtüşsün ve SaveChanges crash etmesin.
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", NormalizedName = "NIKE", SeoSlug = "nike" },
+            new() { Id = 9, Name = "Adidas", NormalizedName = "ADIDAS", SeoSlug = "adidas" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "  adidas  ", "nike-yeni");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("zaten mevcut");
+    }
+
+    [Fact]
+    public async Task UpdateBrand_SeoSlugUsedByAnotherBrand_ReturnsError()
+    {
+        // Arrange — başka markada (id 9) kullanılan slug ile güncelleme.
+        // DB IX_Brands_SeoSlug unique → app katmanında yakalanmalı, SaveChanges crash etmemeli.
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", NormalizedName = "NIKE", SeoSlug = "nike" },
+            new() { Id = 9, Name = "Adidas", NormalizedName = "ADIDAS", SeoSlug = "adidas" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "Nike", "adidas");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("slug");
+    }
+
+    [Fact]
+    public async Task UpdateBrand_KeepsOwnSeoSlug_DoesNotReturnSlugError()
+    {
+        // Arrange — marka kendi slug'ını koruyor; self-exclude sayesinde çakışma TETİKLENMEMELİ.
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", NormalizedName = "NIKE", SeoSlug = "nike" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "Nike", "nike");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task UpdateBrand_EmptySeoSlug_SkipsUniquenessCheck()
+    {
+        // Arrange — slug boş; filtered index NULL'u çoklamaya izin verdiğinden benzersizlik
+        // kontrolü ATLANMALI (mevcut davranışla tutarlı). Başka markada boş slug olsa bile geçer.
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 7, Name = "Nike", NormalizedName = "NIKE", SeoSlug = "" },
+            new() { Id = 9, Name = "Adidas", NormalizedName = "ADIDAS", SeoSlug = "" }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.Brands)
+            .ReturnsDbSet(existingBrands);
+
+        var dto = new EditBrandDto(7, "Nike", "");
+
+        // Act
+        var result = await _sut.UpdateBrand(dto);
+
+        // Assert
+        result.Success.Should().BeTrue();
     }
 }

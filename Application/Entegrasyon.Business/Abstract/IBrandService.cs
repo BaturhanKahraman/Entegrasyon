@@ -10,7 +10,7 @@ public interface IBrandService
 {
     Task<IDataResult<List<BrandListDetailDto>>> GetBrandListDetails();
     Task<IResult> AddBrand(AddBrandDto brandDto);
-    Task<IResult> UpdateBrand(Brand brand);
+    Task<IResult> UpdateBrand(EditBrandDto dto);
     Task<IResult> DeleteBrand(int id);
     Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(BrandDetailPaginatedRequest request);
     Task<IDataResult<Brand>> GetBrandById(int id);

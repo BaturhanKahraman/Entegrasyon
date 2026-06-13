@@ -16,11 +16,12 @@ using Entegrasyon.Entity.Requests;
 using Entegrasyon.Entity.Results;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Hybrid;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext, IOptions<NotificationFeatureFlags> notificationFlags, ICurrentUserContext currentUser)
+public class BrandService(IFluentValidator validator, IApplicationLogManager applicationLogManager, BrandMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, TenantMemoryCache cache, HybridCache hybridCache, ITenantContext tenantContext, IOptions<NotificationFeatureFlags> notificationFlags, ICurrentUserContext currentUser, ILogger<BrandService> logger)
     : IBrandService
 {
     private const string brandListCacheKey = "brands:list";
@@ -54,7 +55,8 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
         var brand = mapper.MapToEntity(brandDto);
-        var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, brand.Name));
+        brand.NormalizedName = NormalizeName(brand.Name);
+        var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, brand.NormalizedName));
         if (result != null)
         {
             await applicationLogManager.AddLog($"Marka eklenemedi. {result.Message}", LogType.Brand, LogAction.Add, brandDto);
@@ -75,19 +77,51 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         return new SuccessDataResult<Brand>(brand);
     }
 
-    public async Task<IResult> UpdateBrand(Brand brand)
+    public async Task<IResult> UpdateBrand(EditBrandDto dto)
     {
-        await applicationLogManager.AddLog("Marka guncelleme istegi geldi.", LogType.Brand, LogAction.Update, brand);
+        // 1) Validation
+        await applicationLogManager.AddLog("Marka guncelleme istegi geldi.", LogType.Brand, LogAction.Update, dto);
+        await validator.ValidateAndThrowAsync(dto);
 
         await using var dbContext = await contextFactory.CreateDbContextAsync();
-        var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, brand.Name));
+
+        // Global no-tracking → mutasyon icin AsTracking ZORUNLU (sessiz no-op footgun).
+        var brand = await dbContext.Brands.AsTracking().FirstOrDefaultAsync(x => x.Id == dto.Id);
+        if (brand == null)
+        {
+            await applicationLogManager.AddLog("Marka guncellenemedi. Ilgili marka bulunamadi.", LogType.Brand, LogAction.Update, dto);
+            logger.LogWarning("UpdateBrand failed: brand {BrandId} not found", dto.Id);
+            return new ErrorResult("Boyle bir marka bulunamadı");
+        }
+
+        // 2) Business Rules — DB unique kisitlariyla (IX_Brands_NormalizedName, IX_Brands_SeoSlug)
+        //    ortusen, self-exclude'lu app-katmani kontrolleri. Aksi halde SaveChanges DbUpdateException
+        //    firlatir ve kullaniciya PRG-hata yerine 500 doner.
+        var normalizedName = NormalizeName(dto.Name);
+        var result = LogicRunner.Run(await CheckIfTheSameNameExits(dbContext, normalizedName, dto.Id));
         if (result != null)
         {
-            await applicationLogManager.AddLog($"Marka guncellenemedi. {result.Message}", LogType.Brand, LogAction.Add, brand);
+            await applicationLogManager.AddLog($"Marka guncellenemedi. {result.Message}", LogType.Brand, LogAction.Update, dto);
+            logger.LogWarning("UpdateBrand failed for brand {BrandId}: {Reason}", dto.Id, result.Message);
             return new ErrorResult(result.Message!);
         }
-        await validator.ValidateAndThrowAsync(brand);
-        dbContext.Brands.Update(brand);
+
+        // SeoSlug benzersizligi — bos slug filtered index'te coklanabildiginden kontrolu atla.
+        if (!string.IsNullOrWhiteSpace(dto.SeoSlug))
+        {
+            var slugResult = LogicRunner.Run(await CheckIfSeoSlugExists(dbContext, dto.SeoSlug, dto.Id));
+            if (slugResult != null)
+            {
+                await applicationLogManager.AddLog($"Marka guncellenemedi. {slugResult.Message}", LogType.Brand, LogAction.Update, dto);
+                logger.LogWarning("UpdateBrand failed for brand {BrandId}: {Reason}", dto.Id, slugResult.Message);
+                return new ErrorResult(slugResult.Message!);
+            }
+        }
+
+        // 3) Execution — Name ile birlikte NormalizedName'i de tutarli set et (index/arama bayatlamaz).
+        brand.Name = dto.Name;
+        brand.NormalizedName = normalizedName;
+        brand.SeoSlug = dto.SeoSlug;
         if (notificationFlags.Value.PublishEnabled)
         {
             dbContext.AddDomainEvent(new BrandUpdatedEvent(
@@ -99,7 +133,9 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         await dbContext.SaveChangesAsync();
         cache.Remove(brandListCacheKey);
         await hybridCache.RemoveByTagAsync("brands");
-        await applicationLogManager.AddLog("Marka basariyla guncellendi.", LogType.Brand, LogAction.Update, brand);
+        await applicationLogManager.AddLog("Marka basariyla guncellendi.", LogType.Brand, LogAction.Update, dto);
+        logger.LogInformation("Brand {BrandId} updated", brand.Id);
+
         var detail = await dbContext.Brands
             .Where(x => x.Id == brand.Id)
             .Select(x => new BrandListDetailDto(x.Id, x.CreatedAt, x.Name, x.Products.Count()))
@@ -203,10 +239,30 @@ public class BrandService(IFluentValidator validator, IApplicationLogManager app
         return new BrandKpiDto(totalProductCount, matchedBrandCount, brandsWithoutProductCount);
     }
 
-    private static async Task<IResult> CheckIfTheSameNameExits(IntegrationDbContext dbContext, string name)
+    private static async Task<IResult> CheckIfTheSameNameExits(IntegrationDbContext dbContext, string normalizedName, int? excludeId = null)
     {
-        if (await dbContext.Brands.AnyAsync(x => x.Name == name))
+        // DB unique kisiti IX_Brands_NormalizedName (UPPER(TRIM(Name))) uzerinden — app kontrolu de
+        // NormalizedName uzerinden olmali ki yalnizca buyuk/kucuk harf-bosluk farkli rename crash etmesin.
+        var query = dbContext.Brands.Where(x => x.NormalizedName == normalizedName);
+        if (excludeId.HasValue)
+            query = query.Where(x => x.Id != excludeId.Value);
+
+        if (await query.AnyAsync())
             return new ErrorResult("Bu isimde bir marka zaten mevcut");
         return new SuccessResult();
     }
+
+    private static async Task<IResult> CheckIfSeoSlugExists(IntegrationDbContext dbContext, string seoSlug, int? excludeId = null)
+    {
+        var query = dbContext.Brands.Where(x => x.SeoSlug == seoSlug);
+        if (excludeId.HasValue)
+            query = query.Where(x => x.Id != excludeId.Value);
+
+        if (await query.AnyAsync())
+            return new ErrorResult("Bu SEO slug zaten kullanılıyor");
+        return new SuccessResult();
+    }
+
+    // DB index/backfill formulu UPPER(TRIM("Name")) ile birebir ayni — invariant upper, sadece trim.
+    private static string NormalizeName(string name) => (name ?? string.Empty).Trim().ToUpperInvariant();
 }

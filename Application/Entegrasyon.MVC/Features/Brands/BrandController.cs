@@ -67,6 +67,38 @@ public class BrandController(
         return View(result.Data);
     }
 
+    [HttpGet("/brands/{id:int}/edit")]
+    public async Task<IActionResult> Edit(int id)
+    {
+        var result = await brandService.GetBrandDetail(id);
+        if (!result.Success || result.Data == null)
+        {
+            TempData.SetError("Marka bulunamadı.");
+            return RedirectToAction(nameof(Index));
+        }
+
+        ViewData.SetPageTitle($"{result.Data.Name} — Düzenle");
+        ViewData.SetActiveNav("brands");
+        ViewData.SetBreadcrumb(("Markalar", "/brands"), (result.Data.Name, $"/brands/{id}"), ("Düzenle", null));
+
+        return View(result.Data);
+    }
+
+    [HttpPost("/brands/{id:int}/edit")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Edit(int id, [FromForm] string name, [FromForm] string? seoSlug)
+    {
+        var result = await brandService.UpdateBrand(new EditBrandDto(id, name, seoSlug));
+        if (result.Success)
+        {
+            TempData.SetSuccess("Marka güncellendi.");
+            return RedirectToAction(nameof(Detail), new { id });
+        }
+
+        TempData.SetError(result.Message ?? "Güncellenemedi.");
+        return RedirectToAction(nameof(Edit), new { id });
+    }
+
     [HttpPost("/brands/{id:int}/delete")]
     public async Task<IActionResult> Delete(int id)
     {

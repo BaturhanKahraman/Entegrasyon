@@ -6,16 +6,20 @@
 
 <div class="d-flex justify-content-end mb-3">
     <div class="btn-list">
+        <a href="/brands" class="btn btn-outline-secondary">
+            <i class="ti ti-arrow-left icon"></i>
+            Markalara Dön
+        </a>
         <button class="btn btn-outline-danger"
                 hx-post="/brands/@Model.Id/delete"
-                hx-confirm="Bu markayi silmek istediginize emin misiniz?"
+                hx-confirm="Bu markayı silmek istediğinize emin misiniz?"
                 hx-on::after-request="if(event.detail.successful) window.location='/brands'">
             <i class="ti ti-trash icon"></i>
             Sil
         </button>
-        <a href="/brands" class="btn btn-outline-secondary">
-            <i class="ti ti-arrow-left icon"></i>
-            Markalara Don
+        <a href="/brands/@Model.Id/edit" class="btn btn-primary">
+            <i class="ti ti-edit icon"></i>
+            Düzelt
         </a>
     </div>
 </div>
@@ -54,7 +58,7 @@
             <div class="card-header">
                 <h3 class="card-title">Pazaryeri Eşleşmeleri</h3>
                 <div class="card-actions">
-                    <span class="badge bg-secondary-lt">@mappings.Count eslestirme</span>
+                    <span class="badge bg-secondary-lt">@mappings.Count eşleştirme</span>
                 </div>
             </div>
             @if (mappings.Any())
@@ -65,7 +69,7 @@
                             <tr>
                                 <th>Pazaryeri</th>
                                 <th>Pazaryeri Marka ID</th>
-                                <th>Pazaryeri Marka Adi</th>
+                                <th>Pazaryeri Marka Adı</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -102,10 +106,10 @@
                     <div class="empty py-3">
                         <p class="empty-title">Eşleştirme bulunamadı</p>
                         <p class="empty-subtitle text-secondary">
-                            Bu marka henüz hicbir pazaryerine eslestirmemis.
+                            Bu marka henüz hiçbir pazaryerine eşleştirilmemiş.
                         </p>
                         <a href="/marketplace/matching?tab=brands" class="btn btn-primary btn-sm mt-2">
-                            <i class="ti ti-link me-1"></i>Eslestir
+                            <i class="ti ti-link me-1"></i>Eşleştir
                         </a>
                     </div>
                 </div>
