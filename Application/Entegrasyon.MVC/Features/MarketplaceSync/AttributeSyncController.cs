@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Entity;
 using Entegrasyon.MVC.Features.MarketplaceSync.ViewModels;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
@@ -20,7 +21,37 @@ public class AttributeSyncController(
         ViewData.SetPageTitle("Özellik Eşlemesi");
         ViewData.SetActiveNav("marketplace-sync");
 
-        var marketPlaces = await marketPlaceManager.GetAllAsync();
+        var marketPlacesResult = await marketPlaceManager.GetAllAsync();
+        var marketPlaces = (marketPlacesResult.Data ?? []).Where(m => !m.IsDeleted).ToList();
+
+        var credentialed = marketPlaces.Where(m => m.IsCredentialComplete()).ToList();
+        var anyCredentialed = credentialed.Count > 0;
+
+        // Hiç credential yoksa: boş VM, view full-page empty-state gösterir.
+        if (!anyCredentialed)
+        {
+            return View($"{ViewBase}/Index.cshtml", new AttributeSyncVm
+            {
+                SelectedMarketPlaceId = mp,
+                MarketPlaces = marketPlaces,
+                AnyCredentialed = false,
+                SelectedHasCredentials = false,
+                SearchTerm = search,
+                ReturnUrl = returnUrl,
+                PreselectAttributeId = attributeId
+            });
+        }
+
+        // Seçili mp credential'sızsa ilk credential'lı pazaryerine düş (HTMX değilse redirect).
+        var selected = marketPlaces.FirstOrDefault(m => m.Id == mp);
+        if (selected is null || !selected.IsCredentialComplete())
+        {
+            var fallbackId = credentialed[0].Id;
+            if (!Request.IsHtmx())
+                return RedirectToAction(nameof(Index), new { mp = fallbackId, search, returnUrl, attributeId });
+            mp = fallbackId;
+        }
+
         var attributesResult = await categoryAttributeManager.GetCategoryAttributes();
         var attributes = attributesResult.Data ?? [];
 
@@ -31,7 +62,9 @@ public class AttributeSyncController(
         var vm = new AttributeSyncVm
         {
             SelectedMarketPlaceId = mp,
-            MarketPlaces = marketPlaces.Data ?? [],
+            MarketPlaces = marketPlaces,
+            AnyCredentialed = true,
+            SelectedHasCredentials = true,
             SearchTerm = search,
             ReturnUrl = returnUrl,
             PreselectAttributeId = attributeId,

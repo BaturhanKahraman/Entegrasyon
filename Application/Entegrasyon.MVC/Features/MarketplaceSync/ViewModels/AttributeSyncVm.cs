@@ -12,6 +12,12 @@ public class AttributeSyncVm
     public string? SearchTerm { get; set; }
     public string? ReturnUrl { get; set; }
 
+    /// <summary>En az bir pazaryeri credential'ı tam mı (sayfa aktif mi).</summary>
+    public bool AnyCredentialed { get; set; }
+
+    /// <summary>Seçili pazaryeri credential'ı tam mı.</summary>
+    public bool SelectedHasCredentials { get; set; }
+
     /// <summary>Sayfa açılışında detayı otomatik yüklenecek özellik (örn. /attributes detayından gelindiğinde).</summary>
     public int? PreselectAttributeId { get; set; }
 }
