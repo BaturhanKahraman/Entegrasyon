@@ -3,7 +3,7 @@
 
 @{
     var brands = ViewBag.Brands as List<BrandListDetailDto> ?? [];
-    var categories = ViewBag.Categories as List<Entegrasyon.Entity.Categories.Category> ?? [];
+    var categories = ViewBag.Categories as List<Entegrasyon.Entity.Dtos.Category.CategorySelectDto> ?? [];
 }
 
 <div data-wizard-step="1">
@@ -73,9 +73,14 @@
                     <label class="form-label required">Kategori</label>
                     <select name="CategoryId" id="category-select" class="@(ViewData.ModelState["CategoryId"]?.Errors.Count > 0 ? "is-invalid" : "")" required>
                         <option value="">Kategori seçin...</option>
-                        @foreach (var c in categories)
+                        @foreach (var group in categories.GroupBy(c => c.ParentName ?? "Diğer").OrderBy(g => g.Key))
                         {
-                            <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                            <optgroup label="@group.Key">
+                                @foreach (var c in group.OrderBy(c => c.Name))
+                                {
+                                    <option value="@c.Id" selected="@(Model.CategoryId == c.Id)">@c.Name</option>
+                                }
+                            </optgroup>
                         }
                     </select>
                     @if (ViewData.ModelState["CategoryId"]?.Errors.Count > 0)

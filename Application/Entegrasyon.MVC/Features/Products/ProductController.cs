@@ -1130,7 +1130,8 @@ public class ProductController(
         var brands = await brandService.GetBrandListDetails();
         ViewBag.Brands = brands.Success ? brands.Data : new List<Entity.Dtos.Brand.BrandListDetailDto>();
 
-        var categories = await categoryService.GetLeafCategoriesAsync();
+        // Üst kategoriye göre optgroup için ParentName'li leaf listesi
+        var categories = await categoryService.GetLeafCategoriesWithParentAsync();
         ViewBag.Categories = categories;
     }
 

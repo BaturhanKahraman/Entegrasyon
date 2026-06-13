@@ -60,13 +60,20 @@
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label required">Kategori</label>
-                                    <select class="form-select" name="CategoryId" required>
-                                        @foreach (var cat in Model.LeafCategories)
+                                    <select id="product-edit-category-select" class="form-select" name="CategoryId" required>
+                                        @foreach (var group in Model.LeafCategories
+                                            .GroupBy(c => c.ParentName ?? "Diğer")
+                                            .OrderBy(g => g.Key))
                                         {
-                                            <option value="@cat.Id"
-                                                    selected="@(cat.Id == Model.Product.CategoryId)">
-                                                @cat.Name
-                                            </option>
+                                            <optgroup label="@group.Key">
+                                                @foreach (var cat in group.OrderBy(c => c.Name))
+                                                {
+                                                    <option value="@cat.Id"
+                                                            selected="@(cat.Id == Model.Product.CategoryId)">
+                                                        @cat.Name
+                                                    </option>
+                                                }
+                                            </optgroup>
                                         }
                                     </select>
                                 </div>
@@ -233,3 +240,13 @@
                 </div>
             </div>
         </div>
+
+<script>
+(function initProductEditCategorySelect() {
+    if (typeof TomSelect === 'undefined') { setTimeout(initProductEditCategorySelect, 50); return; }
+    var el = document.getElementById('product-edit-category-select');
+    if (el && !el.tomselect) {
+        new TomSelect(el, { maxOptions: null });
+    }
+})();
+</script>

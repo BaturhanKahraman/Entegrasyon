@@ -178,7 +178,8 @@ public class ProductManager(
 
         var categories = await dbContext.Categories
             .Where(c => !c.IsDeleted && !c.SubCategories.Any())
-            .Select(c => new CategorySelectDto(c.Id, c.Name))
+            .OrderBy(c => c.Name)
+            .Select(c => new CategorySelectDto(c.Id, c.Name, c.SuperCategory != null ? c.SuperCategory.Name : null))
             .ToListAsync();
 
         var branches = await dbContext.BranchOffices
