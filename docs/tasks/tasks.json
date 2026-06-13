@@ -974,7 +974,7 @@
   {
     "task": "F2 — N11 kargo bilgisi çekilmiyor + Pazarama cargo import'da kaydedilmiyor",
     "description": "Kaynak: order-fulfillment-flow spec (PA, kod-önce teyit). PROBLEM: Bazı pazaryeri siparişlerinde kargo bilgisi (firma+takip no) eksik. KOD-ÖNCE TEYİT: (a) N11 — OrderManager.cs:297-363 import'unda cargo alanları HİÇ doldurulmuyor; (b) Pazarama — PazaramaCargoDto VAR (PazaramaOrderModels.cs:92-95: firma/takip no/url) AMA OrderManager.cs:155-295 import loop'unda item.Cargo OKUNMUYOR → Order.CargoTrackingNumber NULL. Karşılaştırma: Trendyol kargo bilgisi düzgün çekiliyor (OrderManager.cs:474-494). SONUÇ: N11/Pazarama siparişlerinde esnaf kargo takip no'yu göremiyor, müşteriye bildiremiyor. FIX: N11 sipariş response'undan kargo bilgisi çek + map; Pazarama import'unda mevcut PazaramaCargoDto'yu Order'a kaydet.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "plan": false,
     "notes": "TL onayı bekliyor (PA önerisi 2026-06-10). Pazarama düşük efor (DTO hazır, sadece map eksik); N11 response kontratı netleşmeli. Roller: SWE (import mapping), DevOps (WireMock N11/Pazarama order response cargo alanları), QA. #27 (kargo UI) ile tamamlayıcı — veri olmadan UI eksik kalır.",
