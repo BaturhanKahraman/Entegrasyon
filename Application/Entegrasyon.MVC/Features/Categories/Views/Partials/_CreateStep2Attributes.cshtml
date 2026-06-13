@@ -1,4 +1,10 @@
 @model Entegrasyon.MVC.Features.Categories.ViewModels.CategoryCreateVm
+@{
+    // Popover açıklamaları — init site.js'te (global, HTMX swap sonrası dahil).
+    const string requiredHelp = "Bu özellik, ürün eklenirken doldurulması zorunlu olan özelliktir.";
+    const string varianterHelp = "Varyant üreten özelliktir (örn. Beden). Ürün eklerken bu özelliğin seçilen her değeri ayrı bir varyant satırı oluşturur ve varyant adında ilk sırada yer alır.";
+    const string slicerHelp = "Ürünü gruplara bölen özelliktir (örn. Renk). Varyant kombinasyonlarına katılır; pazaryerinde her dilimleyici değeri ayrı ürün kartı olarak listelenir.";
+}
 
 <!-- step2-attributes marker for JS step detection -->
 <form hx-post="/categories/add/step2" hx-target="#wizard-content" hx-swap="innerHTML">
@@ -24,9 +30,27 @@
                             <tr>
                                 <th style="width:40px">Seç</th>
                                 <th>Özellik</th>
-                                <th style="width:100px" class="text-center">Zorunlu</th>
-                                <th style="width:100px" class="text-center">Varyanter</th>
-                                <th style="width:100px" class="text-center">Dilimleyici</th>
+                                <th style="width:100px" class="text-center">
+                                    Zorunlu
+                                    <i class="ti ti-info-circle text-secondary" role="button" tabindex="0"
+                                       data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                       data-bs-placement="top" data-bs-title="Zorunlu"
+                                       data-bs-content="@requiredHelp" aria-label="Zorunlu nedir?"></i>
+                                </th>
+                                <th style="width:100px" class="text-center">
+                                    Varyanter
+                                    <i class="ti ti-info-circle text-secondary" role="button" tabindex="0"
+                                       data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                       data-bs-placement="top" data-bs-title="Varyanter"
+                                       data-bs-content="@varianterHelp" aria-label="Varyanter nedir?"></i>
+                                </th>
+                                <th style="width:100px" class="text-center">
+                                    Dilimleyici
+                                    <i class="ti ti-info-circle text-secondary" role="button" tabindex="0"
+                                       data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                       data-bs-placement="top" data-bs-title="Dilimleyici"
+                                       data-bs-content="@slicerHelp" aria-label="Dilimleyici nedir?"></i>
+                                </th>
                             </tr>
                         </thead>
                         <tbody>

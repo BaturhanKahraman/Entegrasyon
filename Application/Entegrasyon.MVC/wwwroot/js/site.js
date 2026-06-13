@@ -635,3 +635,52 @@ document.addEventListener('keydown', function (event) {
         }, 100);
     }
 })();
+
+// ── Bootstrap Popover ────────────────────────────────────────────────
+// data-bs-toggle="popover" olan elemanları başlatır. HTMX swap sonrası
+// yeni gelen partial'lardaki popover'lar da otomatik aktive edilir.
+
+function initPopovers(root) {
+    if (typeof bootstrap === 'undefined' || !bootstrap.Popover) return;
+    var scope = root || document;
+    if (typeof scope.querySelectorAll !== 'function') return;
+    scope.querySelectorAll('[data-bs-toggle="popover"]').forEach(function (el) {
+        bootstrap.Popover.getOrCreateInstance(el);
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function () { initPopovers(); });
+document.body.addEventListener('htmx:afterSwap', function (evt) {
+    initPopovers(evt.detail.target);
+});
+
+// ── Deselectable Radio ───────────────────────────────────────────────
+// data-deselectable attribute'lu radio input'lar tekrar tıklanınca
+// seçimi bırakır (örn. kategori özellik panelindeki Zorunlu/Varyanter/
+// Dilimleyici seçimleri). Label'a tıklamak da input'u tetiklediği için
+// mousedown anındaki checked durumu saklanır, click'te karşılaştırılır.
+
+(function () {
+    function resolveRadio(target) {
+        if (!target || typeof target.closest !== 'function') return null;
+        if (target.matches && target.matches('input[type="radio"][data-deselectable]')) return target;
+        var label = target.closest('label');
+        return label ? label.querySelector('input[type="radio"][data-deselectable]') : null;
+    }
+
+    document.addEventListener('mousedown', function (evt) {
+        var radio = resolveRadio(evt.target);
+        if (radio) radio.dataset.wasChecked = radio.checked ? '1' : '0';
+    });
+
+    // Yalnız input'un kendi click'inde davran: label tıklamasında tarayıcı
+    // önce label click'ini, sonra input'a synthetic click'i dispatch eder —
+    // label click'inde uncheck yapılırsa synthetic click tekrar seçerdi.
+    document.addEventListener('click', function (evt) {
+        var t = evt.target;
+        if (t && t.matches && t.matches('input[type="radio"][data-deselectable]') && t.dataset.wasChecked === '1') {
+            t.checked = false;
+            t.dataset.wasChecked = '0';
+        }
+    });
+})();

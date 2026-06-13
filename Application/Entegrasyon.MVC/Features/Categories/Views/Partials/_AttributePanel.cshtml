@@ -3,6 +3,11 @@
 @{
     var attachedIds = Model.Attached.Select(a => a.Id).ToHashSet();
     var addable = Model.Pool.Where(p => !attachedIds.Contains(p.Id)).ToList();
+
+    // Popover açıklamaları — init site.js'te (global, HTMX swap sonrası dahil).
+    const string requiredHelp = "Bu özellik, ürün eklenirken doldurulması zorunlu olan özelliktir.";
+    const string varianterHelp = "Varyant üreten özelliktir (örn. Beden). Ürün eklerken bu özelliğin seçilen her değeri ayrı bir varyant satırı oluşturur ve varyant adında ilk sırada yer alır.";
+    const string slicerHelp = "Ürünü gruplara bölen özelliktir (örn. Renk). Varyant kombinasyonlarına katılır; pazaryerinde her dilimleyici değeri ayrı ürün kartı olarak listelenir.";
 }
 
 <div class="row row-cards">
@@ -47,15 +52,24 @@
                                         <div class="d-flex flex-wrap gap-1">
                                             @if (a.IsRequired)
                                             {
-                                                <span class="badge bg-red-lt">Zorunlu</span>
+                                                <span class="badge bg-red-lt" role="button" tabindex="0"
+                                                      data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                                      data-bs-placement="top" data-bs-title="Zorunlu"
+                                                      data-bs-content="@requiredHelp">Zorunlu</span>
                                             }
                                             @if (a.IsVarianter)
                                             {
-                                                <span class="badge bg-blue-lt">Varyanter</span>
+                                                <span class="badge bg-blue-lt" role="button" tabindex="0"
+                                                      data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                                      data-bs-placement="top" data-bs-title="Varyanter"
+                                                      data-bs-content="@varianterHelp">Varyanter</span>
                                             }
                                             @if (a.IsSlicer)
                                             {
-                                                <span class="badge bg-purple-lt">Dilimleyici</span>
+                                                <span class="badge bg-purple-lt" role="button" tabindex="0"
+                                                      data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                                      data-bs-placement="top" data-bs-title="Dilimleyici"
+                                                      data-bs-content="@slicerHelp">Dilimleyici</span>
                                             }
                                             @if (!a.IsRequired && !a.IsVarianter && !a.IsSlicer)
                                             {
@@ -134,18 +148,45 @@
                                     </span>
                                 </label>
                                 <div class="ms-4 d-flex flex-wrap gap-3">
-                                    <label class="form-check form-check-inline mb-0">
-                                        <input class="form-check-input" type="radio" name="requiredId" value="@p.Id">
-                                        <span class="form-check-label small">Zorunlu</span>
-                                    </label>
-                                    <label class="form-check form-check-inline mb-0">
-                                        <input class="form-check-input" type="radio" name="varianterId" value="@p.Id">
-                                        <span class="form-check-label small">Varyanter</span>
-                                    </label>
-                                    <label class="form-check form-check-inline mb-0">
-                                        <input class="form-check-input" type="radio" name="slicerId" value="@p.Id">
-                                        <span class="form-check-label small">Dilimleyici</span>
-                                    </label>
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <label class="form-check form-check-inline mb-0 me-0"
+                                               title="Seçimi kaldırmak için tekrar tıklayın">
+                                            <input class="form-check-input" type="radio" name="requiredId"
+                                                   value="@p.Id" data-deselectable>
+                                            <span class="form-check-label small">Zorunlu</span>
+                                        </label>
+                                        <i class="ti ti-info-circle text-secondary" role="button" tabindex="0"
+                                           data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                           data-bs-placement="top" data-bs-title="Zorunlu"
+                                           data-bs-content="@requiredHelp"
+                                           aria-label="Zorunlu nedir?"></i>
+                                    </span>
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <label class="form-check form-check-inline mb-0 me-0"
+                                               title="Seçimi kaldırmak için tekrar tıklayın">
+                                            <input class="form-check-input" type="radio" name="varianterId"
+                                                   value="@p.Id" data-deselectable>
+                                            <span class="form-check-label small">Varyanter</span>
+                                        </label>
+                                        <i class="ti ti-info-circle text-secondary" role="button" tabindex="0"
+                                           data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                           data-bs-placement="top" data-bs-title="Varyanter"
+                                           data-bs-content="@varianterHelp"
+                                           aria-label="Varyanter nedir?"></i>
+                                    </span>
+                                    <span class="d-inline-flex align-items-center gap-1">
+                                        <label class="form-check form-check-inline mb-0 me-0"
+                                               title="Seçimi kaldırmak için tekrar tıklayın">
+                                            <input class="form-check-input" type="radio" name="slicerId"
+                                                   value="@p.Id" data-deselectable>
+                                            <span class="form-check-label small">Dilimleyici</span>
+                                        </label>
+                                        <i class="ti ti-info-circle text-secondary" role="button" tabindex="0"
+                                           data-bs-toggle="popover" data-bs-trigger="hover focus"
+                                           data-bs-placement="top" data-bs-title="Dilimleyici"
+                                           data-bs-content="@slicerHelp"
+                                           aria-label="Dilimleyici nedir?"></i>
+                                    </span>
                                 </div>
                             </div>
                         }

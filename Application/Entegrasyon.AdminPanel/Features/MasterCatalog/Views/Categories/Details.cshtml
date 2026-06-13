@@ -162,7 +162,6 @@
                             <th class="text-center">Zorunlu</th>
                             <th class="text-center">Varyanter</th>
                             <th class="text-center">Slicer</th>
-                            <th class="text-center">Ozel Deger</th>
                             <th class="text-center">Deger Sayısı</th>
                             <th class="text-end">Islemler</th>
                         </tr>
@@ -199,16 +198,6 @@
                                     @if (attr.IsSlicer)
                                     {
                                         <span class="badge bg-warning text-dark">Evet</span>
-                                    }
-                                    else
-                                    {
-                                        <span class="text-muted">-</span>
-                                    }
-                                </td>
-                                <td class="text-center">
-                                    @if (attr.AllowCustom)
-                                    {
-                                        <span class="badge bg-success">Evet</span>
                                     }
                                     else
                                     {

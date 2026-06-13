@@ -49,7 +49,6 @@
                 <thead class="table-light">
                     <tr>
                         <th>Ozellik Adi</th>
-                        <th class="text-center">Ozel Deger</th>
                         <th class="text-center">Deger Sayısı</th>
                         <th class="text-center">Bagli Kategori</th>
                         <th class="text-end">Islemler</th>
@@ -76,16 +75,6 @@
                                 @if (!attr.IsActive)
                                 {
                                     <span class="badge bg-secondary ms-1">Pasif</span>
-                                }
-                            </td>
-                            <td class="text-center">
-                                @if (attr.AllowCustom)
-                                {
-                                    <span class="badge bg-success">Evet</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">-</span>
                                 }
                             </td>
                             <td class="text-center">
