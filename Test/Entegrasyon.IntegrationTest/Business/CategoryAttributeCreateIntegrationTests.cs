@@ -49,6 +49,42 @@ public class CategoryAttributeCreateIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task UpdateCategoryAttribute_RenamedExistingValue_PersistsToDatabase()
+    {
+        // Arrange — "Sari" değeriyle özellik oluştur
+        var (manager, scope) = GetScopedService<ICategoryAttributeManager>();
+        using var _ = scope;
+        var created = await manager.AddCategoryAttribute(BuildDto("kumaş", "Sari"));
+        Assert.True(created.Success, created.Message);
+
+        int attrId, valueId;
+        using (var db = CreateDbContext())
+        {
+            var attr = await db.CategoryAttributes
+                .Include(x => x.CategoryAttributeValues)
+                .SingleAsync(x => x.CategoryAttributeKey == "kumaş");
+            attrId = attr.Id;
+            valueId = attr.CategoryAttributeValues.Single().Id;
+        }
+
+        // Act — mevcut değeri inline rename ("Sari" → "Sarı")
+        var dto = new EditCategoryAttributeDto(
+            Id: attrId, IsRequired: false, IsVarianter: false,
+            CategoryAttributeKey: "kumaş", IsSlicer: false,
+            CategoryAttributeHumanized: "Kumaş",
+            CategoryAttributeValues: [new CategoryAttributeValue { Id = valueId, Name = "Sarı" }],
+            CategoryId: 0);
+        var result = await manager.UpdateCategoryAttribute(dto);
+
+        // Assert — rename DB'ye yazılmış olmalı (sessiz no-op regresyonu)
+        Assert.True(result.Success, result.Message);
+        using var db2 = CreateDbContext();
+        var value = await db2.CategoryAttributeValues.SingleAsync(v => v.Id == valueId);
+        Assert.Equal("Sarı", value.Name);
+        Assert.Equal("SARI", value.NormalizedName);
+    }
+
+    [Fact]
     public async Task AddCategoryAttribute_DuplicateKey_ReturnsError_NoInsert()
     {
         // Arrange — mevcut "beden" anahtarı

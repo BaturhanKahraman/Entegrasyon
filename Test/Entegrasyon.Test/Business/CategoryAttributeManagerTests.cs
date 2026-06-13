@@ -166,6 +166,45 @@ public class CategoryAttributeManagerTests : BaseTest
     // ──────────────────────────────────────────────────────────────────
 
     [Fact]
+    public async Task UpdateCategoryAttribute_ShouldPersistRenamedExistingValues()
+    {
+        // Arrange — mevcut değer "Sari", kullanıcı inline "Sarı" olarak düzeltiyor (Id aynı)
+        var attr = new CategoryAttribute
+        {
+            Id = 1,
+            CategoryAttributeKey = "renk",
+            CategoryAttributeHumanized = "Renk",
+            CategoryAttributeValues =
+                [new CategoryAttributeValue { Id = 10, Name = "Sari", NormalizedName = "SARI", CategoryAttributeId = 1 }]
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.CategoryAttributes)
+            .ReturnsDbSet([attr]);
+        mockIntegrationDbContext
+            .Setup(x => x.CategoryAttributeValues)
+            .ReturnsDbSet(new List<CategoryAttributeValue>());
+
+        var dto = new EditCategoryAttributeDto(
+            Id: 1,
+            IsRequired: false,
+            IsVarianter: false,
+            CategoryAttributeKey: "renk",
+            IsSlicer: false,
+            CategoryAttributeHumanized: "Renk",
+            CategoryAttributeValues: [new CategoryAttributeValue { Id = 10, Name = "Sarı" }],
+            CategoryId: 0);
+
+        // Act
+        var result = await _sut.UpdateCategoryAttribute(dto);
+
+        // Assert — rename track edilen entity'ye yazılmalı (sessiz no-op = veri kaybı)
+        result.Success.Should().BeTrue();
+        var kept = attr.CategoryAttributeValues.Single(v => v.Id == 10);
+        kept.Name.Should().Be("Sarı");
+        kept.NormalizedName.Should().Be("SARI");
+    }
+
+    [Fact]
     public async Task UpdateCategoryAttribute_ShouldSetNormalizedNameOnNewValues()
     {
         // Arrange — mevcut özellik, yeni değer ekleniyor

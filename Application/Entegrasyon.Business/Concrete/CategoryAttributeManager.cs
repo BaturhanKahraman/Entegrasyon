@@ -130,6 +130,20 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
         if (toRemove.Count > 0)
             dbContext.CategoryAttributeValues.RemoveRange(toRemove);
 
+        // Tutulan değerlerde inline rename'i track edilen entity'ye yaz — yazılmazsa
+        // SaveChanges hiçbir değişiklik görmez ve rename SESSİZCE kaybolur (veri kaybı).
+        foreach (var incoming in dto.CategoryAttributeValues?.Where(v => v.Id > 0) ?? [])
+        {
+            var tracked = attr.CategoryAttributeValues.FirstOrDefault(v => v.Id == incoming.Id);
+            if (tracked is null)
+                continue;
+            var trimmed = incoming.Name?.Trim();
+            if (string.IsNullOrEmpty(trimmed) || trimmed == tracked.Name)
+                continue;
+            tracked.Name = trimmed;
+            tracked.NormalizedName = AttributeValueNormalizer.Normalize(trimmed);
+        }
+
         var existingIds = attr.CategoryAttributeValues.Select(v => v.Id).ToHashSet();
         var toAdd = dto.CategoryAttributeValues?.Where(v => v.Id <= 0 || !existingIds.Contains(v.Id)).ToList() ?? [];
         var existingNormalized = attr.CategoryAttributeValues
@@ -198,10 +212,7 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var key = dto.CategoryAttributeKey.Trim();
-        var keyNormalized = key.ToLower();
-        bool exists = await dbContext.CategoryAttributes
-            .AnyAsync(x => x.CategoryAttributeKey!.Trim().ToLower() == keyNormalized);
-        if (exists)
+        if (await CheckIfExits(key))
             return new ErrorResult("Bu anahtarla bir özellik zaten mevcut.");
 
         var categoryAttr = mapper.MapToEntity(dto);
