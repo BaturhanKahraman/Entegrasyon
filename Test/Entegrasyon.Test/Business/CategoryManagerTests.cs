@@ -99,11 +99,12 @@ public class CategoryManagerTests : BaseTest
         result.Should().BeTrue();
     }
    
-    // AddCategory sync guard tests
+    // AddCategory parent guard tests — üst kategorinin pazaryeri EŞLEŞMESİ alt kategori
+    // eklemeyi ENGELLEMEZ (kullanıcı kararı: parent'ta eşleşmeye bakılmaz). Özellik kuralı korunur.
     [Fact]
-    public async Task AddCategory_Should_Return_Error_When_Parent_Has_Active_MarketplaceSync()
+    public async Task AddCategory_Should_Succeed_When_Parent_Has_Active_MarketplaceSync()
     {
-        // Arrange
+        // Arrange — üst kategorinin aktif pazaryeri eşleşmesi var ama özelliği yok
         var dto = new AddCategoryDto("Child", [], 10, false);
 
         IList<CategoryAttributeCategory> attrCategories = [];
@@ -115,12 +116,15 @@ public class CategoryManagerTests : BaseTest
         ];
         mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(marketplaceLinks);
 
+        IList<Category> categories = [new Category { Id = 10, Name = "Parent" }];
+        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
+        mockIntegrationDbContext.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
+
         // Act
         var result = await _categoryManager.AddCategory(dto);
 
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Contain("pazar yeri eşleştirmesi");
+        // Assert — eşleşme artık engellemiyor
+        result.Success.Should().BeTrue();
     }
 
     [Fact]
@@ -149,32 +153,9 @@ public class CategoryManagerTests : BaseTest
         result.Success.Should().BeTrue();
     }
 
-    // UpdateCategory sync guard tests
-    [Fact]
-    public async Task UpdateCategory_Should_Return_Error_When_Parent_Has_Active_MarketplaceSync()
-    {
-        // Arrange
-        var dto = new EditCategoryDto(5, "Child", 10, false, false);
-
-        IList<Category> categories = [new Category { Id = 5, Name = "Child" }];
-        mockIntegrationDbContext.Setup(x => x.Categories).ReturnsDbSet(categories);
-
-        IList<CategoryAttributeCategory> attrCategories = [];
-        mockIntegrationDbContext.Setup(x => x.CategoryAttributeCategories).ReturnsDbSet(attrCategories);
-
-        IList<CategoryMarketplace> marketplaceLinks =
-        [
-            new CategoryMarketplace { CategoryId = 10, MarketPlaceId = 1, IsActive = true }
-        ];
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(marketplaceLinks);
-
-        // Act
-        var result = await _categoryManager.UpdateCategory(dto);
-
-        // Assert
-        result.Success.Should().BeFalse();
-        result.Message.Should().Contain("pazar yeri eşleştirmesi");
-    }
+    // Not: UpdateCategory'de de üst kategori pazaryeri eşleşmesi engeli kaldırıldı (kullanıcı kararı).
+    // Eski "parent active sync → hata" testi silindi; success path xmin Entry() nedeniyle unit'te
+    // mock'lanamadığından integration kapsamında doğrulanır.
 
     [Fact]
     public async Task SoftDelete_Should_Return_Error_If_Products_Exist()

@@ -50,11 +50,6 @@ namespace Entegrasyon.Business.Concrete
                     .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value);
                 if (parentHasAttrs)
                     return new ErrorDataResult<CategoryDetailDto>(null!, "Seçilen üst kategori özellik içerdiğinden alt kategori eklenemez.");
-
-                bool parentHasSync = await dbContext.CategoryMarketplaces
-                    .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value && x.IsActive);
-                if (parentHasSync)
-                    return new ErrorDataResult<CategoryDetailDto>(null!, "Seçilen üst kategori pazar yeri eşleştirmesi içerdiğinden alt kategori eklenemez.");
             }
 
             var category = mapper.MapToEntity(dto);
@@ -93,11 +88,6 @@ namespace Entegrasyon.Business.Concrete
                     .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value);
                 if (parentHasAttrs)
                     return new ErrorResult("Seçilen üst kategori özellik içerdiğinden bu işlem yapılamaz.");
-
-                bool parentHasSync = await dbContext.CategoryMarketplaces
-                    .AnyAsync(x => x.CategoryId == dto.SuperCategoryId.Value && x.IsActive);
-                if (parentHasSync)
-                    return new ErrorResult("Seçilen üst kategori pazar yeri eşleştirmesi içerdiğinden bu işlem yapılamaz.");
             }
 
             // Optimistic concurrency: formdaki xmin DB'dekiyle eşleşmeli.
