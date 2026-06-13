@@ -322,7 +322,18 @@ public class CategoryController(
             return RedirectToAction(nameof(Index));
         }
 
-        TempData.SetError(result.Message ?? "Kategori olusturulamadi.");
+        var errorMsg = result.Message ?? "Kategori olusturulamadi.";
+
+        // HTMX'te RedirectToAction full Create View'ını #wizard-content'e koyar → "sayfa içinde sayfa".
+        // Bunun yerine Step 1 partial'ını döndür (veri korunur, kullanıcı üst kategoriyi düzeltebilir) + toast.
+        if (Request.IsHtmx())
+        {
+            ViewBag.Parents = await categoryService.GetValidParentCandidatesAsync();
+            Response.HtmxTriggerWithData("showToast", new { message = errorMsg, type = "danger" });
+            return PartialView("Partials/_CreateStep1", vm);
+        }
+
+        TempData.SetError(errorMsg);
         return RedirectToAction(nameof(Create));
     }
 
