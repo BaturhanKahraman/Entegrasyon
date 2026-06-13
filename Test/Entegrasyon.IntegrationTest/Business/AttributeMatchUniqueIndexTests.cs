@@ -17,9 +17,10 @@ public class AttributeMatchUniqueIndexTests : IntegrationTestBase
 
     protected override async Task OnInitializeAsync()
     {
-        using var dbContext = CreateDbContext();
+        // MarketPlace Id=1 (Trendyol) migration ile zaten seed'li — idempotent helper kullan.
+        await SeedMarketPlaceAsync(1, "Trendyol");
 
-        dbContext.MarketPlaces.Add(new MarketPlace { Id = 1, Name = "Trendyol", CreatedAt = DateTimeOffset.UtcNow });
+        using var dbContext = CreateDbContext();
 
         var attr1 = new CategoryAttribute { CategoryAttributeKey = "color", CategoryAttributeHumanized = "Renk", CreatedAt = DateTimeOffset.UtcNow };
         var attr2 = new CategoryAttribute { CategoryAttributeKey = "maincolor", CategoryAttributeHumanized = "Ana Renk", CreatedAt = DateTimeOffset.UtcNow };
