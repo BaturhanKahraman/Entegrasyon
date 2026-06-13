@@ -160,6 +160,7 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<ITrendyolInvoiceService, TrendyolInvoiceService>();
             services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
+            services.AddScoped<ITrendyolAttributeCatalog, TrendyolAttributeCatalog>();
 
             // Hepsiburada servisleri — UseMock flag kaldirildi, WireMock.Net testlerde
             // HTTP mock saglar (bkz. Test/Entegrasyon.IntegrationTest/Fixtures/WireMockStubs/).
