@@ -1,7 +1,7 @@
 export const meta = {
   name: 'feature-pipeline',
-  description: 'Tek backlog task\'ını rol-sınırlı agent zincirinden geçirir: PA inceleme → (Designer) → (DB) → SWE TDD → eş-review → QA DoD. Çıktı = TL push-gate için yapılandırılmış teslim raporu.',
-  whenToUse: 'Loop sürücüsü ya da elle: bir tasks.json task id\'sini args ile ver. mode:dry plan-only (ucuz kanıt), mode:full implement+test.',
+  description: 'Bir işi (backlog task VEYA ad-hoc serbest-metin istek) rol-sınırlı agent zincirinden geçirir: PA inceleme → (Designer) → (DB) → SWE TDD → eş-review → QA DoD. Çıktı = TL push-gate için yapılandırılmış teslim raporu.',
+  whenToUse: 'İki giriş: args.taskId (tasks.json backlog) VEYA args.goal (senin direkt yazdığın serbest-metin iş). mode:dry plan-only (ucuz kanıt), mode:full implement+test.',
   phases: [
     { title: 'PA İnceleme' },
     { title: 'Tasarım' },
@@ -14,12 +14,21 @@ export const meta = {
 
 // ── args (string olarak gelir → parse) ──
 const cfg = args ? (typeof args === 'string' ? JSON.parse(args) : args) : {}
+// İki giriş yolu:
+//  (a) taskId → tasks.json'dan o backlog task'ı okunur (backlog modu)
+//  (b) goal   → serbest-metin ad-hoc istek; tasks.json'a HİÇ bakılmaz (senin direkt yazdığın iş)
 const TASK_ID = cfg.taskId
+const GOAL = cfg.goal
 const MODE = cfg.mode === 'full' ? 'full' : 'dry'  // varsayılan dry (güvenli)
 const MODEL = cfg.modelOverride || undefined        // ör. 'sonnet' maliyet için; yoksa agent.md modeli
-if (!TASK_ID) {
-  throw new Error('feature-pipeline: args.taskId zorunlu (ör. {"taskId":"T028","mode":"dry"}). Ana oturum next-task.py ile seçip verir.')
+if (!TASK_ID && !GOAL) {
+  throw new Error('feature-pipeline: args.taskId VEYA args.goal zorunlu. Örnek backlog: {"taskId":"T028","mode":"full"}. Örnek ad-hoc: {"goal":"Ürün listesine CSV export butonu ekle","mode":"full"}.')
 }
+const WORK_REF = TASK_ID || 'AD-HOC'
+// PA aşamasına verilecek iş kaynağı tarifi
+const WORK_SOURCE = TASK_ID
+  ? `docs/tasks/tasks.json içinde id == "${WORK_REF}" olan task'ı bul ve OKU (python3/jq ile id'ye göre çek). Description'daki kod referanslarını + varsa "Kaynak: docs/superpowers/specs/..." spec'ini KODDAN teyit et.`
+  : `Kullanıcının doğrudan verdiği şu işi ele al (tasks.json'a BAKMA, bu serbest-metin istektir):\n--- İSTEK ---\n${GOAL}\n--- /İSTEK ---\nİsteği KODDAN teyit et: ilgili mevcut kodu/sayfayı bul (Read/Grep), zaten var mı / kısmen mi / yeni mi belirle.`
 
 const HEADLESS = 'WORKFLOW MODU (headless): TL onayı = bu görev tanımı; soru sorma, git/push yapma, başka agent çağırma, integration/E2E koşma. Belirsizlikte makul varsay + VARSAYIM: ile raporla. Eksik altyapı/devir için DEVİR: yaz. Çıktın yapılandırılmış veri teslimidir.'
 const mopt = (o) => (MODEL ? { ...o, model: MODEL } : o)
@@ -139,15 +148,15 @@ const pa = await agent(
   `${HEADLESS}
 
 ROL: Product Analyst (kod-önce doğrulama).
-GÖREV: docs/tasks/tasks.json içinde id == "${TASK_ID}" olan task'ı bul ve OKU (python3/jq ile id'ye göre çek). Sonra task'ın description'ında geçen kod referanslarını (dosya:satır, servis/metod adları) ve varsa "Kaynak: docs/superpowers/specs/..." spec'ini KODDAN teyit et (Read/Grep).
+İŞ KAYNAĞI: ${WORK_SOURCE}
 
 Belirle:
 - status: 'ready' (işlenebilir, tanım kodla uyumlu) | 'stale' (tanım kodla çelişiyor, önce güncellenmeli) | 'already_done' (kodda zaten var) | 'blocked' (ön koşul kodda yok).
-- Güncel, KOD-TEYİTLİ kabul kriterleri (acceptanceCriteria) — manual_test_steps'i de dikkate al.
+- Güncel, KOD-TEYİTLİ kabul kriterleri (acceptanceCriteria) — backlog ise manual_test_steps'i de dikkate al, ad-hoc ise istekten türet.
 - needsDesign / needsMigration / needsBackend / isReadOnly bayrakları (kodun mevcut durumuna göre).
 - blockers + assumptions.
 Kanıtını reason'da dosya:satır ile ver. Kod yazma, dosya düzenleme YOK — sadece analiz.`,
-  mopt({ label: `PA:${TASK_ID}`, phase: 'PA İnceleme', agentType: 'pa-entegrasyon', schema: PA_SCHEMA })
+  mopt({ label: `PA:${WORK_REF}`, phase: 'PA İnceleme', agentType: 'pa-entegrasyon', schema: PA_SCHEMA })
 )
 
 if (!pa) {
@@ -158,11 +167,12 @@ log(`PA verdict: ${pa.status} — ${pa.summary}`)
 if (pa.status !== 'ready') {
   // erken dur — downstream'i boşa harcama. Ana oturum bu verdict'e göre task'ı güncellesin/atlasın.
   return {
-    taskId: TASK_ID, mode: MODE, outcome: 'pa_stop', paStatus: pa.status,
+    taskId: TASK_ID || null, isAdHoc: !TASK_ID, goal: GOAL || null,
+    mode: MODE, outcome: 'pa_stop', paStatus: pa.status,
     reason: pa.reason, summary: pa.summary, blockers: pa.blockers || [],
     acceptanceCriteria: pa.acceptanceCriteria, assumptions: pa.assumptions || [],
-    nextAction: pa.status === 'already_done' ? 'tasks.json → status done işaretle'
-      : pa.status === 'stale' ? 'task tanımını koda göre güncelle (ana oturum/PA), sonra tekrar çalıştır'
+    nextAction: pa.status === 'already_done' ? (TASK_ID ? 'tasks.json → status done işaretle' : 'İstenen iş kodda zaten var — yapılacak bir şey yok')
+      : pa.status === 'stale' ? (TASK_ID ? 'task tanımını koda göre güncelle (ana oturum/PA), sonra tekrar çalıştır' : 'İstek kodun mevcut durumuyla çelişiyor — isteği netleştir, tekrar çalıştır')
       : 'bağımlılığı/ön koşulu çöz, sonra tekrar çalıştır',
   }
 }
@@ -174,16 +184,16 @@ if (MODE === 'dry') {
     `${HEADLESS}
 
 ROL: Software Engineer (planlama — KOD YAZMA, sadece plan).
-GÖREV: "${TASK_ID}" task'ı için implementasyon planı çıkar. PA analizi:
+GÖREV: "${WORK_REF}" task'ı için implementasyon planı çıkar. PA analizi:
 - Özet: ${pa.summary}
 - Kabul kriterleri: ${JSON.stringify(pa.acceptanceCriteria)}
 - needsDesign=${pa.needsDesign}, needsMigration=${pa.needsMigration}, needsBackend=${pa.needsBackend}, isReadOnly=${pa.isReadOnly}
 
 İlgili mevcut kodu OKU (controller/manager/view), katmanlı mimariye (Manager/Interface + FluentValidation + LogicRunner pipeline + Mapperly + çift loglama) uygun planı ver: oluşturulacak/değişecek dosyalar, RED-first test listesi, designer/DB sözleşme beklentisi, karmaşıklık (S/M/L), açık sorular, riskler. Dosya YAZMA.`,
-    mopt({ label: `PLAN:${TASK_ID}`, phase: 'SWE Implementasyon', agentType: 'swe-entegrasyon', schema: PLAN_SCHEMA })
+    mopt({ label: `PLAN:${WORK_REF}`, phase: 'SWE Implementasyon', agentType: 'swe-entegrasyon', schema: PLAN_SCHEMA })
   )
   return {
-    taskId: TASK_ID, mode: 'dry', outcome: 'plan_ready',
+    taskId: TASK_ID || null, isAdHoc: !TASK_ID, goal: GOAL || null, mode: 'dry', outcome: 'plan_ready',
     pa: { status: pa.status, summary: pa.summary, acceptanceCriteria: pa.acceptanceCriteria, needsDesign: pa.needsDesign, needsMigration: pa.needsMigration, needsBackend: pa.needsBackend, isReadOnly: pa.isReadOnly, assumptions: pa.assumptions || [] },
     plan: plan || { error: 'plan agent null' },
     nextAction: 'Plan onaylanırsa aynı task\'ı mode:full ile çalıştır.',
@@ -199,10 +209,10 @@ if (pa.needsDesign) {
     `${HEADLESS}
 
 ROL: UI/UX Designer (Razor + Tabler + HTMX). C#/iş mantığı/migration YAZMA — altyapı gerekirse DEVİR: swe + veri sözleşmesi yaz.
-GÖREV: "${TASK_ID}" — ${pa.summary}
+GÖREV: "${WORK_REF}" — ${pa.summary}
 Kabul kriterleri: ${JSON.stringify(pa.acceptanceCriteria)}
 Features/{Feature}/Views altına .cshtml + partial yaz. Tabler bileşeni kullanmadan ÖNCE class kombinasyonunu doğrula (tabler-ui referansı). Referans tasarım dili: Features/Reports/Views/* + Products. Türkçe diakritikler doğru. SWE'nin sağlaması gereken ViewModel alanları + controller action imzaları + ViewBag anahtarlarını "contract" alanında net yaz.`,
-    mopt({ label: `DESIGN:${TASK_ID}`, phase: 'Tasarım', agentType: 'designer', schema: DESIGN_SCHEMA })
+    mopt({ label: `DESIGN:${WORK_REF}`, phase: 'Tasarım', agentType: 'designer', schema: DESIGN_SCHEMA })
   )
   if (design) log(`Designer: ${(design.viewFiles || []).length} view, contract hazır`)
 }
@@ -214,10 +224,10 @@ async function runDb(extraCtx) {
     `${HEADLESS}
 
 ROL: Database Master (EF Core + PostgreSQL). Entity/DbContext değişikliği + IEntityTypeConfiguration + migration strict-rule (add → gözden geçir → has-pending-model-changes ile snapshot doğrula). Dev DB erişilemezse migration dosyası + temiz snapshot yeterli (update'i DEVİR: ile bırak).
-GÖREV: "${TASK_ID}" — ${pa.summary}
+GÖREV: "${WORK_REF}" — ${pa.summary}
 Kabul kriterleri: ${JSON.stringify(pa.acceptanceCriteria)}${extraCtx || ''}
 Multi-tenant izolasyon + index/hot-path'i göz önünde bulundur. SWE'nin tüketeceği yeni alan/DbSet/servis imzalarını "handoffNotes"ta yaz. EF mutasyon-persist kuralı (no-tracking footgun) için ilgili mutasyon yollarını işaretle.`,
-    mopt({ label: `DB:${TASK_ID}`, phase: 'DB', agentType: 'db-entegrasyon', schema: DB_SCHEMA })
+    mopt({ label: `DB:${WORK_REF}`, phase: 'DB', agentType: 'db-entegrasyon', schema: DB_SCHEMA })
   )
   if (r) log(`DB: migration ${r.migrationName || '(yok)'} — ${r.schemaSummary}`)
   return r
@@ -234,11 +244,11 @@ const swe = await agent(
   `${HEADLESS}
 
 ROL: Software Engineer-A (TDD-First, RED→GREEN). Katmanlı mimari: Manager/Interface + FluentValidation + LogicRunner 3-adım pipeline (Validation→BusinessRules→Execution) + Mapperly + çift loglama (IApplicationLogManager TR + ILogger). EF mutasyonda .AsTracking()/Update şart (no-tracking footgun). Entity/migration GEREKİYORSA kendin yapma → DEVİR: db-entegrasyon (zaten yapıldıysa handoff'u tüket).
-GÖREV: "${TASK_ID}" — ${pa.summary}
+GÖREV: "${WORK_REF}" — ${pa.summary}
 Kabul kriterleri: ${JSON.stringify(pa.acceptanceCriteria)}${designCtx}${dbCtx}
 
 Sıra: (1) RED testi yaz, başarısız olduğunu doğrula. (2) Minimum kodu yaz (GREEN). (3) dotnet build Entegrasyon.sln + dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj koş. buildResult + unitTestResult + redFirstProof döndür. Integration/E2E KOŞMA (CI'da).`,
-  mopt({ label: `SWE-A:${TASK_ID}`, phase: 'SWE Implementasyon', agentType: 'swe-entegrasyon', schema: SWE_SCHEMA })
+  mopt({ label: `SWE-A:${WORK_REF}`, phase: 'SWE Implementasyon', agentType: 'swe-entegrasyon', schema: SWE_SCHEMA })
 )
 if (!swe) {
   return { taskId: TASK_ID, mode: 'full', outcome: 'error', detail: 'SWE aşaması sonuç döndürmedi.', pa, design, db }
@@ -260,8 +270,8 @@ if (!db) {
 ROL: Software Engineer-A (DB handoff sonrası implementasyon tamamlama). DB Master migration'ı hazırladı:
 ${db.handoffNotes}
 Migration: ${db.migrationName || '(yok)'}
-"${TASK_ID}" — ${pa.summary}: backend + testleri bu yeni şemayı tüketerek TAMAMLA (TDD RED→GREEN). dotnet build + unit test koş.`,
-        mopt({ label: `SWE-A2:${TASK_ID}`, phase: 'SWE Implementasyon', agentType: 'swe-entegrasyon', schema: SWE_SCHEMA })
+"${WORK_REF}" — ${pa.summary}: backend + testleri bu yeni şemayı tüketerek TAMAMLA (TDD RED→GREEN). dotnet build + unit test koş.`,
+        mopt({ label: `SWE-A2:${WORK_REF}`, phase: 'SWE Implementasyon', agentType: 'swe-entegrasyon', schema: SWE_SCHEMA })
       )
       if (swe2) {
         swe.filesChanged = [...new Set([...(swe.filesChanged || []), ...(swe2.filesChanged || [])])]
@@ -280,11 +290,11 @@ phase('Eş-Review')
 const review = await agent(
   `${HEADLESS}
 
-ROL: Software Engineer-B (eş-review). SWE-A'nın "${TASK_ID}" için yaptığı değişikliği git diff ile incele (git diff + git status; commit YOK). Mimari kurallara uyum: 3-adım pipeline, no-tracking persist, çift loglama, Mapperly, multi-tenant, FluentValidation. Güvenlik (kullanıcı girdisi/yetki/mutasyon) ve doğruluk hatalarına odaklan; format nit'lerini atla.
+ROL: Software Engineer-B (eş-review). SWE-A'nın "${WORK_REF}" için yaptığı değişikliği git diff ile incele (git diff + git status; commit YOK). Mimari kurallara uyum: 3-adım pipeline, no-tracking persist, çift loglama, Mapperly, multi-tenant, FluentValidation. Güvenlik (kullanıcı girdisi/yetki/mutasyon) ve doğruluk hatalarına odaklan; format nit'lerini atla.
 SWE-A özeti: ${swe.summary}
 Değişen dosyalar: ${JSON.stringify(swe.filesChanged)}
 Her bulgu: severity + dosya:satır + problem + fix. blocker varsa changes_requested.`,
-  mopt({ label: `SWE-B:${TASK_ID}`, phase: 'Eş-Review', agentType: 'swe-entegrasyon', schema: REVIEW_SCHEMA })
+  mopt({ label: `SWE-B:${WORK_REF}`, phase: 'Eş-Review', agentType: 'swe-entegrasyon', schema: REVIEW_SCHEMA })
 )
 log(`Review: ${review ? review.verdict + ' (' + review.blockingCount + ' blocker)' : 'null'}`)
 
@@ -298,7 +308,7 @@ if (review && review.verdict === 'changes_requested' && review.blockingCount > 0
 ROL: Software Engineer-A (review fix turu). Eş-review şu blocker/major bulguları verdi — DÜZELT, sonra build + unit test tekrar koş:
 ${JSON.stringify(blockers, null, 2)}
 Sadece bu bulguları gider, kapsam genişletme. buildResult + unitTestResult döndür.`,
-    mopt({ label: `SWE-FIX:${TASK_ID}`, phase: 'Eş-Review', agentType: 'swe-entegrasyon', schema: SWE_SCHEMA })
+    mopt({ label: `SWE-FIX:${WORK_REF}`, phase: 'Eş-Review', agentType: 'swe-entegrasyon', schema: SWE_SCHEMA })
   )
   if (sweFix) log(`SWE fix: build=${sweFix.buildResult}, test=${sweFix.unitTestResult}`)
 }
@@ -308,11 +318,11 @@ phase('QA Kapısı')
 const qa = await agent(
   `${HEADLESS}
 
-ROL: QA / TDD bekçisi (Definition of Done kapısı). "${TASK_ID}" değişikliğini incele (git diff). Kabul kriterleri + manual_test_steps karşılanıyor mu? RED-first izlendi mi? dotnet build + dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj KOŞ ve sonucu raporla. Integration/E2E/görsel doğrulamayı KOŞMA — bunları ciDeferred (CI-DEVİR) olarak işaretle, bu yüzden fail VERME. Yalnız headless'ta kanıtlanabilir eksikler (build fail, unit fail, kabul kriteri açıkça karşılanmamış) blocker'dır.
+ROL: QA / TDD bekçisi (Definition of Done kapısı). "${WORK_REF}" değişikliğini incele (git diff). Kabul kriterleri + manual_test_steps karşılanıyor mu? RED-first izlendi mi? dotnet build + dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj KOŞ ve sonucu raporla. Integration/E2E/görsel doğrulamayı KOŞMA — bunları ciDeferred (CI-DEVİR) olarak işaretle, bu yüzden fail VERME. Yalnız headless'ta kanıtlanabilir eksikler (build fail, unit fail, kabul kriteri açıkça karşılanmamış) blocker'dır.
 Kabul kriterleri: ${JSON.stringify(pa.acceptanceCriteria)}
 SWE özeti: ${swe.summary}${sweFix ? '\nFix sonrası: ' + sweFix.summary : ''}
 Review verdict: ${review ? review.verdict : 'n/a'}`,
-  mopt({ label: `QA:${TASK_ID}`, phase: 'QA Kapısı', agentType: 'qa-entegrasyon', schema: QA_SCHEMA })
+  mopt({ label: `QA:${WORK_REF}`, phase: 'QA Kapısı', agentType: 'qa-entegrasyon', schema: QA_SCHEMA })
 )
 log(`QA: ${qa ? qa.verdict : 'null'}`)
 
@@ -320,7 +330,9 @@ log(`QA: ${qa ? qa.verdict : 'null'}`)
 const finalBuild = (sweFix && sweFix.buildResult) || swe.buildResult
 const readyToPush = !!qa && qa.verdict === 'pass' && qa.buildResult === 'pass' && finalBuild === 'pass'
 return {
-  taskId: TASK_ID,
+  taskId: TASK_ID || null,
+  isAdHoc: !TASK_ID,
+  goal: GOAL || null,
   mode: 'full',
   outcome: readyToPush ? 'ready_to_push' : 'needs_attention',
   readyToPush,
@@ -335,6 +347,6 @@ return {
   deferrals: [...(swe.deferrals || []), ...(design ? design.deferrals || [] : [])],
   assumptions: [...(pa.assumptions || []), ...(swe.assumptions || []), ...(design ? design.assumptions || [] : []), ...(db ? db.assumptions || [] : [])],
   nextAction: readyToPush
-    ? 'Ana oturum: diff incele → commit → git push gitea+origin develop → dev deploy → (görsel QA 8085) → next-task.py --done ' + TASK_ID
-    : 'QA fail/blocker — ana oturum kararı: aynı task mode:full tekrar (fix odaklı) ya da elle müdahale. Blocker listesine bak.',
+    ? ('Ana oturum: diff incele → commit → git push gitea+origin develop → dev deploy → (görsel QA 8085)' + (TASK_ID ? ' → next-task.py --done ' + TASK_ID : ' (ad-hoc — tasks.json güncellemesi yok)'))
+    : 'QA fail/blocker — ana oturum kararı: aynı iş mode:full tekrar (fix odaklı) ya da elle müdahale. Blocker listesine bak.',
 }

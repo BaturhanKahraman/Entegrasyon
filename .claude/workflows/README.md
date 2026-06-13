@@ -37,9 +37,26 @@ bu tasarım onları nasıl çözüyor — en altta "Neden bu tasarım" bölümü
 çünkü `develop` push'u otomatik dev deploy tetikler; bu kapı kontrollü kalmalı.
 Stage/prod her zaman elle.
 
+## İki giriş yolu (ÖNEMLİ)
+
+feature-pipeline iki şekilde beslenir — sadece backlog'a bağlı DEĞİL:
+
+| Arg | Anlam | Örnek |
+|---|---|---|
+| `taskId` | tasks.json backlog task'ı (loop bunu kullanır) | `{"taskId":"T028","mode":"full"}` |
+| `goal` | **Senin direkt yazdığın serbest-metin iş** — tasks.json'a HİÇ bakılmaz | `{"goal":"Ürün listesine CSV export butonu ekle","mode":"full"}` |
+
+İkisinden biri zorunlu. `goal` verilince PA, isteği tasks.json'dan değil **doğrudan senin metninden** alır, koda göre teyit eder, aynı zincirden (Designer→DB→SWE→review→QA) geçirir. Loop sadece `taskId` yolunu sürer; ad-hoc işleri sen tek tek `goal` ile verirsin.
+
 ## Kullanım
 
-### Tek task — önce ucuz plan (dry), sonra tam (full)
+### Ad-hoc (senin direkt isteğin)
+```
+Workflow scriptPath=.../feature-pipeline.js  args={"goal":"<ne istiyorsan>","mode":"dry"}   # önce plan
+Workflow scriptPath=.../feature-pipeline.js  args={"goal":"<ne istiyorsan>","mode":"full"}  # implement+test
+```
+
+### Backlog task — önce ucuz plan (dry), sonra tam (full)
 ```
 # 1) Plan-only kanıt (ucuz, dosya yazmaz): PA + plan
 Workflow scriptPath=.../feature-pipeline.js  args={"taskId":"T028","mode":"dry"}
