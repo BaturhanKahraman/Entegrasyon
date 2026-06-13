@@ -37,6 +37,15 @@ public class AttributeMatchManager(
         if (existing != null)
             return new ErrorResult($"Bu özellik bu marketplace için zaten eşleştirilmiş.");
 
+        var reverseConflict = await dbContext.CategoryAttributeMarketPlaceMatches
+            .AnyAsync(x =>
+                x.MarketPlaceId == marketPlaceId &&
+                x.MarketPlaceCategoryAttributeId == marketplaceAttributeId &&
+                x.ApplicationCategoryAttributeId != applicationAttributeId);
+
+        if (reverseConflict)
+            return new ErrorResult("Bu pazaryeri özelliği başka bir özelliğinize zaten eşlenmiş.");
+
         dbContext.CategoryAttributeMarketPlaceMatches.Add(new CategoryAttributeMarketPlaceMatch
         {
             ApplicationCategoryAttributeId = applicationAttributeId,

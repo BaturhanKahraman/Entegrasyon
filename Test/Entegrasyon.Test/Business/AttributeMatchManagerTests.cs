@@ -85,6 +85,26 @@ public class AttributeMatchManagerTests : BaseTest
     }
 
     [Fact]
+    public async Task SaveAttributeMatchAsync_ShouldReturnError_WhenSameMarketplaceAttributeAlreadyMappedToAnother()
+    {
+        // Arrange — Trendyol attr 100 zaten bizim attr 1'e eşli
+        var existing = new List<CategoryAttributeMarketPlaceMatch>
+        {
+            new() { ApplicationCategoryAttributeId = 1, MarketPlaceId = 1, MarketPlaceCategoryAttributeId = 100 }
+        };
+        mockIntegrationDbContext
+            .Setup(x => x.CategoryAttributeMarketPlaceMatches)
+            .ReturnsDbSet(existing);
+
+        // Act — şimdi bizim attr 2'yi de aynı Trendyol attr 100'e eşlemeye çalış
+        var result = await _sut.SaveAttributeMatchAsync(2, 1, 100);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("başka bir özelliğinize");
+    }
+
+    [Fact]
     public async Task SaveAttributeMatchAsync_ShouldReturnError_WhenMatchAlreadyExists()
     {
         // Arrange
