@@ -134,12 +134,19 @@
                                             Kaldir
                                         </button>
                                     }
-                                    else
+                                    else if (Model.AttributeMatch is not null)
                                     {
                                         <button class="btn btn-outline-primary btn-sm"
                                                 data-bs-toggle="modal"
                                                 data-bs-target="#mapValueModal"
                                                 onclick="openValueMapModal(@val.ValueId, '@val.ValueName.Replace("'", "\\'")' )">
+                                            Eşle
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-primary btn-sm" disabled
+                                                title="Önce bu özelliği bir pazaryeri özelliğine eşleyin">
                                             Eşle
                                         </button>
                                     }
@@ -191,6 +198,7 @@
 
 <script>
     var valueSearchTs = null;
+    var trendyolAttrId = @(Model.AttributeMatch?.MarketPlaceCategoryAttributeId ?? 0);
 
     function ensureValueSearchTomSelect() {
         var el = document.getElementById('valueSearchSelect');
@@ -205,9 +213,8 @@
             loadThrottle: 500,
             preload: false,
             load: function (query, callback) {
-                if (query.length < 2) { callback(); return; }
-                var attributeId = @Model.AttributeId;
-                fetch('/marketplace/sync/suggestions/attributes/' + attributeId + '/values?mp=@Model.MarketPlaceId&q=' + encodeURIComponent(query))
+                if (query.length < 2 || !trendyolAttrId) { callback(); return; }
+                fetch('/marketplace/sync/suggestions/attributes/values?mp=@Model.MarketPlaceId&mpAttributeId=' + trendyolAttrId + '&q=' + encodeURIComponent(query))
                     .then(function (r) { return r.json(); })
                     .then(function (data) { callback(data); })
                     .catch(function () { callback(); });
