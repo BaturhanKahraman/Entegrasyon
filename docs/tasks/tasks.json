@@ -435,7 +435,7 @@
   {
     "task": "Integration test altyapısı: ApplicationStarted Roles race (42P01) — tüm integration testleri kırıyor",
     "description": "PRE-EXISTING, QA teşhis etti. Program.cs ApplicationStarted.Register fire-and-forget callback'i adminPermissionSeeder.EnsureAdminPermissionsAsync() çağırıyor; WebApplicationFactory app'i başlatınca bu callback migration'dan ÖNCE Roles tablosuna erişiyor → 42P01 relation Roles does not exist → process crash. MigrationTests dahil TÜM integration testlerini etkiliyor. Yerel Docker açıkken de timing ile tetiklenebilir. Çözüm seçenekleri: (a) Testing/IntegrationTest ortamında seeder'ı ApplicationStarted'da çalıştırma, (b) migration tamamlanmasını bekle, (c) son çare 42P01 yakalama. ROOT-CAUSE tercih edilmeli (suppress değil). Mimari karar — sabah kullanıcı ile.",
-    "status": "todo",
+    "status": "done",
     "priority": "high",
     "plan": true,
     "notes": "QA DoD raporu 2026-06-10. BulkExportHttpTests bu yüzden koşulamadı (feature kodu doğru).",
@@ -1254,7 +1254,7 @@
   {
     "task": "Ürün Detay — Storefront Ayarlarını Ayrı Sayfaya Taşı (/products/{id}/storefront)",
     "description": "Şu an /products/{id} altında HTMX lazy-load ile gelen 'Mağaza Ayarları' kartı (SEO alanları + varyant mağaza fiyatları + Yayınla) ürün detay sayfasından ayrılacak ve /products/{id}/storefront adresinde bağımsız bir sayfaya taşınacak. Spec: docs/superpowers/specs/2026-06-11-urun-detay-storefront-split.md",
-    "status": "todo",
+    "status": "done",
     "notes": "Storefront alanları tespit edildi (_StoreSettings.cshtml): SeoTitle, SeoSlug, SeoDescription, SeoKeywords (SEO grubu) + ECommercePrice per-variant (mağaza fiyatı). Mevcut endpoint'ler: GET/POST /products/{id}/store-settings ve /store-settings/publish → yeni URL'e taşınacak. Migration/entity değişikliği YOK — alanlar zaten mevcut. Roller: SWE (yeni controller action + StorefrontSettings.cshtml + endpoint taşıma), Designer (yeni sayfa tasarımı + Detail.cshtml HTMX bloğu kaldırma).",
     "priority": "high",
     "plan": true,
@@ -1371,7 +1371,7 @@
   {
     "task": "Marketplace Sync — Eksik API Credential Durumunda Disabled Kart + Popover",
     "description": "Senkronizasyon (/marketplace/sync) overview sayfasında API credential'ı eksik olan pazaryerleri için kart disabled (butonlar tıklanamaz) + 'Yapılandırılmamış' badge + tooltip/popover gösterilecek. Spec: docs/superpowers/specs/2026-06-11-marketplace-sync-credential-disabled.md",
-    "status": "todo",
+    "status": "done",
     "notes": "Credential tespit mantığı: Trendyol=ApiKey+ApiSecret+SellerId, Amazon/Pazarama (mp.Id 4 veya 5)=TokenUrl+RefreshToken, diğerleri=ApiKey+ApiSecret. MarketplaceSyncCardVm'e HasCredentials (bool) alanı eklenecek; SyncOverviewController/Manager'da mapping güncellenecek. Overview/Index.cshtml'de HasCredentials=false ise butonlar disabled + Tabler tooltip/popover ile '/settings/integrations' linki. Sorumlu: SWE (vm + controller) + Designer (disabled kart UI).",
     "priority": "high",
     "plan": true,
