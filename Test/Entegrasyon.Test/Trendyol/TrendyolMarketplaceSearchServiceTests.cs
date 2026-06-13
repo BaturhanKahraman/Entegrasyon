@@ -205,6 +205,33 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
         result.Data[0].FullPath.Should().Be("Giyim > Erkek > Tisort");
     }
 
+    [Fact]
+    public async Task SearchCategoriesAsync_MarksLeafAndParentCategories()
+    {
+        // Arrange — "Oyuncak" parent (alt kategorisi var) + "Peluş Oyuncak" leaf
+        var categories = new List<ImportedTrendyolCategory>
+        {
+            new() { Id = 1, Name = "Oyuncak", SubCategories = new List<ImportedTrendyolCategory>
+            {
+                new() { Id = 2, Name = "Peluş Oyuncak" }
+            }}
+        };
+
+        _categoryImportMock
+            .Setup(s => s.GetTrendyolCategories())
+            .ReturnsAsync(new SuccessDataResult<IEnumerable<ImportedTrendyolCategory>>(categories));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchCategoriesAsync(1, "");
+
+        // Assert — parent leaf değil, child leaf
+        result.Success.Should().BeTrue();
+        result.Data.Single(c => c.Id == 1).IsLeaf.Should().BeFalse();
+        result.Data.Single(c => c.Id == 2).IsLeaf.Should().BeTrue();
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // SearchBrandsAsync — Trendyol API (WireMock stub)
     // ═══════════════════════════════════════════════════════════════════════

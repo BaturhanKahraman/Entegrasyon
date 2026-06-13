@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Entegrasyon.ApplicationBootstrap.Security;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.MVC.Features.MarketplaceSync.ViewModels;
@@ -100,6 +101,7 @@ public class CategorySyncController(
     }
 
     [HttpPost("/marketplace/sync/categories/{categoryId:int}/unmap")]
+    [Authorize(Policy = AppPermissions.Categories.DeleteMapping)]
     public async Task<IActionResult> RemoveMapping(int categoryId, int mp)
     {
         var result = await categoryMatchService.RemoveCategoryMappingAsync(categoryId, mp);

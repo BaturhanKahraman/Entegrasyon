@@ -98,6 +98,27 @@ public sealed class TrendyolMarketplaceSearchService(
         }
     }
 
+    public async Task<IDataResult<List<MarketplaceOption>>> SearchAttributeValuesForCategoryAsync(
+        int marketPlaceId, int marketplaceCategoryId, int marketplaceAttributeId, string query, CancellationToken ct = default)
+    {
+        if (marketPlaceId != TrendyolMarketPlaceId)
+            return new SuccessDataResult<List<MarketplaceOption>>([]);
+
+        try
+        {
+            var values = await attributeCatalog.SearchValuesForCategoryAsync(
+                marketplaceCategoryId, marketplaceAttributeId, query, ct);
+            return new SuccessDataResult<List<MarketplaceOption>>(values.ToList());
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex,
+                "Trendyol kategori-bazlı özellik değeri arama hatası. CategoryId={CategoryId} AttributeId={AttributeId}",
+                marketplaceCategoryId, marketplaceAttributeId);
+            return new ErrorDataResult<List<MarketplaceOption>>([], "Özellik değeri arama sırasında hata oluştu.");
+        }
+    }
+
     private async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsTrendyolAsync(
         string query, CancellationToken ct)
     {
@@ -158,7 +179,8 @@ public sealed class TrendyolMarketplaceSearchService(
         foreach (var cat in categories)
         {
             var fullPath = string.IsNullOrEmpty(parentPath) ? cat.Name : $"{parentPath} > {cat.Name}";
-            results.Add(new MarketplaceCategorySearchResult(cat.Id, cat.Name, fullPath));
+            var isLeaf = cat.SubCategories is not { Count: > 0 };
+            results.Add(new MarketplaceCategorySearchResult(cat.Id, cat.Name, fullPath, isLeaf));
 
             if (cat.SubCategories is { Count: > 0 })
                 FlattenCategories(cat.SubCategories, fullPath, results);

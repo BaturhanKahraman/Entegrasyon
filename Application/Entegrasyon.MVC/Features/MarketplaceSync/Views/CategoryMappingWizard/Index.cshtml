@@ -1,0 +1,262 @@
+@model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CategoryMappingWizardVm
+@{
+    var wizardUrl = $"/marketplace/sync/categories/{Model.CategoryId}/wizard?mp={Model.MarketPlaceId}";
+}
+
+<div class="row g-3">
+    <div class="col-12">
+        <a href="/marketplace/sync/categories?mp=@Model.MarketPlaceId" class="btn btn-link px-0">
+            <i class="ti ti-arrow-left me-1"></i>Kategori eşleme listesine dön
+        </a>
+    </div>
+
+    <!-- Başlık + adım göstergesi -->
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="avatar bg-blue-lt me-3"><i class="ti ti-category"></i></span>
+                    <div>
+                        <h2 class="mb-0">@Model.CategoryName</h2>
+                        <div class="text-secondary">@Model.MarketPlaceName eşlemesi</div>
+                    </div>
+                    @if (Model.ReadyToPublish)
+                    {
+                        <span class="badge bg-green text-green-fg ms-auto">
+                            <i class="ti ti-circle-check me-1"></i>Gönderime hazır
+                        </span>
+                    }
+                </div>
+
+                <div class="steps steps-counter steps-green">
+                    <span class="step-item @(Model.ActiveStep >= 1 ? "active" : "")">Kategori Eşle</span>
+                    <span class="step-item @(Model.ActiveStep >= 2 ? "active" : "")">Zorunlu Özellikler</span>
+                    <span class="step-item @(Model.ActiveStep >= 3 ? "active" : "")">Değerler</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (!Model.IsMapped)
+    {
+        <!-- ADIM 1 — pazaryeri kategorisi seç -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">1. Pazaryeri Kategorisi Seç</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info" role="alert">
+                        <div class="d-flex">
+                            <i class="ti ti-bulb icon alert-icon"></i>
+                            <div>
+                                Bu kategori master katalogda tüm özellik ve değerleriyle hazır eşleşmiş olabilir.
+                                Manuel eşleme yerine hazır halini kullanmak isterseniz
+                                <a href="/categories" class="alert-link">Kategoriler &rsaquo; İçe Aktar</a>
+                                bölümünü kontrol edin. (Master katalog güncel olmayabilir; karar sizde.)
+                            </div>
+                        </div>
+                    </div>
+
+                    <form method="post" action="/marketplace/sync/categories/@Model.CategoryId/map">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
+                        <input type="hidden" name="returnUrl" value="@wizardUrl" />
+                        <input type="hidden" name="externalCategoryName" id="categorySearchName" />
+
+                        <div class="mb-3">
+                            <label class="form-label required">@Model.MarketPlaceName Kategorisi</label>
+                            <select id="categorySearchSelect" name="externalCategoryId" required>
+                                <option value=""></option>
+                            </select>
+                            <small class="form-hint">Kategori adı yazın (örn: "Oyuncak") — tam yolu ile listelenir.</small>
+                        </div>
+
+                        <div id="leafWarning" class="alert alert-warning d-none" role="alert">
+                            <div class="d-flex">
+                                <i class="ti ti-alert-triangle icon alert-icon"></i>
+                                <div>
+                                    <strong>Bu bir ara (üst) kategori.</strong>
+                                    Trendyol yalnızca en alt (yaprak) kategoriye ürün göndermeye izin verir.
+                                    Daha spesifik bir alt kategori seçmeniz önerilir.
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">
+                            <i class="ti ti-link me-1"></i>Eşle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Eşleme özeti + kaldır -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-secondary">Eşli pazaryeri kategorisi</div>
+                            <div class="h3 mb-0">
+                                @(Model.MarketPlaceCategoryName ?? $"ID: {Model.MarketPlaceCategoryId}")
+                            </div>
+                        </div>
+                        <div class="col-auto" require-permission="Permissions.Categories.DeleteMapping">
+                            <button class="btn btn-outline-danger"
+                                    hx-post="/marketplace/sync/categories/@Model.CategoryId/unmap?mp=@Model.MarketPlaceId"
+                                    hx-confirm="Bu eşlemeyi kaldırmak üzeresiniz. Kategoriye bağlı özellik ve değer eşleşmeleri de (başka kategori kullanmıyorsa) temizlenecek. Emin misiniz?"
+                                    hx-swap="none"
+                                    hx-on::after-request="if(event.detail.successful){ window.location.href='@wizardUrl'; }">
+                                <i class="ti ti-unlink me-1"></i>Eşlemeyi Kaldır
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADIM 2 — zorunlu özellik tamlığı -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">2. Zorunlu Özellikler</h3>
+                    @if (Model.Validation is not null)
+                    {
+                        <div class="card-actions text-secondary">
+                            @Model.Validation.MappedRequiredAttributes / @Model.Validation.TotalRequiredAttributes eşli
+                        </div>
+                    }
+                </div>
+                <div class="card-body">
+                    @if (Model.Validation is null)
+                    {
+                        <div class="empty">
+                            <p class="empty-title">Tamlık bilgisi alınamadı</p>
+                        </div>
+                    }
+                    else if (Model.Validation.TotalRequiredAttributes == 0)
+                    {
+                        <div class="alert alert-success mb-0" role="alert">
+                            <i class="ti ti-circle-check icon alert-icon"></i>
+                            Bu kategoride zorunlu özellik yok. Gönderim için engel bulunmuyor.
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="progress mb-3" style="height: 10px;">
+                            <div class="progress-bar @(Model.RequiredComplete ? "bg-success" : "bg-warning")"
+                                 style="width: @(Model.RequiredPercent)%"
+                                 role="progressbar" aria-valuenow="@Model.RequiredPercent"
+                                 aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+
+                        @if (Model.Validation.Errors.Count > 0)
+                        {
+                            <p class="text-secondary">Gönderim için eşlenmesi gereken zorunlu özellikler:</p>
+                            <div class="list-group list-group-flush mb-3">
+                                @foreach (var err in Model.Validation.Errors)
+                                {
+                                    <div class="list-group-item d-flex align-items-center px-0">
+                                        <span class="status-dot bg-red me-2"></span>
+                                        <span>@err.Replace("Zorunlu özellik eşleştirilmemiş: ", "")</span>
+                                    </div>
+                                }
+                            </div>
+                            <a href="/marketplace/sync/attributes?mp=@Model.MarketPlaceId" class="btn btn-primary">
+                                <i class="ti ti-adjustments me-1"></i>Özellikleri Eşle
+                            </a>
+                        }
+                        else
+                        {
+                            <div class="alert alert-success mb-0" role="alert">
+                                <i class="ti ti-circle-check icon alert-icon"></i>
+                                Tüm zorunlu özellikler eşli.
+                            </div>
+                        }
+                    }
+
+                    @if (Model.Validation is { Warnings.Count: > 0 })
+                    {
+                        <div class="mt-3">
+                            <p class="text-secondary mb-1">Eşlenmemiş varianter özellikler (opsiyonel):</p>
+                            <div class="list-group list-group-flush">
+                                @foreach (var warn in Model.Validation.Warnings)
+                                {
+                                    <div class="list-group-item d-flex align-items-center px-0">
+                                        <span class="status-dot bg-yellow me-2"></span>
+                                        <span>@warn.Replace("Varianter özellik eşleştirilmemiş: ", "")</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- ADIM 3 — değerler -->
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">3. Özellik Değerleri</h3>
+                </div>
+                <div class="card-body">
+                    <p class="text-secondary">
+                        Özellik değerleri (örn. "Malzeme" altındaki Plastik/Kauçuk) bu kategori bağlamında
+                        Trendyol'dan çekilir — farklı kategorilerin aynı isimli özellik değerleri karışmaz.
+                    </p>
+                    <a href="/marketplace/sync/attributes?mp=@Model.MarketPlaceId" class="btn btn-outline-primary">
+                        <i class="ti ti-list-details me-1"></i>Değer Eşleme Ekranına Git
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@if (!Model.IsMapped)
+{
+    <script>
+        (function () {
+            var el = document.getElementById('categorySearchSelect');
+            if (!el || el.tomselect) return;
+            var ts = new TomSelect(el, {
+                valueField: 'id',
+                labelField: 'label',
+                searchField: ['name', 'label'],
+                maxOptions: 20,
+                placeholder: 'Kategori adı yazın...',
+                loadThrottle: 400,
+                preload: false,
+                load: function (query, callback) {
+                    if (query.length < 2) { callback(); return; }
+                    fetch('/marketplace/sync/suggestions/categories?mp=@Model.MarketPlaceId&q=' + encodeURIComponent(query))
+                        .then(function (r) { return r.json(); })
+                        .then(function (data) { callback(data); })
+                        .catch(function () { callback(); });
+                },
+                render: {
+                    option: function (item, escape) {
+                        var leaf = item.isLeaf
+                            ? ''
+                            : ' <span class="badge bg-yellow-lt ms-1">üst kategori</span>';
+                        return '<div>' + escape(item.label) + leaf + '</div>';
+                    },
+                    item: function (item, escape) {
+                        return '<div>' + escape(item.label) + '</div>';
+                    }
+                }
+            });
+            ts.on('change', function (value) {
+                var opt = ts.options[value];
+                document.getElementById('categorySearchName').value = opt ? opt.name : '';
+                var warn = document.getElementById('leafWarning');
+                if (opt && opt.isLeaf === false) warn.classList.remove('d-none');
+                else warn.classList.add('d-none');
+            });
+        })();
+    </script>
+}

@@ -41,6 +41,44 @@ public sealed class TrendyolAttributeCatalog(
         return result.Take(20).ToList();
     }
 
+    public async Task<IReadOnlyList<MarketplaceOption>> SearchValuesForCategoryAsync(
+        int marketplaceCategoryId, int marketplaceAttributeId, string query, CancellationToken ct = default)
+    {
+        var attrs = await GetCategoryAttributesAsync(marketplaceCategoryId, ct);
+        var attr = attrs.FirstOrDefault(a => a.Id == marketplaceAttributeId);
+        if (attr is null)
+            return [];
+
+        IEnumerable<MarketplaceAttributeValueDto> values = attr.Values;
+        if (!string.IsNullOrWhiteSpace(query))
+            values = values.Where(v => v.Name.Contains(query, StringComparison.OrdinalIgnoreCase));
+
+        return values.Take(20)
+            .Select(v => new MarketplaceOption(v.Id, v.Name))
+            .ToList();
+    }
+
+    /// <summary>Tek bir pazaryeri kategorisinin attribute'larını (değerleriyle) çeker — kategori-bazlı cache.</summary>
+    private async Task<IReadOnlyList<MarketplaceAttributeDto>> GetCategoryAttributesAsync(
+        int marketplaceCategoryId, CancellationToken ct)
+    {
+        var key = $"{CacheKey}:cat:{marketplaceCategoryId}";
+        if (cache.TryGetValue<List<MarketplaceAttributeDto>>(key, out var cached) && cached is not null)
+            return cached;
+
+        var provider = providers.FirstOrDefault(p => p.MarketPlaceId == TrendyolMarketPlaceId);
+        if (provider is null)
+        {
+            logger.LogWarning("Trendyol attribute provider bulunamadı.");
+            return [];
+        }
+
+        var res = await provider.GetAttributesForCategoryAsync(marketplaceCategoryId, ct);
+        var data = res is { Success: true, Data: { } d } ? d : new List<MarketplaceAttributeDto>();
+        cache.Set(key, data, Ttl);
+        return data;
+    }
+
     private async Task<CatalogData> GetCatalogAsync(CancellationToken ct)
     {
         if (cache.TryGetValue<CatalogData>(CacheKey, out var cached) && cached is not null)

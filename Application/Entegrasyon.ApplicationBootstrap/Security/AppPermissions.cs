@@ -50,6 +50,12 @@ public static class AppPermissions
         public const string Create = "Permissions.Categories.Create";
         public const string Edit = "Permissions.Categories.Edit";
         public const string Delete = "Permissions.Categories.Delete";
+
+        /// <summary>
+        /// Kategori ↔ pazaryeri eşlemesini bozma/silme (cascade) yetkisi.
+        /// Eşleme kaldırma geri-alınamaz cascade içerir → ayrı yetki.
+        /// </summary>
+        public const string DeleteMapping = "Permissions.Categories.DeleteMapping";
     }
 
     public static class Orders
@@ -153,7 +159,7 @@ public static class AppPermissions
         permissions.AddRange([Products.View, Products.Create, Products.Edit, Products.Delete]);
         permissions.AddRange([Customers.View, Customers.Create, Customers.Edit, Customers.Delete]);
         permissions.AddRange([BranchOffices.View, BranchOffices.Create, BranchOffices.Edit, BranchOffices.Delete]);
-        permissions.AddRange([Categories.View, Categories.Create, Categories.Edit, Categories.Delete]);
+        permissions.AddRange([Categories.View, Categories.Create, Categories.Edit, Categories.Delete, Categories.DeleteMapping]);
         permissions.AddRange([Orders.View, Orders.Create, Orders.Edit, Orders.Delete]);
         permissions.AddRange([Sales.View, Sales.Create, Sales.Edit, Sales.Delete]);
         permissions.AddRange([Reports.View, Reports.Create, Reports.Edit, Reports.Delete]);

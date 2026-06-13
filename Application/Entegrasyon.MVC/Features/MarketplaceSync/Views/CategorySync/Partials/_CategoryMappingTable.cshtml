@@ -55,23 +55,17 @@
                         <td>
                             @if (cat.IsMapped)
                             {
-                                <button class="btn btn-outline-danger btn-sm"
-                                        hx-post="/marketplace/sync/categories/@cat.Id/unmap?mp=@Model.SelectedMarketPlaceId"
-                                        hx-confirm="Bu eslemeyi kaldirmak istediginize emin misiniz?"
-                                        hx-swap="none">
-                                    Kaldir
-                                </button>
+                                <a class="btn btn-outline-secondary btn-sm"
+                                   href="/marketplace/sync/categories/@cat.Id/wizard?mp=@Model.SelectedMarketPlaceId">
+                                    <i class="ti ti-settings me-1"></i>Yönet
+                                </a>
                             }
                             else
                             {
-                                <button class="btn btn-outline-primary btn-sm"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#mapCategoryModal"
-                                        data-category-id="@cat.Id"
-                                        data-category-name="@cat.Name"
-                                        onclick="openMapModal(@cat.Id, '@cat.Name.Replace("'", "\\'")' )">
-                                    Esle
-                                </button>
+                                <a class="btn btn-outline-primary btn-sm"
+                                   href="/marketplace/sync/categories/@cat.Id/wizard?mp=@Model.SelectedMarketPlaceId">
+                                    <i class="ti ti-link me-1"></i>Eşle
+                                </a>
                             }
                         </td>
                     </tr>
@@ -81,91 +75,7 @@
     </div>
 </div>
 
-<!-- Map Category Modal -->
-<div class="modal modal-blur fade" id="mapCategoryModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Kategori Esle</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <form id="mapCategoryForm" method="post" hx-swap="none">
-                <div class="modal-body">
-                    <p class="text-secondary mb-3">
-                        <strong id="modal-category-name"></strong> için pazaryeri kategorisi seçin.
-                    </p>
-                    <input type="hidden" name="mp" value="@Model.SelectedMarketPlaceId" />
-                    @if (!string.IsNullOrEmpty(Model.ReturnUrl))
-                    {
-                        <input type="hidden" name="returnUrl" value="@Model.ReturnUrl" />
-                    }
-                    <div class="mb-3">
-                        <label class="form-label">Pazaryeri Kategorisi</label>
-                        <select id="categorySearchSelect" name="externalCategoryId" required>
-                            <option value=""></option>
-                        </select>
-                        <input type="hidden" name="externalCategoryName" id="categorySearchName" />
-                        <small class="form-hint">Kategori adı yazın (örn: "Elbise"), tam yolu ile gösterilir.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
-                    <button type="submit" class="btn btn-primary">Esle</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
 <script>
-    var categorySearchTs = null;
-
-    function ensureCategorySearchTomSelect(mpId) {
-        var el = document.getElementById('categorySearchSelect');
-        if (!el) return;
-        if (el.tomselect) { categorySearchTs = el.tomselect; return; }
-        categorySearchTs = new TomSelect(el, {
-            valueField: 'id',
-            labelField: 'label',
-            searchField: ['name', 'label'],
-            maxOptions: 20,
-            placeholder: 'Kategori adı yazın...',
-            loadThrottle: 500,
-            preload: false,
-            load: function (query, callback) {
-                if (query.length < 2) { callback(); return; }
-                fetch('/marketplace/sync/suggestions/categories?mp=' + mpId + '&q=' + encodeURIComponent(query))
-                    .then(function (r) { return r.json(); })
-                    .then(function (data) { callback(data); })
-                    .catch(function () { callback(); });
-            },
-            render: {
-                option: function (item, escape) {
-                    return '<div>' + escape(item.label) + '</div>';
-                },
-                item: function (item, escape) {
-                    return '<div>' + escape(item.label) + '</div>';
-                }
-            }
-        });
-        categorySearchTs.on('change', function (value) {
-            var opt = categorySearchTs.options[value];
-            document.getElementById('categorySearchName').value = opt ? opt.name : '';
-        });
-    }
-
-    function openMapModal(categoryId, categoryName) {
-        document.getElementById('modal-category-name').textContent = categoryName;
-        var form = document.getElementById('mapCategoryForm');
-        form.setAttribute('hx-post', '/marketplace/sync/categories/' + categoryId + '/map');
-        htmx.process(form);
-        ensureCategorySearchTomSelect(@Model.SelectedMarketPlaceId);
-        if (categorySearchTs) {
-            categorySearchTs.clear();
-            categorySearchTs.clearOptions();
-        }
-    }
-
     function filterCategoryTable(query) {
         var rows = document.querySelectorAll('#category-mapping-table .category-row');
         var lower = query.toLowerCase();

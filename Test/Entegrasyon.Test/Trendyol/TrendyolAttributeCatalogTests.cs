@@ -118,6 +118,52 @@ public class TrendyolAttributeCatalogTests : Entegrasyon.UnitTest.BaseTest
     }
 
     [Fact]
+    public async Task SearchValuesForCategoryAsync_ReturnsOnlyThatCategorysValues_NoCrossCategoryMerge()
+    {
+        // Arrange — "Malzeme" (500) iki kategoride de var ama FARKLI değer setiyle.
+        // Oyuncak(100): Plastik/Kauçuk; Mobilya(200): Ahşap/Metal. Global merge çelişki yaratırdı.
+        SetupCategoryAttributes(100,
+            new MarketplaceAttributeDto(500, "Malzeme", false, false, new()
+            {
+                new MarketplaceAttributeValueDto(1, "Plastik"),
+                new MarketplaceAttributeValueDto(2, "Kauçuk")
+            }));
+        SetupCategoryAttributes(200,
+            new MarketplaceAttributeDto(500, "Malzeme", false, false, new()
+            {
+                new MarketplaceAttributeValueDto(3, "Ahşap"),
+                new MarketplaceAttributeValueDto(4, "Metal")
+            }));
+
+        var sut = CreateSut();
+
+        // Act — Oyuncak (100) kategorisi için Malzeme (500) değerleri
+        var result = await sut.SearchValuesForCategoryAsync(100, 500, "");
+
+        // Assert — yalnız Oyuncak değerleri; Mobilya değerleri (Ahşap/Metal) KARIŞMAMALI
+        result.Select(v => v.Id).Should().BeEquivalentTo(new[] { 1, 2 });
+        result.Select(v => v.Name).Should().NotContain(new[] { "Ahşap", "Metal" });
+    }
+
+    [Fact]
+    public async Task SearchValuesForCategoryAsync_FiltersByQuery()
+    {
+        SetupCategoryAttributes(100,
+            new MarketplaceAttributeDto(500, "Malzeme", false, false, new()
+            {
+                new MarketplaceAttributeValueDto(1, "Plastik"),
+                new MarketplaceAttributeValueDto(2, "Kauçuk")
+            }));
+
+        var sut = CreateSut();
+
+        var result = await sut.SearchValuesForCategoryAsync(100, 500, "kau");
+
+        result.Should().ContainSingle();
+        result[0].Name.Should().Be("Kauçuk");
+    }
+
+    [Fact]
     public async Task SearchAttributesAsync_UsesCache_ProviderCalledOncePerCategory()
     {
         SetupMappedCategories(388);

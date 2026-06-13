@@ -264,10 +264,58 @@ public class CategoryMatchService(
             return new ErrorResult(error);
         }
 
+        // ── Orphan-safe cascade ──
+        // Özellikler kategoriler arası paylaşımlı (controlled-vocab dedup). Bu kategorinin
+        // özellik/değer pazaryeri eşleşmeleri yalnızca BAŞKA hiçbir hâlâ-eşli kategori onları
+        // kullanmıyorsa (orphan) silinir; aksi halde paylaşan kategorinin eşlemesi bozulur.
+        var thisCategoryAttrIds = await dbContext.CategoryAttributeCategories
+            .Where(cac => cac.CategoryId == categoryId)
+            .Select(cac => cac.CategoryAttributeId)
+            .ToListAsync();
+
+        if (thisCategoryAttrIds.Count > 0)
+        {
+            var stillMappedCategoryIds = dbContext.CategoryMarketplaces
+                .Where(cm => cm.MarketPlaceId == marketPlaceId && cm.IsActive && cm.CategoryId != categoryId)
+                .Select(cm => cm.CategoryId);
+
+            var stillUsedAttrIds = await dbContext.CategoryAttributeCategories
+                .Where(cac => stillMappedCategoryIds.Contains(cac.CategoryId))
+                .Select(cac => cac.CategoryAttributeId)
+                .ToListAsync();
+
+            var orphanAttrIds = CategoryMappingCascade.OrphanedAttributeIds(thisCategoryAttrIds, stillUsedAttrIds);
+
+            if (orphanAttrIds.Count > 0)
+            {
+                var orphanValueIds = await dbContext.CategoryAttributeValues
+                    .Where(v => orphanAttrIds.Contains(v.CategoryAttributeId))
+                    .Select(v => v.Id)
+                    .ToListAsync();
+
+                var attrMatches = await dbContext.CategoryAttributeMarketPlaceMatches
+                    .AsTracking()
+                    .Where(m => m.MarketPlaceId == marketPlaceId &&
+                                orphanAttrIds.Contains(m.ApplicationCategoryAttributeId))
+                    .ToListAsync();
+                dbContext.CategoryAttributeMarketPlaceMatches.RemoveRange(attrMatches);
+
+                if (orphanValueIds.Count > 0)
+                {
+                    var valueMatches = await dbContext.CategoryAttributeValueMarketPlaceMatches
+                        .AsTracking()
+                        .Where(m => m.MarketPlaceId == marketPlaceId &&
+                                    orphanValueIds.Contains(m.ApplicationCategoryAttributeValueId))
+                        .ToListAsync();
+                    dbContext.CategoryAttributeValueMarketPlaceMatches.RemoveRange(valueMatches);
+                }
+            }
+        }
+
         dbContext.CategoryMarketplaces.Remove(mapping);
         await dbContext.SaveChangesAsync();
 
-        await applicationLogManager.AddLog("Kategori mapping başarıyla silindi", LogType.Category, LogAction.Delete);
+        await applicationLogManager.AddLog("Kategori mapping başarıyla silindi (cascade)", LogType.Category, LogAction.Delete);
         return new SuccessResult("Kategori mapping başarıyla silindi.");
     }
 
