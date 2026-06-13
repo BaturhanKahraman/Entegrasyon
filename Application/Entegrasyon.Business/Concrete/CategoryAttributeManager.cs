@@ -7,13 +7,15 @@ using Entegrasyon.Entity.Dtos;
 using Entegrasyon.Entity.Dtos.Category;
 using Entegrasyon.Entity.Logs;
 using Entegrasyon.Entity.Matches;
+using Entegrasyon.Business.Helpers;
 using Entegrasyon.Business.Mappers;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Entegrasyon.Entity.Results;
 
 namespace Entegrasyon.Business.Concrete;
 
-public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, CategoryAttributeMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory) : ICategoryAttributeManager
+public class CategoryAttributeManager(IApplicationLogManager applicationLogManager, IFluentValidator fluentValidator, CategoryAttributeMapper mapper, IDbContextFactory<IntegrationDbContext> contextFactory, ILogger<CategoryAttributeManager> logger) : ICategoryAttributeManager
 {
     public async Task<List<CategoryAttribute>> AddIfNotExits(IEnumerable<CategoryAttribute> attrs)
     {
@@ -130,8 +132,19 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
         var existingIds = attr.CategoryAttributeValues.Select(v => v.Id).ToHashSet();
         var toAdd = dto.CategoryAttributeValues?.Where(v => v.Id <= 0 || !existingIds.Contains(v.Id)).ToList() ?? [];
+        var existingNormalized = attr.CategoryAttributeValues
+            .Except(toRemove)
+            .Select(v => v.NormalizedName)
+            .Where(n => !string.IsNullOrEmpty(n))
+            .ToHashSet();
         foreach (var val in toAdd)
         {
+            // NormalizedName set edilmezse filtreli unique index boş string çakışmasıyla patlar.
+            var normalized = AttributeValueNormalizer.Normalize(val.Name);
+            if (normalized.Length == 0 || !existingNormalized.Add(normalized))
+                continue;
+            val.Name = val.Name!.Trim();
+            val.NormalizedName = normalized;
             val.CategoryAttributeId = attr.Id;
             attr.CategoryAttributeValues.Add(val);
         }
@@ -180,12 +193,50 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
 
     public async Task<IResult> AddCategoryAttribute(AddCategoryAttributeDto dto)
     {
-        await using var dbContext = await contextFactory.CreateDbContextAsync();
         await fluentValidator.ValidateAndThrowAsync(dto);
+
+        await using var dbContext = await contextFactory.CreateDbContextAsync();
+
+        var key = dto.CategoryAttributeKey.Trim();
+        var keyNormalized = key.ToLower();
+        bool exists = await dbContext.CategoryAttributes
+            .AnyAsync(x => x.CategoryAttributeKey!.Trim().ToLower() == keyNormalized);
+        if (exists)
+            return new ErrorResult("Bu anahtarla bir özellik zaten mevcut.");
+
         var categoryAttr = mapper.MapToEntity(dto);
+        categoryAttr.Id = 0;
+        categoryAttr.CategoryAttributeKey = key;
+        categoryAttr.CategoryAttributeHumanized = dto.CategoryAttributeHumanized.Trim();
+
+        // Değerleri kanonik anahtara göre tekilleştir; NormalizedName set edilmezse
+        // (CategoryAttributeId, NormalizedName) filtreli unique index boş string çakışmasıyla patlar.
+        var dedupedValues = new List<CategoryAttributeValue>();
+        var seenKeys = new HashSet<string>();
+        foreach (var value in categoryAttr.CategoryAttributeValues)
+        {
+            var normalized = AttributeValueNormalizer.Normalize(value.Name);
+            if (normalized.Length == 0 || !seenKeys.Add(normalized))
+                continue;
+            value.Id = 0;
+            value.Name = value.Name!.Trim();
+            value.NormalizedName = normalized;
+            dedupedValues.Add(value);
+        }
+        categoryAttr.CategoryAttributeValues = dedupedValues;
+
         dbContext.CategoryAttributes.Add(categoryAttr);
         await dbContext.SaveChangesAsync();
-        return new SuccessResult();
+
+        // Log payload düz projeksiyon olmalı: dto içindeki entity listesi SaveChanges sonrası
+        // EF navigation fix-up ile döngüsel referans kazanır → JSON serileştirme patlar.
+        await applicationLogManager.AddLog($"\"{categoryAttr.CategoryAttributeHumanized}\" özelliği oluşturuldu.",
+            LogType.Category, LogAction.Add,
+            new { categoryAttr.Id, categoryAttr.CategoryAttributeKey, ValueCount = dedupedValues.Count });
+        logger.LogInformation("Category attribute created: {Key} with {ValueCount} values",
+            categoryAttr.CategoryAttributeKey, dedupedValues.Count);
+
+        return new SuccessResult("Özellik oluşturuldu.");
     }
 
     public async Task RemoveAllAttributesByCategoryId(int categoryId)
