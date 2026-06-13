@@ -107,6 +107,38 @@ public class BrandController(
         return HtmxMutationResult(result, "Marka silindi.", "Silinemedi.");
     }
 
+    // ── Arşiv (soft-deleted) ─────────────────────────────────────────
+
+    [HttpGet("/brands/archive")]
+    public async Task<IActionResult> Archive(string? search = null, int page = 1)
+    {
+        ViewData.SetPageTitle("Arşivlenmiş Markalar");
+        ViewData.SetActiveNav("brands");
+        ViewData.SetBreadcrumb(("Markalar", "/brands"), ("Arşiv", null));
+
+        var result = await brandService.GetArchivedBrandsPageable(
+            new BrandDetailPaginatedRequest { SearchTerm = search, PageIndex = page - 1, PageSize = 20 });
+
+        if (Request.IsHtmx())
+            return PartialView("Partials/_BrandArchiveTable", result.Data);
+
+        ViewBag.Search = search;
+        return View(result.Data);
+    }
+
+    [HttpPost("/brands/{id:int}/restore")]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> Restore(int id)
+    {
+        var result = await brandService.RestoreBrand(id);
+        if (result.Success)
+            TempData.SetSuccess("Marka geri yüklendi.");
+        else
+            TempData.SetError(result.Message ?? "Geri yüklenemedi.");
+
+        return RedirectToAction(nameof(Archive));
+    }
+
     // ── Master Import ────────────────────────────────────────────────
 
     [HttpGet("/brands/master-import")]

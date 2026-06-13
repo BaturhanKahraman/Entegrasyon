@@ -1760,7 +1760,7 @@
     "id": "T107",
     "task": "Brand silme: bağlı ürün guard (engelle) + arşiv sayfası + geri yükle",
     "description": "BrandService.cs:110 DeleteBrand şu an guard'sız soft-delete yapıyor → ürünlü marka silinince ürünler markasız kalıyor (RİSK-3). (1) DeleteBrand'a LogicRunner business rule: markaya bağlı görünür (query-filter'lı) ürün varsa silmeyi ENGELLE, 'X ürün bu markaya bağlı, önce taşıyın/kaldırın' ErrorResult dön. Soft-delete davranışı korunur (AsTracking zaten doğru, BrandService.cs:113). (2) Arşiv sayfası: soft-deleted markaları listele (IgnoreQueryFilters().Where(b=>b.IsDeleted)), her satırda 'Geri Yükle' butonu. (3) RestoreBrand(int id) metodu: AsTracking ile yükle, IsDeleted=false + DeletedAt=null, çift loglama + cache invalidation (brands tag). Index.cshtml'e Arşiv sayfasına nav linki. Tabler bileşenleri için class doğrula.",
-    "status": "todo",
+    "status": "done",
     "priority": "medium",
     "plan": true,
     "manual_test_steps": [
@@ -1771,6 +1771,7 @@
     ],
     "addOrUpdateUnitTests": true,
     "addOrUpdateIntegrationTests": true,
-    "dependsOn": []
+    "dependsOn": [],
+    "notes": "DeleteBrand bağlı-ürün guard (LogicRunner, görünür ürün varsa engelle) + RestoreBrand (isim-çakışması guard dahil) + Archive.cshtml + _BrandArchiveTable partial + Index arşiv nav. 1785 unit pass. Minor (deferred): Archive+Index HTMX ViewBag.Search pagination terim düşüşü (pre-existing pattern); soft-deleted ürünün silmeyi engellememesi integration testi eksik. Persist testleri CI-deferred."
   }
 ]

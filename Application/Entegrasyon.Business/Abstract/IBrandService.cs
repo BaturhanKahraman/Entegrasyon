@@ -12,7 +12,9 @@ public interface IBrandService
     Task<IResult> AddBrand(AddBrandDto brandDto);
     Task<IResult> UpdateBrand(EditBrandDto dto);
     Task<IResult> DeleteBrand(int id);
+    Task<IResult> RestoreBrand(int id);
     Task<IDataResult<Pageable<BrandListDetailDto>>> GetBrandDetailPageable(BrandDetailPaginatedRequest request);
+    Task<IDataResult<Pageable<BrandListDetailDto>>> GetArchivedBrandsPageable(BrandDetailPaginatedRequest request);
     Task<IDataResult<Brand>> GetBrandById(int id);
     Task<IDataResult<BrandDetailDto>> GetBrandDetail(int id);
 

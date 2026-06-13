@@ -1,0 +1,94 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Brand.BrandListDetailDto>
+
+@{
+    // Avatar baş-harf rengi marka Id'sine göre döner — deterministik, görsel çeşitlilik.
+    // Light tonlar (-lt) zorunlu; aksi halde baş harf okunmaz kontrast verir.
+    string[] avatarTints = { "bg-primary-lt", "bg-azure-lt", "bg-green-lt", "bg-purple-lt", "bg-orange-lt", "bg-teal-lt", "bg-pink-lt" };
+}
+
+@* brandChanged: geri yükleme sonrası arşiv listesini otomatik tazele (mevcut arama korunur). *@
+<div id="brand-archive-table"
+     hx-get="/brands/archive"
+     hx-trigger="brandChanged from:body"
+     hx-target="#brand-archive-table"
+     hx-swap="outerHTML"
+     hx-include="[name='search']">
+    @if (Model.HasItem)
+    {
+        <div class="table-responsive">
+            <table class="table table-vcenter card-table table-hover">
+                <thead>
+                    <tr>
+                        <th>Marka Adı</th>
+                        <th class="text-center">Ürün Sayısı</th>
+                        <th>Oluşturma Tarihi</th>
+                        <th class="w-1 text-end">İşlem</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var brand in Model.Items)
+                    {
+                        var initial = string.IsNullOrWhiteSpace(brand.Name) ? "?" : brand.Name.Trim().Substring(0, 1).ToUpperInvariant();
+                        var tint = avatarTints[brand.Id % avatarTints.Length];
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <span class="avatar @tint rounded me-2">@initial</span>
+                                    <div>
+                                        <div class="fw-medium text-truncate">@brand.Name</div>
+                                        <div class="text-secondary small">
+                                            <span class="status status-secondary">
+                                                <span class="status-dot"></span>
+                                                Arşivlendi
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span class="badge bg-secondary-lt">@brand.ProductNumber.ToString("N0")</span>
+                            </td>
+                            <td class="text-secondary">@brand.CreatedAt.ToString("dd.MM.yyyy")</td>
+                            <td class="text-end">
+                                <form method="post" action="/brands/@brand.Id/restore" class="d-inline"
+                                      onsubmit="return confirm('@(brand.Name?.Replace("'", "\\'")) markasını geri yüklemek istediğinize emin misiniz?');">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="btn btn-outline-success btn-sm">
+                                        <i class="ti ti-restore icon"></i>
+                                        Geri Yükle
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="~/Shared/Views/Partials/_Pagination.cshtml"
+                 model='new Entegrasyon.MVC.Shared.ViewModels.PaginationVm
+                 {
+                     CurrentPage = Model.CurrentPageIndex + 1,
+                     TotalPages = Model.TotalPageCount,
+                     TotalCount = Model.TotalItemCount,
+                     BaseUrl = "/brands/archive",
+                     TargetId = "#brand-archive-table",
+                     QueryParams = ViewBag.Search != null
+                         ? new Dictionary<string, string> { ["search"] = (string)ViewBag.Search }
+                         : new()
+                 }'/>
+    }
+    else
+    {
+        <div class="card-body">
+            <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
+                     model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
+                     {
+                         Title = "Arşivde marka yok",
+                         Subtitle = "Silinen markalar burada görünür ve buradan geri yüklenebilir.",
+                         ActionText = "Markalara Dön",
+                         ActionUrl = "/brands"
+                     }'/>
+        </div>
+    }
+</div>

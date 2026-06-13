@@ -1,0 +1,46 @@
+@model Entegrasyon.Entity.Pageable<Entegrasyon.Entity.Dtos.Brand.BrandListDetailDto>
+
+@{
+    ViewData.SetPageSubtitle("Silinen markalar burada listelenir. Bir markayı geri yükleyerek aktif listeye geri alabilirsin.");
+}
+
+@section PageActions {
+    <a href="/brands" class="btn btn-outline-secondary">
+        <i class="ti ti-arrow-left icon"></i>
+        Markalara Dön
+    </a>
+}
+
+@* ── Arşiv listesi kartı ── *@
+<div class="card">
+    <div class="card-header">
+        <div class="row g-2 w-100 align-items-center">
+            <div class="col">
+                <h3 class="card-title mb-0">Arşivlenmiş Markalar</h3>
+                <div class="text-secondary mt-1 small">
+                    Toplam <strong>@Model.TotalItemCount.ToString("N0")</strong> arşivlenmiş marka
+                </div>
+            </div>
+            <div class="col-12 col-md-auto ms-md-auto">
+                <div class="input-icon">
+                    <span class="input-icon-addon">
+                        <i class="ti ti-search"></i>
+                    </span>
+                    <input type="text"
+                           class="form-control"
+                           name="search"
+                           placeholder="Marka adı ara…"
+                           autocomplete="off"
+                           aria-label="Arşivde marka ara"
+                           value="@ViewBag.Search"
+                           hx-get="/brands/archive"
+                           hx-trigger="keyup changed delay:300ms, search"
+                           hx-target="#brand-archive-table"
+                           hx-swap="outerHTML"
+                           hx-include="this"/>
+                </div>
+            </div>
+        </div>
+    </div>
+    <partial name="Partials/_BrandArchiveTable" model="Model"/>
+</div>

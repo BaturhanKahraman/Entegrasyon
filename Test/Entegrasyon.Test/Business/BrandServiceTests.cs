@@ -6,6 +6,7 @@ using Entegrasyon.Business.Tenants;
 using Entegrasyon.Business.Validation.FluentValidation;
 using Entegrasyon.Entity.Brands;
 using Entegrasyon.Entity.Dtos.Brand;
+using Entegrasyon.Entity.Products;
 using FluentAssertions;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
@@ -34,6 +35,9 @@ public class BrandServiceTests : BaseTest
         mockIntegrationDbContext
             .Setup(x => x.Brands)
             .ReturnsDbSet(new List<Brand>());
+        mockIntegrationDbContext
+            .Setup(x => x.MainProducts)
+            .ReturnsDbSet(new List<Product>());
         mockIntegrationDbContext
             .Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(1);
@@ -272,5 +276,116 @@ public class BrandServiceTests : BaseTest
 
         // Assert
         result.Success.Should().BeTrue();
+    }
+
+    // ── DeleteBrand: ürün guard (LogicRunner business rule) ──────────────────
+
+    [Fact]
+    public async Task DeleteBrand_WhenBrandHasVisibleProducts_ReturnsError()
+    {
+        // Arrange — markaya bağlı görünür ürün(ler) var → silme reddedilmeli (kabul kriteri 1).
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 5, Name = "Nike", NormalizedName = "NIKE" }
+        };
+        var products = new List<Product>
+        {
+            new() { Id = Guid.NewGuid(), BrandId = 5 },
+            new() { Id = Guid.NewGuid(), BrandId = 5 }
+        };
+        mockIntegrationDbContext.Setup(x => x.Brands).ReturnsDbSet(existingBrands);
+        mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(products);
+
+        // Act
+        var result = await _sut.DeleteBrand(5);
+
+        // Assert — hata döner, mesaj formatı birebir, soft-delete yapılmaz, SaveChanges ÇAĞRILMAZ.
+        result.Success.Should().BeFalse();
+        result.Message.Should().Be("2 ürün bu markaya bağlı, önce taşıyın veya kaldırın");
+        existingBrands.Single(b => b.Id == 5).IsDeleted.Should().BeFalse();
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteBrand_WhenBrandHasNoProducts_SoftDeletesAndReturnsSuccess()
+    {
+        // Arrange — markaya bağlı ürün yok → soft-delete başarıyla yapılmalı (kabul kriteri 2).
+        var existingBrands = new List<Brand>
+        {
+            new() { Id = 5, Name = "Nike", NormalizedName = "NIKE", IsDeleted = false }
+        };
+        mockIntegrationDbContext.Setup(x => x.Brands).ReturnsDbSet(existingBrands);
+        mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(new List<Product>());
+
+        // Act
+        var result = await _sut.DeleteBrand(5);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var brand = existingBrands.Single(b => b.Id == 5);
+        brand.IsDeleted.Should().BeTrue();
+        brand.DeletedAt.Should().NotBe(default);
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    // ── RestoreBrand ─────────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task RestoreBrand_WhenBrandIsDeleted_SetsIsDeletedFalse()
+    {
+        // Arrange — soft-deleted marka geri yüklenince IsDeleted=false + DeletedAt=default (kabul kriteri 3).
+        var deletedBrands = new List<Brand>
+        {
+            new() { Id = 5, Name = "Nike", NormalizedName = "NIKE", IsDeleted = true, DeletedAt = DateTimeOffset.UtcNow }
+        };
+        mockIntegrationDbContext.Setup(x => x.Brands).ReturnsDbSet(deletedBrands);
+
+        // Act
+        var result = await _sut.RestoreBrand(5);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        var brand = deletedBrands.Single(b => b.Id == 5);
+        brand.IsDeleted.Should().BeFalse();
+        brand.DeletedAt.Should().Be(default(DateTimeOffset));
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RestoreBrand_WhenBrandNotFound_ReturnsError()
+    {
+        // Arrange — verilen Id'de silinmiş marka yok.
+        mockIntegrationDbContext.Setup(x => x.Brands).ReturnsDbSet(new List<Brand>());
+
+        // Act
+        var result = await _sut.RestoreBrand(404);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RestoreBrand_WhenActiveSameNamedBrandExists_ReturnsErrorAndDoesNotRestore()
+    {
+        // Arrange — arşivdeki "Nike" (id 5, IsDeleted=true) + aynı isimle eklenmiş AKTİF "Nike" (id 8).
+        // Filtered unique index IX_Brands_NormalizedName (HasFilter "IsDeleted = false") nedeniyle
+        // geri yükleme (IsDeleted=false) iki adet aktif "NIKE" yaratır → SaveChanges DbUpdateException → 500.
+        // Business Rules adımı bunu önceden yakalayıp dostça ErrorResult dönmeli, SaveChanges ÇAĞRILMAMALI.
+        var brands = new List<Brand>
+        {
+            new() { Id = 5, Name = "Nike", NormalizedName = "NIKE", IsDeleted = true, DeletedAt = DateTimeOffset.UtcNow },
+            new() { Id = 8, Name = "Nike", NormalizedName = "NIKE", IsDeleted = false }
+        };
+        mockIntegrationDbContext.Setup(x => x.Brands).ReturnsDbSet(brands);
+
+        // Act
+        var result = await _sut.RestoreBrand(5);
+
+        // Assert
+        result.Success.Should().BeFalse();
+        result.Message.Should().Contain("zaten mevcut");
+        brands.Single(b => b.Id == 5).IsDeleted.Should().BeTrue();
+        mockIntegrationDbContext.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }
