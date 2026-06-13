@@ -10,5 +10,8 @@ public class CategoryAttributeMarketPlaceMatchEntityConfiguration: IEntityTypeCo
     {
         builder.HasKey(x => new {x.MarketPlaceId,x.ApplicationCategoryAttributeId});
 
+        // 1:1 ters yön — bir pazaryeri özelliği yalnız bir bizim özelliğimize eşlenebilir.
+        builder.HasIndex(x => new { x.MarketPlaceId, x.MarketPlaceCategoryAttributeId })
+            .IsUnique();
     }
 }
