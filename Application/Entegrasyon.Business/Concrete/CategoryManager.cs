@@ -355,8 +355,7 @@ namespace Entegrasyon.Business.Concrete
             await using var dbContext = await contextFactory.CreateDbContextAsync();
             return await dbContext.Categories
                 .AsNoTracking()
-                .Where(c => c.SubCategories.Any()
-                         || (!c.CategoryAttributes.Any() && !c.MarketplaceLinks.Any(m => m.IsActive)))
+                .Where(c => c.SubCategories.Any() || !c.CategoryAttributes.Any())
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
@@ -374,8 +373,7 @@ namespace Entegrasyon.Business.Concrete
             return await dbContext.Categories
                 .AsNoTracking()
                 .Where(c => !descendantIds.Contains(c.Id))
-                .Where(c => c.SubCategories.Any()
-                         || (!c.CategoryAttributes.Any() && !c.MarketplaceLinks.Any(m => m.IsActive)))
+                .Where(c => c.SubCategories.Any() || !c.CategoryAttributes.Any())
                 .OrderBy(c => c.Name)
                 .ToListAsync();
         }
