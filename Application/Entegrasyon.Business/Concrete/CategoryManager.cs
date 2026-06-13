@@ -378,6 +378,20 @@ namespace Entegrasyon.Business.Concrete
                 .ToListAsync();
         }
 
+        public async Task<List<CategorySelectDto>> GetLeafCategoriesWithParentAsync()
+        {
+            await using var dbContext = await contextFactory.CreateDbContextAsync();
+            return await dbContext.Categories
+                .AsNoTracking()
+                .Where(c => !dbContext.Categories.Any(child => child.SuperCategoryId == c.Id && !child.IsDeleted))
+                .OrderBy(c => c.Name)
+                .Select(c => new CategorySelectDto(
+                    c.Id,
+                    c.Name!,
+                    c.SuperCategory != null ? c.SuperCategory.Name : null))
+                .ToListAsync();
+        }
+
         public async Task RefreshCategorySummaryAsync()
         {
             await using var dbContext = await contextFactory.CreateDbContextAsync();

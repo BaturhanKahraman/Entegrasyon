@@ -147,6 +147,33 @@ public class CategoryManagerIntegrationTests : IntegrationTestBase
     }
 
     [Fact]
+    public async Task GetLeafCategoriesWithParentAsync_ReturnsOnlyLeafCategories_WithParentName()
+    {
+        // Arrange — parent + leaf oluştur
+        using var dbContext = CreateDbContext();
+        var parent = new Category { Name = "ParentCat" };
+        await dbContext.Categories.AddAsync(parent);
+        await dbContext.SaveChangesAsync();
+
+        var leaf = new Category { Name = "LeafCat", SuperCategoryId = parent.Id };
+        var orphanParent = new Category { Name = "OrphanLeaf" }; // parent'sız leaf
+        await dbContext.Categories.AddRangeAsync(leaf, orphanParent);
+        await dbContext.SaveChangesAsync();
+
+        // Act
+        var (categoryService, scope) = GetScopedService<ICategoryService>();
+        using var _ = scope;
+        var result = await categoryService.GetLeafCategoriesWithParentAsync();
+
+        // Assert
+        result.Should().NotContain(x => x.Id == parent.Id); // parent dışarıda
+        var leafDto = result.Should().ContainSingle(x => x.Id == leaf.Id).Subject;
+        leafDto.ParentName.Should().Be("ParentCat");
+        var orphanDto = result.Should().ContainSingle(x => x.Id == orphanParent.Id).Subject;
+        orphanDto.ParentName.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetCategoryDetailList_ShouldReturnCreatedCategories()
     {
         // Arrange
