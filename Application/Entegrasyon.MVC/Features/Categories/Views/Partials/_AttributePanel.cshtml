@@ -1,8 +1,8 @@
 @using Entegrasyon.MVC.Features.Categories.ViewModels
 @model CategoryAttributePanelVm
 @{
-    var attachedIds = Model.Attached.Select(a => a.Id).ToHashSet();
-    var addable = Model.Pool.Where(p => !attachedIds.Contains(p.Id)).ToList();
+    // Sıralama VM'de: en çok kategoride kullanılan üstte, eşitlikte TR alfabetik.
+    var addable = Model.Addable;
 
     // Popover açıklamaları — init site.js'te (global, HTMX swap sonrası dahil).
     const string requiredHelp = "Bu özellik, ürün eklenirken doldurulması zorunlu olan özelliktir.";
@@ -136,15 +136,31 @@
             }
             else
             {
+                <div class="card-body border-bottom py-2">
+                    <div class="input-icon">
+                        <span class="input-icon-addon">
+                            <i class="ti ti-search"></i>
+                        </span>
+                        <input type="text" class="form-control" placeholder="Özellik ara..."
+                               autocomplete="off" data-attr-filter="#addable-attribute-list"
+                               aria-label="Eklenebilir özelliklerde ara">
+                    </div>
+                </div>
                 <form hx-post="/categories/@Model.CategoryId/attributes" hx-target="#attribute-panel">
-                    <div class="list-group list-group-flush">
+                    <div class="list-group list-group-flush" id="addable-attribute-list">
                         @foreach (var p in addable)
                         {
-                            <div class="list-group-item">
+                            var name = p.CategoryAttributeHumanized ?? p.CategoryAttributeKey;
+                            var usageCount = p.Categories?.Count() ?? 0;
+                            <div class="list-group-item" data-filter-name="@name">
                                 <label class="form-check mb-2">
                                     <input class="form-check-input" type="checkbox" name="attributeIds" value="@p.Id">
                                     <span class="form-check-label fw-bold">
-                                        @(p.CategoryAttributeHumanized ?? p.CategoryAttributeKey)
+                                        @name
+                                        @if (usageCount > 0)
+                                        {
+                                            <span class="badge bg-secondary-lt ms-1" title="Bu özellik @usageCount kategoride kullanılıyor">@usageCount kategoride</span>
+                                        }
                                     </span>
                                 </label>
                                 <div class="ms-4 d-flex flex-wrap gap-3">
@@ -190,6 +206,9 @@
                                 </div>
                             </div>
                         }
+                        <div class="list-group-item text-secondary text-center d-none" data-filter-empty>
+                            <i class="ti ti-search-off me-1"></i> Aramanızla eşleşen özellik yok.
+                        </div>
                     </div>
                     <div class="card-footer">
                         <button type="submit" class="btn btn-primary w-100">

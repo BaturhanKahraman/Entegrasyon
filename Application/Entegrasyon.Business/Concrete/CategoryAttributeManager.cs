@@ -49,6 +49,8 @@ public class CategoryAttributeManager(IApplicationLogManager applicationLogManag
         return new SuccessDataResult<List<CategoryAttribute>>(
             await dbContext.CategoryAttributes
                 .Include(x => x.CategoryAttributeValues)
+                .Include(x => x.Categories)
+                .AsSplitQuery()
                 .ToListAsync());
     }
 

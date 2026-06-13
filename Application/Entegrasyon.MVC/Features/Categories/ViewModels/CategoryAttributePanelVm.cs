@@ -1,3 +1,4 @@
+using System.Globalization;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Dtos.Category;
 
@@ -17,4 +18,24 @@ public sealed class CategoryAttributePanelVm
 
     /// <summary>Kategoriye şu an bağlı özellikler (kaldırılabilir).</summary>
     public IReadOnlyList<CategoryAttributeDto> Attached { get; init; } = [];
+
+    private static readonly StringComparer TurkishComparer =
+        StringComparer.Create(CultureInfo.GetCultureInfo("tr-TR"), ignoreCase: true);
+
+    /// <summary>
+    /// Havuzdan eklenebilir adaylar: bağlı olanlar hariç, en çok kategoride
+    /// kullanılan en üstte, eşitlikte TR alfabetik.
+    /// </summary>
+    public IReadOnlyList<CategoryAttribute> Addable
+    {
+        get
+        {
+            var attachedIds = Attached.Select(a => a.Id).ToHashSet();
+            return Pool
+                .Where(p => !attachedIds.Contains(p.Id))
+                .OrderByDescending(p => p.Categories?.Count() ?? 0)
+                .ThenBy(p => p.CategoryAttributeHumanized ?? p.CategoryAttributeKey, TurkishComparer)
+                .ToList();
+        }
+    }
 }

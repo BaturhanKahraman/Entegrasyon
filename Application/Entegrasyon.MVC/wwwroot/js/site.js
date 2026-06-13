@@ -684,3 +684,37 @@ document.body.addEventListener('htmx:afterSwap', function (evt) {
         }
     });
 })();
+
+// ── Liste Arama Filtresi ─────────────────────────────────────────────
+// data-attr-filter="<liste seçici>" olan input'a yazılınca, hedef listedeki
+// [data-filter-name] öğeleri TR-duyarsız substring eşleşmesine göre süzülür.
+// Hiç eşleşme kalmazsa [data-filter-empty] öğesi gösterilir. HTMX swap
+// sonrası input boş geldiği için ekstra reset gerekmez (delegasyon).
+
+(function () {
+    function normalize(s) {
+        return (s || '').toLocaleLowerCase('tr-TR');
+    }
+
+    function applyFilter(input) {
+        var list = document.querySelector(input.getAttribute('data-attr-filter'));
+        if (!list) return;
+        var term = normalize(input.value.trim());
+        var items = list.querySelectorAll('[data-filter-name]');
+        var visible = 0;
+        items.forEach(function (item) {
+            var match = !term || normalize(item.getAttribute('data-filter-name')).indexOf(term) !== -1;
+            item.classList.toggle('d-none', !match);
+            if (match) visible++;
+        });
+        var empty = list.querySelector('[data-filter-empty]');
+        if (empty) empty.classList.toggle('d-none', visible > 0);
+    }
+
+    document.addEventListener('input', function (evt) {
+        var input = evt.target;
+        if (input && input.matches && input.matches('input[data-attr-filter]')) {
+            applyFilter(input);
+        }
+    });
+})();
