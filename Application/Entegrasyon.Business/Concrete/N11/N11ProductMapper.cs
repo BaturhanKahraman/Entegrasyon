@@ -48,9 +48,9 @@ public sealed class N11ProductMapper(
         var effectiveDescription = marketplace?.DescriptionOverride ?? product.Description ?? string.Empty;
 
         // 3. Kategori N11 eşleştirmesi
-        var categoryMatch = await dbContext.CategoryMarketPlaceMatches
+        var categoryMatch = await dbContext.CategoryMarketplaces
             .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId);
+            .FirstOrDefaultAsync(m => m.CategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId && m.IsActive);
 
         if (categoryMatch is null)
             return new ErrorDataResult<XElement>(null!, "Kategori N11 eslestirmesi bulunamadı.");

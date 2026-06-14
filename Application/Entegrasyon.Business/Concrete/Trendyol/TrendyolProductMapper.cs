@@ -56,8 +56,8 @@ public sealed class TrendyolProductMapper(
         if (brandMatch is null)
             return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Marka Trendyol eslestirmesi bulunamadı.");
 
-        var categoryMatch = await dbContext.CategoryMarketPlaceMatches.AsNoTracking()
-            .FirstOrDefaultAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId);
+        var categoryMatch = await dbContext.CategoryMarketplaces.AsNoTracking()
+            .FirstOrDefaultAsync(m => m.CategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId && m.IsActive);
 
         if (categoryMatch is null)
             return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Kategori Trendyol eslestirmesi bulunamadı.");

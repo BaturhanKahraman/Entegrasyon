@@ -28,9 +28,9 @@ public class N11MappingValidatorTests : Entegrasyon.UnitTest.BaseTest
 
         var products = new List<Product> { BuildProduct(productId, categoryId, brandId) };
 
-        var categoryMatches = new List<CategoryMarketPlaceMatch>
+        var categoryMatches = new List<CategoryMarketplace>
         {
-            new() { ApplicationCategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId }
+            new() { CategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId, IsActive = true }
         };
 
         var brandMatches = new List<BrandMarketPlaceMatch>
@@ -49,7 +49,7 @@ public class N11MappingValidatorTests : Entegrasyon.UnitTest.BaseTest
         };
 
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(products);
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches).ReturnsDbSet(categoryMatches);
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(categoryMatches);
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches).ReturnsDbSet(brandMatches);
         mockIntegrationDbContext.Setup(x => x.CategoryAttributeCategories).ReturnsDbSet(requiredAttrs);
         mockIntegrationDbContext.Setup(x => x.CategoryAttributeMarketPlaceMatches).ReturnsDbSet(attrMatches);
@@ -74,8 +74,8 @@ public class N11MappingValidatorTests : Entegrasyon.UnitTest.BaseTest
         var products = new List<Product> { BuildProduct(productId, categoryId, brandId) };
 
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(products);
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>()); // no match
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>()); // no match
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches)
             .ReturnsDbSet(new List<BrandMarketPlaceMatch>
             {
@@ -107,10 +107,10 @@ public class N11MappingValidatorTests : Entegrasyon.UnitTest.BaseTest
         var products = new List<Product> { BuildProduct(productId, categoryId, brandId) };
 
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(products);
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>
             {
-                new() { ApplicationCategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId }
+                new() { CategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId, IsActive = true }
             });
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches)
             .ReturnsDbSet(new List<BrandMarketPlaceMatch>()); // no match
@@ -146,10 +146,10 @@ public class N11MappingValidatorTests : Entegrasyon.UnitTest.BaseTest
         };
 
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(products);
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>
             {
-                new() { ApplicationCategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId }
+                new() { CategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId, IsActive = true }
             });
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches)
             .ReturnsDbSet(new List<BrandMarketPlaceMatch>
@@ -184,10 +184,10 @@ public class N11MappingValidatorTests : Entegrasyon.UnitTest.BaseTest
         var products = new List<Product> { BuildProduct(productId, categoryId, brandId: null) };
 
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(products);
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>
             {
-                new() { ApplicationCategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId }
+                new() { CategoryId = categoryId, MarketPlaceId = MarketPlaceConstants.N11MarketPlaceId, IsActive = true }
             });
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches)
             .ReturnsDbSet(new List<BrandMarketPlaceMatch>());

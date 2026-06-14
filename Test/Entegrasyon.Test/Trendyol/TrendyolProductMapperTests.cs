@@ -94,12 +94,12 @@ public class TrendyolProductMapperTests : Entegrasyon.UnitTest.BaseTest
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches).ReturnsDbSet(brandMatches);
 
         var categoryMatches = hasCategoryMatch
-            ? new List<CategoryMarketPlaceMatch>
+            ? new List<CategoryMarketplace>
             {
-                new() { ApplicationCategoryId = product.CategoryId, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryId = 1000 }
+                new() { CategoryId = product.CategoryId, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryId = 1000, IsActive = true }
             }
-            : new List<CategoryMarketPlaceMatch>();
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches).ReturnsDbSet(categoryMatches);
+            : new List<CategoryMarketplace>();
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(categoryMatches);
 
         mockIntegrationDbContext.Setup(x => x.CategoryAttributeMarketPlaceMatches)
             .ReturnsDbSet(new List<CategoryAttributeMarketPlaceMatch>());

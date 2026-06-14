@@ -79,9 +79,9 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
             BrandId = 10
         };
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(new List<Product> { product });
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches).ReturnsDbSet(new List<CategoryMarketPlaceMatch>
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(new List<CategoryMarketplace>
         {
-            new() { ApplicationCategoryId = 1, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryId = 100 }
+            new() { CategoryId = 1, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryId = 100, IsActive = true }
         });
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches).ReturnsDbSet(new List<BrandMarketPlaceMatch>
         {
@@ -107,8 +107,8 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
         };
         mockIntegrationDbContext.Setup(x => x.MainProducts).ReturnsDbSet(new List<Product> { product });
         // No category match -> validation fails
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>());
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>());
         mockIntegrationDbContext.Setup(x => x.BrandMarketPlaceMatches).ReturnsDbSet(new List<BrandMarketPlaceMatch>
         {
             new() { ApplicationBrandId = 10, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceBrandId = 200 }

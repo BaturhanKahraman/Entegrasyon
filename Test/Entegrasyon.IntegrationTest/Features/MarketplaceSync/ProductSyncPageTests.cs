@@ -329,21 +329,23 @@ public class ProductSyncPageTests : IntegrationTestBase
     }
 
     /// <summary>
-    /// Seed a CategoryMarketPlaceMatch entry.
+    /// Seed a category mapping in the canonical CategoryMarketplaces table
+    /// (the table the mapping wizard writes and preflight/send reads).
     /// </summary>
     private async Task SeedCategoryMarketPlaceMatchAsync(int categoryId, int marketPlaceId, int marketPlaceCategoryId)
     {
         using var dbContext = CreateDbContext();
-        var exists = await dbContext.CategoryMarketPlaceMatches
-            .AnyAsync(m => m.ApplicationCategoryId == categoryId && m.MarketPlaceId == marketPlaceId);
+        var exists = await dbContext.CategoryMarketplaces
+            .AnyAsync(m => m.CategoryId == categoryId && m.MarketPlaceId == marketPlaceId);
 
         if (!exists)
         {
-            dbContext.CategoryMarketPlaceMatches.Add(new CategoryMarketPlaceMatch
+            dbContext.CategoryMarketplaces.Add(new CategoryMarketplace
             {
-                ApplicationCategoryId = categoryId,
+                CategoryId = categoryId,
                 MarketPlaceId = marketPlaceId,
-                MarketPlaceCategoryId = marketPlaceCategoryId
+                MarketPlaceCategoryId = marketPlaceCategoryId,
+                IsActive = true
             });
             await dbContext.SaveChangesAsync();
         }

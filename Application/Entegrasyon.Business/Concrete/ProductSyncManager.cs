@@ -413,9 +413,10 @@ public sealed class ProductSyncManager(
         if (product is null)
             return new ErrorDataResult<ProductSendPreflightDto>(null!, "Ürün bulunamadı.");
 
-        // 1. Kategori eşleştirmesi kontrol et
-        var categoryMatch = await dbContext.CategoryMarketPlaceMatches
-            .FirstOrDefaultAsync(cm => cm.ApplicationCategoryId == product.CategoryId && cm.MarketPlaceId == marketPlaceId);
+        // 1. Kategori eşleştirmesi kontrol et — kanonik tablo CategoryMarketplaces
+        //    (kategori eşleme wizard'ının yazdığı tablo; eski CategoryMarketPlaceMatches değil).
+        var categoryMatch = await dbContext.CategoryMarketplaces
+            .FirstOrDefaultAsync(cm => cm.CategoryId == product.CategoryId && cm.MarketPlaceId == marketPlaceId && cm.IsActive);
 
         var categoryMatched = categoryMatch is not null;
         var matchedCategoryName = categoryMatch?.MarketPlaceCategoryId.ToString();  // Store the marketplace category ID as name reference

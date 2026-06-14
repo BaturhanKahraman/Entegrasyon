@@ -22,8 +22,8 @@ public sealed class TrendyolMappingValidator(IDbContextFactory<IntegrationDbCont
         var errors = new List<string>();
 
         // 1. Kategori eslestirmesi
-        var categoryMapped = await dbContext.CategoryMarketPlaceMatches
-            .AnyAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId);
+        var categoryMapped = await dbContext.CategoryMarketplaces
+            .AnyAsync(m => m.CategoryId == product.CategoryId && m.MarketPlaceId == TrendyolMarketPlaceId && m.IsActive);
         if (!categoryMapped)
             errors.Add("Urunun kategorisi Trendyol'a eslestirilmemis.");
 

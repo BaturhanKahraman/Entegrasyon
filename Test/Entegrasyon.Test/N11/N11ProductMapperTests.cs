@@ -149,14 +149,15 @@ public class N11ProductMapperTests : Entegrasyon.UnitTest.BaseTest
             .ReturnsDbSet(new List<ProductMarketplace>());
 
         mockIntegrationDbContext
-            .Setup(x => x.CategoryMarketPlaceMatches)
+            .Setup(x => x.CategoryMarketplaces)
             .ReturnsDbSet(
             [
-                new CategoryMarketPlaceMatch
+                new CategoryMarketplace
                 {
-                    ApplicationCategoryId = product.CategoryId,
+                    CategoryId = product.CategoryId,
                     MarketPlaceId = 2,
-                    MarketPlaceCategoryId = 999
+                    MarketPlaceCategoryId = 999,
+                    IsActive = true
                 }
             ]);
 
@@ -262,14 +263,15 @@ public class N11ProductMapperTests : Entegrasyon.UnitTest.BaseTest
             .ReturnsDbSet(new List<ProductMarketplace>());
 
         mockIntegrationDbContext
-            .Setup(x => x.CategoryMarketPlaceMatches)
+            .Setup(x => x.CategoryMarketplaces)
             .ReturnsDbSet(
             [
-                new CategoryMarketPlaceMatch
+                new CategoryMarketplace
                 {
-                    ApplicationCategoryId = product.CategoryId,
+                    CategoryId = product.CategoryId,
                     MarketPlaceId = 2,
-                    MarketPlaceCategoryId = 999
+                    MarketPlaceCategoryId = 999,
+                    IsActive = true
                 }
             ]);
 
@@ -333,8 +335,8 @@ public class N11ProductMapperTests : Entegrasyon.UnitTest.BaseTest
             .ReturnsDbSet(new List<ProductMarketplace>());
 
         mockIntegrationDbContext
-            .Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>());
+            .Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>());
 
         mockIntegrationDbContext
             .Setup(x => x.CategoryAttributeMarketPlaceMatches)
@@ -412,8 +414,8 @@ public class N11ProductMapperTests : Entegrasyon.UnitTest.BaseTest
 
         // Kategori eşleştirmesi yok
         mockIntegrationDbContext
-            .Setup(x => x.CategoryMarketPlaceMatches)
-            .ReturnsDbSet(new List<CategoryMarketPlaceMatch>());
+            .Setup(x => x.CategoryMarketplaces)
+            .ReturnsDbSet(new List<CategoryMarketplace>());
 
         mockIntegrationDbContext
             .Setup(x => x.CategoryAttributeMarketPlaceMatches)

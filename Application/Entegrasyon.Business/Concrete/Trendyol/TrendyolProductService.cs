@@ -324,8 +324,8 @@ public sealed class TrendyolProductService(
             return new ErrorDataResult<TrendyolSendPreviewDto>(null!, "Ürün bulunamadı.");
 
         // 1. Kategori eşleştirmesini al
-        var categoryMatch = await context.CategoryMarketPlaceMatches
-            .FirstOrDefaultAsync(cm => cm.ApplicationCategoryId == product.CategoryId && cm.MarketPlaceId == TrendyolMarketPlaceId);
+        var categoryMatch = await context.CategoryMarketplaces
+            .FirstOrDefaultAsync(cm => cm.CategoryId == product.CategoryId && cm.MarketPlaceId == TrendyolMarketPlaceId && cm.IsActive);
 
         if (categoryMatch is null)
             return new ErrorDataResult<TrendyolSendPreviewDto>(null!, "Kategori eşleştirmesi bulunamadı.");

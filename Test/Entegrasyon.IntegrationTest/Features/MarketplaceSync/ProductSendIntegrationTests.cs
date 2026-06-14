@@ -178,6 +178,61 @@ public class ProductSendIntegrationTests : IntegrationTestBase
     }
 
     /// <summary>
+    /// Regression: category mapping is stored by the wizard in the canonical
+    /// CategoryMarketplaces table. Preflight must read THAT table.
+    /// </summary>
+    [Fact]
+    public async Task GetSendPreflight_CategoryMappedInCanonicalTable_ShouldReportCategoryMatched()
+    {
+        // Arrange
+        var (categoryId, _) = await GetCategoryAndBrandIdsAsync();
+        var (productId, _) = await SeedProductWithStockAsync("CANON-CAT-001", stock: 5);
+        // Map category exactly as the mapping wizard does (canonical CategoryMarketplaces table)
+        await SeedCategoryMarketPlaceMatchAsync(categoryId, TrendyolMarketPlaceId, 1011);
+
+        var (syncManager, scope) = GetScopedService<IProductSyncManager>();
+        using var _ = scope;
+
+        // Act
+        var preflight = await syncManager.GetSendPreflightAsync(productId, TrendyolMarketPlaceId);
+
+        // Assert
+        preflight.Data!.CategoryMatched.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// Regression guard: a mapping present ONLY in the deprecated
+    /// CategoryMarketPlaceMatches table must NOT satisfy preflight — preflight
+    /// reads the canonical CategoryMarketplaces table only.
+    /// </summary>
+    [Fact]
+    public async Task GetSendPreflight_CategoryMappedOnlyInLegacyTable_ShouldReportCategoryNotMatched()
+    {
+        // Arrange
+        var (categoryId, _) = await GetCategoryAndBrandIdsAsync();
+        var (productId, _) = await SeedProductWithStockAsync("LEGACY-CAT-001", stock: 5);
+        using (var db = CreateDbContext())
+        {
+            db.CategoryMarketPlaceMatches.Add(new CategoryMarketPlaceMatch
+            {
+                ApplicationCategoryId = categoryId,
+                MarketPlaceId = TrendyolMarketPlaceId,
+                MarketPlaceCategoryId = 1011
+            });
+            await db.SaveChangesAsync();
+        }
+
+        var (syncManager, scope) = GetScopedService<IProductSyncManager>();
+        using var _ = scope;
+
+        // Act
+        var preflight = await syncManager.GetSendPreflightAsync(productId, TrendyolMarketPlaceId);
+
+        // Assert
+        preflight.Data!.CategoryMatched.Should().BeFalse();
+    }
+
+    /// <summary>
     /// Product already synced once, user syncs again after modifying overrides.
     /// Expected: Product status reset to Pending, existing override replaced.
     /// </summary>
@@ -249,21 +304,23 @@ public class ProductSendIntegrationTests : IntegrationTestBase
     }
 
     /// <summary>
-    /// Seed a CategoryMarketPlaceMatch entry.
+    /// Seed a category mapping in the canonical CategoryMarketplaces table
+    /// (the table the mapping wizard writes and preflight/send reads).
     /// </summary>
     private async Task SeedCategoryMarketPlaceMatchAsync(int categoryId, int marketPlaceId, int marketPlaceCategoryId)
     {
         using var dbContext = CreateDbContext();
-        var exists = await dbContext.CategoryMarketPlaceMatches
-            .AnyAsync(m => m.ApplicationCategoryId == categoryId && m.MarketPlaceId == marketPlaceId);
+        var exists = await dbContext.CategoryMarketplaces
+            .AnyAsync(m => m.CategoryId == categoryId && m.MarketPlaceId == marketPlaceId);
 
         if (!exists)
         {
-            dbContext.CategoryMarketPlaceMatches.Add(new CategoryMarketPlaceMatch
+            dbContext.CategoryMarketplaces.Add(new CategoryMarketplace
             {
-                ApplicationCategoryId = categoryId,
+                CategoryId = categoryId,
                 MarketPlaceId = marketPlaceId,
-                MarketPlaceCategoryId = marketPlaceCategoryId
+                MarketPlaceCategoryId = marketPlaceCategoryId,
+                IsActive = true
             });
             await dbContext.SaveChangesAsync();
         }

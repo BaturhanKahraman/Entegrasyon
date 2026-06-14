@@ -22,8 +22,8 @@ public class N11MappingValidator(IDbContextFactory<IntegrationDbContext> context
         var errors = new List<string>();
 
         // 1. Kategori eslestirmesi
-        var categoryMapped = await dbContext.CategoryMarketPlaceMatches
-            .AnyAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId);
+        var categoryMapped = await dbContext.CategoryMarketplaces
+            .AnyAsync(m => m.CategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId && m.IsActive);
         if (!categoryMapped)
             errors.Add("Urunun kategorisi N11'e eslestirilmemis.");
 

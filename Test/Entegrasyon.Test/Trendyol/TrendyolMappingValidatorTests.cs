@@ -32,13 +32,13 @@ public class TrendyolMappingValidatorTests : Entegrasyon.UnitTest.BaseTest
     private void SetupCategoryMatch(int categoryId, bool exists)
     {
         var matches = exists
-            ? new List<CategoryMarketPlaceMatch>
+            ? new List<CategoryMarketplace>
             {
-                new() { ApplicationCategoryId = categoryId, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryId = 100 }
+                new() { CategoryId = categoryId, MarketPlaceId = TrendyolMarketPlaceId, MarketPlaceCategoryId = 100, IsActive = true }
             }
-            : new List<CategoryMarketPlaceMatch>();
+            : new List<CategoryMarketplace>();
 
-        mockIntegrationDbContext.Setup(x => x.CategoryMarketPlaceMatches).ReturnsDbSet(matches);
+        mockIntegrationDbContext.Setup(x => x.CategoryMarketplaces).ReturnsDbSet(matches);
     }
 
     private void SetupBrandMatch(int brandId, bool exists)

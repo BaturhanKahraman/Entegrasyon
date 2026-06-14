@@ -122,13 +122,19 @@ public class TrendyolCategoryImporterService:ITrendyolCategoryImportService
     {
         if (trendyolMarketPlace == null)
             return;
-        var categoryMarketPlaceMatch = new CategoryMarketPlaceMatch
+        // Kanonik tablo CategoryMarketplaces (kategori eşleme wizard'ı + send/preflight bu tabloyu okur).
+        var externalId = category.ExternalCategoryId!;
+        var categoryMarketplace = new CategoryMarketplace
         {
             MarketPlace = trendyolMarketPlace,
-            ApplicationCategory = category,
-            MarketPlaceCategoryId = int.Parse(category.ExternalCategoryId!)
+            Category = category,
+            MarketPlaceCategoryId = int.Parse(externalId),
+            ExternalCategoryId = externalId,
+            MarketPlaceCategoryName = category.Name,
+            LastSyncedAt = DateTimeOffset.UtcNow,
+            IsActive = true
         };
-        await dbContext.CategoryMarketPlaceMatches.AddAsync(categoryMarketPlaceMatch);
+        await dbContext.CategoryMarketplaces.AddAsync(categoryMarketplace);
     }
 
     private async Task AddAttributesForCategory(IntegrationDbContext dbContext, MarketPlace? trendyolMarketPlace, Category category, bool newEntity)

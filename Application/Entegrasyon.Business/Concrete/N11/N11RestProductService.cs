@@ -86,9 +86,9 @@ public sealed class N11RestProductService(
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
         // Adım 3: Kategori eşleştirmesi
-        var categoryMatch = await dbContext.CategoryMarketPlaceMatches
+        var categoryMatch = await dbContext.CategoryMarketplaces
             .AsNoTracking()
-            .FirstOrDefaultAsync(m => m.ApplicationCategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId);
+            .FirstOrDefaultAsync(m => m.CategoryId == product.CategoryId && m.MarketPlaceId == N11MarketPlaceId && m.IsActive);
 
         if (categoryMatch is null)
             return new ErrorDataResult<long>(0, "Kategori N11 eşleştirmesi bulunamadı.");
@@ -382,7 +382,7 @@ public sealed class N11RestProductService(
     private List<N11ProductSku> BuildSkus(
         Entegrasyon.Entity.Products.Product product,
         ProductMarketplace? pm,
-        Entegrasyon.Entity.Matches.CategoryMarketPlaceMatch categoryMatch,
+        Entegrasyon.Entity.Categories.CategoryMarketplace categoryMatch,
         Dictionary<int, int> attributeMatches,
         Dictionary<int, int> valueMatches,
         List<int> warehouseIds,
