@@ -477,7 +477,7 @@ public class CategoryController(
                 return PartialView("Partials/_MasterImportResult", new MasterImportResultVm
                 {
                     Success = false,
-                    ErrorMessage = "Import sirasinda bir hata olustu: " + ex.Message
+                    ErrorMessage = "Import sirasinda bir hata olustu: " + (ex.InnerException ?? ex).Message
                 });
             }
 

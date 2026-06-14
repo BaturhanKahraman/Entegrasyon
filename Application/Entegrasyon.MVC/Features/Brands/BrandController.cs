@@ -195,7 +195,7 @@ public class BrandController(
                 return PartialView("Partials/_BrandMasterImportResult", new BrandMasterImportResultVm
                 {
                     Success = false,
-                    ErrorMessage = "Import sirasinda bir hata olustu: " + ex.Message
+                    ErrorMessage = "Import sirasinda bir hata olustu: " + (ex.InnerException ?? ex).Message
                 });
             }
 

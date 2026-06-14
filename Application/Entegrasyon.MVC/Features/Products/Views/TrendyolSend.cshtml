@@ -14,13 +14,13 @@
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">On-Ucus Kontrolleri</h3>
+                        <h3 class="card-title">Ön-Uçuş Kontrolleri</h3>
                     </div>
                     <div class="card-body">
                         @if (Model.Preflight is null)
                         {
                             <div class="alert alert-warning">
-                                On-ucus kontrolleri yuklenemedi. Ürünün kategori ve marka eslestirmelerini kontrol edin.
+                                Ön-Uçuş Kontrolleri yüklenemedi. Ürünün kategori ve marka eşleştirmelerini kontrol edin.
                             </div>
                         }
                         else
@@ -116,27 +116,27 @@
                                        value="@Model.TitleOverride"
                                        placeholder="Bos birakilirsa ürün basligi kullanilir"
                                        @(Model.PreflightPassed ? "" : "disabled")>
-                                <small class="form-hint">Trendyol'da gorunecek baslik. Bos birakirsaniz urunun mevcut basligi gonderilir.</small>
+                                <small class="form-hint">Trendyol'da görünecek başlık. Boş bırakırsanız ürünün mevcut başlığı gönderilir.</small>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Açıklama Override</label>
                                 <textarea class="form-control" name="DescriptionOverride" rows="4"
                                           placeholder="Bos birakilirsa ürün aciklamasi kullanilir"
                                           @(Model.PreflightPassed ? "" : "disabled")>@Model.DescriptionOverride</textarea>
-                                <small class="form-hint">Trendyol'da gorunecek açıklama. Bos birakirsaniz urunun mevcut aciklamasi gonderilir.</small>
+                                <small class="form-hint">Trendyol'da görünecek açıklama. Boş bırakırsanız ürünün mevcut açıklaması gönderilir.</small>
                             </div>
 
                             @if (Model.Variants.Any())
                             {
                                 <hr class="my-3" />
-                                <h4 class="subheader mb-2">Varyant Fiyat Override</h4>
-                                <small class="text-secondary d-block mb-3">Bos birakirsaniz urunun mevcut fiyati gonderilir.</small>
+                                <h4 class="subheader mb-2">Varyant Fiyatı</h4>
+                                <small class="text-secondary d-block mb-3">Boş bırakırsanız ürünün mevcut fiyatı gönderilir.</small>
                                 <div class="table-responsive">
                                     <table class="table table-vcenter table-sm">
                                         <thead>
                                             <tr>
                                                 <th>Barkod</th>
-                                                <th class="text-end">Liste Fiyati</th>
+                                                <th class="text-end">Liste Fiyatı</th>
                                                 <th class="text-end">Satış Fiyati</th>
                                                 <th>Trendyol Liste</th>
                                                 <th>Trendyol Satış</th>
@@ -209,7 +209,7 @@
                                 <div class="col-md-6">
                                     <div class="datagrid">
                                         <div class="datagrid-item">
-                                            <div class="datagrid-title">Baslik</div>
+                                            <div class="datagrid-title">Başlık</div>
                                             <div class="datagrid-content">@Model.Preview.Title</div>
                                         </div>
                                         <div class="datagrid-item">
