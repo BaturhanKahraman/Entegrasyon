@@ -12,7 +12,7 @@
                                 hx-target="#log-table"
                                 hx-swap="outerHTML"
                                 hx-include=".log-filter">
-                            <option value="">Tum Kategoriler</option>
+                            <option value="">Tüm Kategoriler</option>
                             @foreach (LogType lt in Enum.GetValues<LogType>())
                             {
                                 <option value="@((int)lt)" selected="@(ViewBag.LogType != null && (LogType)ViewBag.LogType == lt)">@lt</option>
@@ -27,7 +27,7 @@
                                 hx-target="#log-table"
                                 hx-swap="outerHTML"
                                 hx-include=".log-filter">
-                            <option value="">Tum Islemler</option>
+                            <option value="">Tüm İşlemler</option>
                             @foreach (LogAction la in Enum.GetValues<LogAction>())
                             {
                                 <option value="@((int)la)" selected="@(ViewBag.LogAction != null && (LogAction)ViewBag.LogAction == la)">@la</option>

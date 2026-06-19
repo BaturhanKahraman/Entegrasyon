@@ -160,7 +160,7 @@
     <div class="card-footer d-flex justify-content-between">
         <div class="d-flex gap-2">
             <a href="/products/add/back-to-step4" hx-get="/products/add/back-to-step4" hx-target="#wizard-content" hx-swap="innerHTML" class="btn btn-ghost-secondary">&larr; Geri</a>
-            <a href="/products/add" class="btn btn-outline-secondary">Bastan Baslat</a>
+            <a href="/products/add" class="btn btn-outline-secondary">Baştan Başlat</a>
         </div>
         <form hx-post="/products/add/step5" hx-target="#wizard-content" hx-swap="innerHTML">
             @Html.AntiForgeryToken()
@@ -207,7 +207,7 @@
             path.setAttribute('d', 'M5 12l5 5l10 -10');
             icon.appendChild(path);
             saveBtn.appendChild(icon);
-            saveBtn.appendChild(document.createTextNode(' Devam: Yayinla'));
+            saveBtn.appendChild(document.createTextNode(' Devam: Yayınla'));
         }
     });
 })();

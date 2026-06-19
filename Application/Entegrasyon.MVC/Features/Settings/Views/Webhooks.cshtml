@@ -68,7 +68,7 @@
                                             <td>
                                                 @if (isDisabledByFailure)
                                                 {
-                                                    <span class="badge bg-red-lt">Otomatik Devre Disi</span>
+                                                    <span class="badge bg-red-lt">Otomatik Devre Dışı</span>
                                                 }
                                                 else if (wh.IsActive)
                                                 {
@@ -91,7 +91,7 @@
                                                     <form method="post" action="/settings/webhooks/@wh.Id/delete" class="d-inline">
                                                         @Html.AntiForgeryToken()
                                                         <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                                onclick="return confirm('Bu webhook\'u silmek istediginize emin misiniz?')">
+                                                                onclick="return confirm('Bu webhook\'u silmek istediğinize emin misiniz?')">
                                                             <i class="ti ti-trash"></i>
                                                         </button>
                                                     </form>
@@ -110,7 +110,7 @@
                             <div class="empty py-3">
                                 <div class="empty-icon"><i class="ti ti-webhook" style="font-size:2.5rem;"></i></div>
                                 <p class="empty-title">Henüz webhook yok</p>
-                                <p class="empty-subtitle text-secondary">Dis sistemlere otomatik bildirim gondermek için webhook ekleyin.</p>
+                                <p class="empty-subtitle text-secondary">Dış sistemlere otomatik bildirim göndermek için webhook ekleyin.</p>
                             </div>
                         </div>
                     }
@@ -121,10 +121,10 @@
                     <div class="card-header"><h3 class="card-title">Desteklenen Event'ler</h3></div>
                     <div class="card-body">
                         <div class="datagrid">
-                            <div class="datagrid-item"><div class="datagrid-title">order.created</div><div class="datagrid-content">Yeni siparis</div></div>
-                            <div class="datagrid-item"><div class="datagrid-title">order.status_changed</div><div class="datagrid-content">Siparis durumu degisti</div></div>
-                            <div class="datagrid-item"><div class="datagrid-title">product.stock_updated</div><div class="datagrid-content">Stok guncellendi</div></div>
-                            <div class="datagrid-item"><div class="datagrid-title">product.price_updated</div><div class="datagrid-content">Fiyat degisti</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">order.created</div><div class="datagrid-content">Yeni sipariş</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">order.status_changed</div><div class="datagrid-content">Sipariş durumu değişti</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">product.stock_updated</div><div class="datagrid-content">Stok güncellendi</div></div>
+                            <div class="datagrid-item"><div class="datagrid-title">product.price_updated</div><div class="datagrid-content">Fiyat değişti</div></div>
                             <div class="datagrid-item"><div class="datagrid-title">return.created</div><div class="datagrid-content">İade talebi</div></div>
                             <div class="datagrid-item"><div class="datagrid-title">invoice.created</div><div class="datagrid-content">Fatura kesildi</div></div>
                         </div>
@@ -165,8 +165,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
-                    <button type="submit" class="btn btn-primary">Olustur</button>
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
                 </div>
             </form>
         </div>

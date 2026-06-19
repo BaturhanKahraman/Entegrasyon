@@ -4,21 +4,21 @@
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Bildirim Gonder</h3>
+                        <h3 class="card-title">Bildirim Gönder</h3>
                     </div>
                     <div class="card-body">
                         <form method="post" action="/admin/notifications/send">
                             @Html.AntiForgeryToken()
                             <div class="mb-3">
-                                <label class="form-label">Baslik</label>
-                                <input type="text" class="form-control" name="title" placeholder="Bildirim basligi" required />
+                                <label class="form-label">Başlık</label>
+                                <input type="text" class="form-control" name="title" placeholder="Bildirim başlığı" required />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Mesaj</label>
-                                <textarea class="form-control" name="message" rows="4" placeholder="Bildirim icerigi" required></textarea>
+                                <textarea class="form-control" name="message" rows="4" placeholder="Bildirim içeriği" required></textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Onem Derecesi</label>
+                                <label class="form-label">Önem Derecesi</label>
                                 <select class="form-select" name="severity">
                                     @foreach (var s in Enum.GetValues<NotificationSeverity>())
                                     {
@@ -38,12 +38,12 @@
                             <div class="mb-3">
                                 <label class="form-label">Hedef</label>
                                 <select class="form-select" name="target">
-                                    <option value="all">Tum Kullanıcılar</option>
+                                    <option value="all">Tüm Kullanıcılar</option>
                                 </select>
                             </div>
                             <button type="submit" class="btn btn-primary">
                                 <i class="ti ti-send"></i>
-                                Bildirim Gonder
+                                Bildirim Gönder
                             </button>
                         </form>
                     </div>
@@ -52,7 +52,7 @@
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Son Gonderilen Bildirimler</h3>
+                        <h3 class="card-title">Son Gönderilen Bildirimler</h3>
                     </div>
                     <div class="card-body">
                         @{
@@ -60,7 +60,7 @@
                         }
                         @if (notifications is null || notifications.Count == 0)
                         {
-                            <p class="text-secondary text-center py-4">Henüz bildirim gonderilmemis.</p>
+                            <p class="text-secondary text-center py-4">Henüz bildirim gönderilmemiş.</p>
                         }
                         else
                         {

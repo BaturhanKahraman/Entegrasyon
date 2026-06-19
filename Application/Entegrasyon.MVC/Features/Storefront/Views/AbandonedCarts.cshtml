@@ -8,16 +8,16 @@
                     <div class="mb-3">
                         <i class="ti ti-shopping-cart-off icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Terk edilen sepet e-postasi yok</h3>
-                    <p class="text-secondary">Müşterilerin terk ettigi sepetler için gonderilen e-postalar burada listelenecektir.</p>
+                    <h3 class="text-secondary">Terk edilen sepet e-postası yok</h3>
+                    <p class="text-secondary">Müşterilerin terk ettiği sepetler için gönderilen e-postalar burada listelenecektir.</p>
                 </div>
             }
             else
             {
                 <div class="card-header">
-                    <h3 class="card-title">Terk Edilen Sepet E-postalari</h3>
+                    <h3 class="card-title">Terk Edilen Sepet E-postaları</h3>
                     <div class="card-actions">
-                        <span class="badge bg-orange text-orange-fg">@Model.Count kayit</span>
+                        <span class="badge bg-orange text-orange-fg">@Model.Count kayıt</span>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -26,10 +26,10 @@
                             <tr>
                                 <th>Tarih</th>
                                 <th>Müşteri ID</th>
-                                <th>E-posta Adimi</th>
+                                <th>E-posta Adımı</th>
                                 <th>Kupon Kodu</th>
                                 <th>Durum</th>
-                                <th>Donusturuldu</th>
+                                <th>Dönüştürüldü</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -51,10 +51,10 @@
                                             };
                                             var stepText = email.EmailStep switch
                                             {
-                                                1 => "1. Hatirlat",
-                                                2 => "2. Hatirlat",
+                                                1 => "1. Hatırlat",
+                                                2 => "2. Hatırlat",
                                                 3 => "3. Son Teklif",
-                                                _ => $"Adim {email.EmailStep}"
+                                                _ => $"Adım {email.EmailStep}"
                                             };
                                         }
                                         <span class="badge @stepClass">@stepText</span>
@@ -81,8 +81,8 @@
                                             var statusText = email.Status switch
                                             {
                                                 AbandonedCartEmailStatus.Pending => "Bekliyor",
-                                                AbandonedCartEmailStatus.Sent => "Gonderildi",
-                                                AbandonedCartEmailStatus.Converted => "Donusturuldu",
+                                                AbandonedCartEmailStatus.Sent => "Gönderildi",
+                                                AbandonedCartEmailStatus.Converted => "Dönüştürüldü",
                                                 _ => email.Status.ToString()
                                             };
                                         }
@@ -98,7 +98,7 @@
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary-lt">Hayir</span>
+                                            <span class="badge bg-secondary-lt">Hayır</span>
                                         }
                                     </td>
                                 </tr>

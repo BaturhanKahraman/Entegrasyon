@@ -27,7 +27,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Gonderilen</div>
+                                <div class="font-weight-medium">Gönderilen</div>
                                 <div class="text-secondary">284</div>
                             </div>
                         </div>
@@ -44,7 +44,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Donusum</div>
+                                <div class="font-weight-medium">Dönüşüm</div>
                                 <div class="text-secondary">31%</div>
                             </div>
                         </div>
@@ -61,7 +61,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Izlenen Varyant</div>
+                                <div class="font-weight-medium">İzlenen Varyant</div>
                                 <div class="text-secondary">93</div>
                             </div>
                         </div>
@@ -76,7 +76,7 @@
                 <div class="card-actions">
                     <div class="d-flex gap-2">
                         <span class="badge bg-yellow-lt">47 Bekliyor</span>
-                        <span class="badge bg-green-lt">284 Gonderildi</span>
+                        <span class="badge bg-green-lt">284 Gönderildi</span>
                     </div>
                 </div>
             </div>
@@ -86,7 +86,7 @@
                         <tr>
                             <th>Ürün / Varyant</th>
                             <th>Abone E-posta</th>
-                            <th>Kayit Tarihi</th>
+                            <th>Kayıt Tarihi</th>
                             <th class="text-center">Durum</th>
                         </tr>
                     </thead>
@@ -94,14 +94,14 @@
                         @{
                             var notifications = new[]
                             {
-                                new { Product = "Kadin Deri Ceket / S", Email = "ayse***@gmail.com", Date = "2026-04-03", Sent = false },
-                                new { Product = "Kadin Deri Ceket / S", Email = "fatma***@hotmail.com", Date = "2026-04-02", Sent = false },
+                                new { Product = "Kadın Deri Ceket / S", Email = "ayse***@gmail.com", Date = "2026-04-03", Sent = false },
+                                new { Product = "Kadın Deri Ceket / S", Email = "fatma***@hotmail.com", Date = "2026-04-02", Sent = false },
                                 new { Product = "Unisex Sneaker / 42", Email = "mehmet***@gmail.com", Date = "2026-04-01", Sent = true },
                                 new { Product = "Erkek Jogger / L", Email = "ali***@yahoo.com", Date = "2026-03-31", Sent = false },
                                 new { Product = "Erkek Jogger / L", Email = "hasan***@outlook.com", Date = "2026-03-30", Sent = true },
-                                new { Product = "Mini Kol Cantasi / Siyah", Email = "zeynep***@gmail.com", Date = "2026-03-29", Sent = true },
-                                new { Product = "Kadin Blazer / M", Email = "selin***@gmail.com", Date = "2026-03-28", Sent = false },
-                                new { Product = "Kadin Blazer / M", Email = "neslihan***@hotmail.com", Date = "2026-03-27", Sent = true },
+                                new { Product = "Mini Kol Çantası / Siyah", Email = "zeynep***@gmail.com", Date = "2026-03-29", Sent = true },
+                                new { Product = "Kadın Blazer / M", Email = "selin***@gmail.com", Date = "2026-03-28", Sent = false },
+                                new { Product = "Kadın Blazer / M", Email = "neslihan***@hotmail.com", Date = "2026-03-27", Sent = true },
                             };
                         }
                         @foreach (var n in notifications)
@@ -114,7 +114,7 @@
                                     @if (n.Sent)
                                     {
                                         <span class="badge bg-green-lt">
-                                            <i class="ti ti-check me-1"></i>Gonderildi
+                                            <i class="ti ti-check me-1"></i>Gönderildi
                                         </span>
                                     }
                                     else

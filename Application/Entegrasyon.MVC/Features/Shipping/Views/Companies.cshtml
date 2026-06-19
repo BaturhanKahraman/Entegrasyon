@@ -3,7 +3,7 @@
 <div class="d-flex justify-content-end mb-3">
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCompanyModal">
         <i class="ti ti-plus icon"></i>
-        Yeni Kargo Firmasi
+        Yeni Kargo Firması
     </button>
 </div>
 
@@ -13,7 +13,7 @@
                     <input type="text"
                            class="form-control"
                            name="search"
-                           placeholder="Kargo firmasi ara..."
+                           placeholder="Kargo firması ara..."
                            value="@ViewBag.Search"
                            hx-get="/shipping/companies"
                            hx-trigger="keyup changed delay:300ms"
@@ -32,13 +32,13 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Yeni Kargo Firmasi</h5>
+                <h5 class="modal-title">Yeni Kargo Firması</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <form hx-post="/shipping/companies/create" hx-swap="none">
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label">Firma Adi <span class="text-danger">*</span></label>
+                        <label class="form-label">Firma Adı <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" name="Name" required />
                     </div>
                     <div class="mb-3">
@@ -46,12 +46,12 @@
                         <input type="text" class="form-control" name="Code" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Vergi Numarasi</label>
+                        <label class="form-label">Vergi Numarası</label>
                         <input type="text" class="form-control" name="TaxNumber" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">İptal</button>
                     <button type="submit" class="btn btn-primary">Ekle</button>
                 </div>
             </form>

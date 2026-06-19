@@ -9,9 +9,9 @@
                     <div class="d-flex">
                         <i class="ti ti-info-circle me-2" style="font-size: 1.25rem;"></i>
                         <div>
-                            <strong>Fiyatlandirma Kurallari:</strong>
-                            Ürün satış fiyatlarinizi pazaryerlerine gore otomatik hesaplamak için kullanilir.
-                            Oncelik: Ürün > Kategori > Marka > Platform Geneli > Varsayilan.
+                            <strong>Fiyatlandırma Kuralları:</strong>
+                            Ürün satış fiyatlarınızı pazaryerlerine göre otomatik hesaplamak için kullanılır.
+                            Öncelik: Ürün > Kategori > Marka > Platform Geneli > Varsayılan.
                         </div>
                     </div>
                 </div>
@@ -30,12 +30,12 @@
                 <table class="table table-vcenter card-table table-hover">
                     <thead>
                         <tr>
-                            <th>Kural Adi</th>
+                            <th>Kural Adı</th>
                             <th>Pazaryeri</th>
                             <th>Tip</th>
                             <th>Değer</th>
                             <th>Kapsam</th>
-                            <th>Oncelik</th>
+                            <th>Öncelik</th>
                             <th>Durum</th>
                             <th class="w-1"></th>
                         </tr>
@@ -45,7 +45,7 @@
                         {
                             var scopeText = rule.Scope switch
                             {
-                                PricingScope.AllProducts => "Tum Ürünler",
+                                PricingScope.AllProducts => "Tüm Ürünler",
                                 PricingScope.Category => $"Kategori: {rule.ScopeEntityName ?? rule.ScopeEntityId?.ToString()}",
                                 PricingScope.Brand => $"Marka: {rule.ScopeEntityName ?? rule.ScopeEntityId?.ToString()}",
                                 _ => "-"
@@ -61,11 +61,11 @@
                                     }
                                     else
                                     {
-                                        <span class="text-secondary">Tum Platformlar</span>
+                                        <span class="text-secondary">Tüm Platformlar</span>
                                     }
                                 </td>
                                 <td>
-                                    @(rule.RuleType == PricingRuleType.Percentage ? "Yuzde" : "Sabit Tutar")
+                                    @(rule.RuleType == PricingRuleType.Percentage ? "Yüzde" : "Sabit Tutar")
                                 </td>
                                 <td>
                                     <span class="@dirColor fw-bold">
@@ -100,7 +100,7 @@
                                                 hx-get="/pricing/rules/@rule.Id/preview"
                                                 hx-target="#preview-panel"
                                                 hx-swap="innerHTML"
-                                                title="Onizle">
+                                                title="Önizle">
                                             <i class="ti ti-eye"></i>
                                         </button>
                                         <button class="btn btn-sm @(rule.IsActive ? "btn-outline-warning" : "btn-outline-success")"
@@ -112,7 +112,7 @@
                                         <button class="btn btn-sm btn-outline-danger"
                                                 hx-post="/pricing/rules/@rule.Id/delete"
                                                 hx-swap="none"
-                                                hx-confirm="Bu kurali silmek istediginize emin misiniz?"
+                                                hx-confirm="Bu kuralı silmek istediğinize emin misiniz?"
                                                 title="Sil">
                                             <i class="ti ti-trash"></i>
                                         </button>
@@ -130,8 +130,8 @@
                 <div class="card-body">
                     <div class="empty py-4">
                         <div class="empty-icon"><i class="ti ti-percentage" style="font-size:2.5rem;"></i></div>
-                        <p class="empty-title">Henüz fiyatlandirma kurali yok</p>
-                        <p class="empty-subtitle text-secondary">Pazaryeri bazli otomatik fiyat hesaplamasi için kural ekleyin.</p>
+                        <p class="empty-title">Henüz fiyatlandırma kuralı yok</p>
+                        <p class="empty-subtitle text-secondary">Pazaryeri bazlı otomatik fiyat hesaplaması için kural ekleyin.</p>
                     </div>
                 </div>
             </div>
@@ -147,31 +147,31 @@
         <div class="modal-content">
             <form hx-post="/pricing/rules/create" hx-swap="none">
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni Fiyatlandirma Kurali</h5>
+                    <h5 class="modal-title">Yeni Fiyatlandırma Kuralı</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label required">Kural Adi</label>
-                        <input type="text" name="Name" class="form-control" required placeholder="orn. Trendyol +%5"/>
+                        <label class="form-label required">Kural Adı</label>
+                        <input type="text" name="Name" class="form-control" required placeholder="örn. Trendyol +%5"/>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label">Pazaryeri</label>
                             <select name="MarketPlaceId" class="form-select">
-                                <option value="">Tum Platformlar</option>
+                                <option value="">Tüm Platformlar</option>
                                 <option value="1">Trendyol</option>
                                 <option value="2">N11</option>
                                 <option value="3">Hepsiburada</option>
                                 <option value="4">Amazon</option>
                                 <option value="5">Pazarama</option>
-                                <option value="8">Ciceksepeti</option>
+                                <option value="8">Çiçeksepeti</option>
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
                             <label class="form-label required">Kural Tipi</label>
                             <select name="RuleType" class="form-select">
-                                <option value="0">Yuzde (%)</option>
+                                <option value="0">Yüzde (%)</option>
                                 <option value="1">Sabit Tutar (TL)</option>
                             </select>
                         </div>
@@ -182,10 +182,10 @@
                             <input type="number" name="Value" class="form-control" step="0.01" min="0.01" required placeholder="5.00"/>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Yon</label>
+                            <label class="form-label required">Yön</label>
                             <select name="Direction" class="form-select">
-                                <option value="0">Artis (+)</option>
-                                <option value="1">Azalis (-)</option>
+                                <option value="0">Artış (+)</option>
+                                <option value="1">Azalış (-)</option>
                             </select>
                         </div>
                     </div>
@@ -193,7 +193,7 @@
                         <div class="col-md-6 mb-3">
                             <label class="form-label required">Kapsam</label>
                             <select name="Scope" class="form-select" id="scopeSelect" onchange="toggleScopeEntity()">
-                                <option value="0">Tum Ürünler</option>
+                                <option value="0">Tüm Ürünler</option>
                                 <option value="1">Kategori</option>
                                 <option value="2">Marka</option>
                             </select>
@@ -204,14 +204,14 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Oncelik</label>
+                        <label class="form-label">Öncelik</label>
                         <input type="number" name="Priority" class="form-control" value="10" min="1" max="100"/>
-                        <div class="form-text">Düşük değer = yuksek oncelik. Eşleşme durumunda en Düşük oncelikli kural uygulanir.</div>
+                        <div class="form-text">Düşük değer = yüksek öncelik. Eşleşme durumunda en düşük öncelikli kural uygulanır.</div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
-                    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Olustur</button>
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Oluştur</button>
                 </div>
             </form>
         </div>

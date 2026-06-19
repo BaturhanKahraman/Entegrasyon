@@ -13,7 +13,7 @@ public class PickingController(IOrderManager orderManager) : HtmxController
     [HttpGet("/picking")]
     public async Task<IActionResult> Index(int page = 1)
     {
-        ViewData.SetPageTitle("Siparis Hazirlama");
+        ViewData.SetPageTitle("Sipariş Hazırlama");
         ViewData.SetActiveNav("picking");
 
         var result = await orderManager.GetOrdersAsync(new OrderPaginatedRequest

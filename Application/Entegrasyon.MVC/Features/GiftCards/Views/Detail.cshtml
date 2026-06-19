@@ -7,25 +7,25 @@
     var (statusBadge, statusText) = Model.Status switch
     {
         GiftCardStatus.Active => ("bg-green-lt", "Aktif"),
-        GiftCardStatus.Used => ("bg-secondary-lt", "Kullanildi"),
-        GiftCardStatus.Expired => ("bg-red-lt", "Suresi Doldu"),
-        GiftCardStatus.Cancelled => ("bg-orange-lt", "Iptal"),
+        GiftCardStatus.Used => ("bg-secondary-lt", "Kullanıldı"),
+        GiftCardStatus.Expired => ("bg-red-lt", "Süresi Doldu"),
+        GiftCardStatus.Cancelled => ("bg-orange-lt", "İptal"),
         _ => ("bg-secondary-lt", Model.Status.ToString())
     };
 
     string TransactionTypeText(string type) => type switch
     {
-        "Purchase" => "Satin Alma",
-        "Use" => "Kullanim",
+        "Purchase" => "Satın Alma",
+        "Use" => "Kullanım",
         "Refund" => "İade",
-        "Cancel" => "Iptal",
+        "Cancel" => "İptal",
         "TopUp" => "Bakiye Yükleme",
         _ => type
     };
 }
 
 <div class="d-flex justify-content-end mb-3">
-    <a href="/gift-cards" class="btn btn-outline-secondary">Listeye Don</a>
+    <a href="/gift-cards" class="btn btn-outline-secondary">Listeye Dön</a>
 </div>
 
         <div class="row row-cards">
@@ -33,7 +33,7 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Hediye Karti Bilgileri</h3>
+                        <h3 class="card-title">Hediye Kartı Bilgileri</h3>
                         <div class="card-actions">
                             <span class="badge @statusBadge fs-6">@statusText</span>
                         </div>
@@ -46,7 +46,7 @@
 
                         <div class="row mb-3">
                             <div class="col-6">
-                                <label class="form-label text-muted">Başlangıç Tutari</label>
+                                <label class="form-label text-muted">Başlangıç Tutarı</label>
                                 <div class="fw-bold">@Model.InitialAmount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</div>
                             </div>
                             <div class="col-6">
@@ -63,7 +63,7 @@
                         </div>
 
                         <div class="mb-3">
-                            <label class="form-label text-muted">Son Kullanim Tarihi</label>
+                            <label class="form-label text-muted">Son Kullanım Tarihi</label>
                             <div>@Model.ExpiresAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                         </div>
 
@@ -71,7 +71,7 @@
                         {
                             <hr/>
                             <div class="mb-3">
-                                <label class="form-label text-muted">Alici</label>
+                                <label class="form-label text-muted">Alıcı</label>
                                 @if (!string.IsNullOrEmpty(Model.RecipientName))
                                 {
                                     <div>@Model.RecipientName</div>
@@ -92,7 +92,7 @@
                         }
 
                         <div class="mb-0">
-                            <label class="form-label text-muted">Olusturulma Tarihi</label>
+                            <label class="form-label text-muted">Oluşturulma Tarihi</label>
                             <div class="text-secondary small">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                         </div>
                     </div>
@@ -114,7 +114,7 @@
                                                 hx-post="/gift-cards/@Model.Id/topup"
                                                 hx-include="#topup-amount"
                                                 hx-swap="none"
-                                                hx-confirm="Bakiye yuklemek istediginize emin misiniz?">
+                                                hx-confirm="Bakiye yüklemek istediğinize emin misiniz?">
                                             <i class="ti ti-plus"></i> Yükle
                                         </button>
                                     </form>
@@ -123,8 +123,8 @@
                                     <button class="btn btn-sm btn-outline-danger"
                                             hx-post="/gift-cards/@Model.Id/cancel"
                                             hx-swap="none"
-                                            hx-confirm="Bu hediye kartini iptal etmek istediginize emin misiniz? Bu islem geri alinamaz.">
-                                        <i class="ti ti-x"></i> Iptal Et
+                                            hx-confirm="Bu hediye kartını iptal etmek istediğinize emin misiniz? Bu işlem geri alınamaz.">
+                                        <i class="ti ti-x"></i> İptal Et
                                     </button>
                                 </div>
                             </div>
@@ -137,7 +137,7 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Islem Gecmisi</h3>
+                        <h3 class="card-title">İşlem Geçmişi</h3>
                     </div>
                     @if (transactions.Count > 0)
                     {
@@ -145,9 +145,9 @@
                             <table class="table table-vcenter card-table">
                                 <thead>
                                     <tr>
-                                        <th>Islem Tipi</th>
+                                        <th>İşlem Tipi</th>
                                         <th>Tutar</th>
-                                        <th>Onceki Bakiye</th>
+                                        <th>Önceki Bakiye</th>
                                         <th>Sonraki Bakiye</th>
                                         <th>Tarih</th>
                                     </tr>
@@ -182,8 +182,8 @@
                             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                                      {
-                                         Title = "Islem gecmisi bulunamadı",
-                                         Subtitle = "Bu hediye kartina ait islem kaydi yok."
+                                         Title = "İşlem geçmişi bulunamadı",
+                                         Subtitle = "Bu hediye kartına ait işlem kaydı yok."
                                      }'/>
                         </div>
                     }

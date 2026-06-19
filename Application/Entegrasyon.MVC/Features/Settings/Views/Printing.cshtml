@@ -6,12 +6,12 @@
             </div>
             <div class="col-md-9">
 
-                <!-- Yazici Baglanti Ayarlari -->
+                <!-- Yazıcı Bağlantı Ayarları -->
                 <form method="post" action="/settings/printing/save-printer">
                     @Html.AntiForgeryToken()
                     <div class="card mb-3">
                         <div class="card-header">
-                            <h3 class="card-title">Yazici Baglantisi</h3>
+                            <h3 class="card-title">Yazıcı Bağlantısı</h3>
                         </div>
                         <div class="card-body">
                             @if (Model.Settings.Any())
@@ -56,16 +56,16 @@
                             else
                             {
                                 <div class="alert alert-info mb-0">
-                                    <h4 class="alert-title">Yazici ayarlari henüz tanimlanmamis</h4>
+                                    <h4 class="alert-title">Yazıcı ayarları henüz tanımlanmamış</h4>
                                     <p class="text-secondary">
-                                        Yazici baglanti ayarlari (IP, Port, Dil) admin panelinden "Printer" grubunda tanimlanabilir.
-                                        Asagidaki tipik ayarlari kullanabilirsiniz:
+                                        Yazıcı bağlantı ayarları (IP, Port, Dil) admin panelinden "Printer" grubunda tanımlanabilir.
+                                        Aşağıdaki tipik ayarları kullanabilirsiniz:
                                     </p>
                                     <ul class="text-secondary mb-0">
-                                        <li><strong>Printer.IP</strong> — Yazici IP adresi (orn. 192.168.1.100)</li>
-                                        <li><strong>Printer.Port</strong> — Yazici portu (orn. 9100)</li>
-                                        <li><strong>Printer.Language</strong> — Yazici dili (ZPL veya ESC/POS)</li>
-                                        <li><strong>Printer.Enabled</strong> — Yazici aktif mi</li>
+                                        <li><strong>Printer.IP</strong> — Yazıcı IP adresi (örn. 192.168.1.100)</li>
+                                        <li><strong>Printer.Port</strong> — Yazıcı portu (örn. 9100)</li>
+                                        <li><strong>Printer.Language</strong> — Yazıcı dili (ZPL veya ESC/POS)</li>
+                                        <li><strong>Printer.Enabled</strong> — Yazıcı aktif mi</li>
                                     </ul>
                                 </div>
                             }
@@ -73,7 +73,7 @@
                         @if (Model.Settings.Any())
                         {
                             <div class="card-footer text-end">
-                                <button type="submit" class="btn btn-primary">Yazici Ayarlarini Kaydet</button>
+                                <button type="submit" class="btn btn-primary">Yazıcı Ayarlarını Kaydet</button>
                             </div>
                         }
                     </div>
@@ -88,20 +88,20 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Barkod Formati</label>
+                                    <label class="form-label">Barkod Formatı</label>
                                     <select class="form-select" disabled>
                                         <option selected>EAN-13</option>
                                         <option>Code128</option>
                                         <option>QR Code</option>
                                     </select>
-                                    <small class="form-hint">Barkod formati sistem genelinde tanimlidir ve BarcodeSequence tablosu uzerinden yonetilir.</small>
+                                    <small class="form-hint">Barkod formatı sistem genelinde tanımlıdır ve BarcodeSequence tablosu üzerinden yönetilir.</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <div class="mb-3">
-                                    <label class="form-label">Barkod Oneki</label>
+                                    <label class="form-label">Barkod Öneki</label>
                                     <input type="text" class="form-control" value="869" disabled />
-                                    <small class="form-hint">Turkiye ulke kodu (869) otomatik kullanilir.</small>
+                                    <small class="form-hint">Türkiye ülke kodu (869) otomatik kullanılır.</small>
                                 </div>
                             </div>
                         </div>
@@ -111,11 +111,11 @@
                 <!-- Etiket Sablonlari -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h3 class="card-title">Etiket Sablonlari</h3>
+                        <h3 class="card-title">Etiket Şablonları</h3>
                         <div class="card-actions">
                             <button type="button" class="btn btn-primary btn-sm"
                                     data-bs-toggle="modal" data-bs-target="#newTemplateModal">
-                                Yeni Sablon
+                                Yeni Şablon
                             </button>
                         </div>
                     </div>
@@ -126,11 +126,11 @@
                                 <thead>
                                     <tr>
                                         <th>Ad</th>
-                                        <th>Tur</th>
+                                        <th>Tür</th>
                                         <th>Boyut (mm)</th>
                                         <th>DPI</th>
-                                        <th>Varsayilan</th>
-                                        <th class="text-end">Islemler</th>
+                                        <th>Varsayılan</th>
+                                        <th class="text-end">İşlemler</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -148,7 +148,7 @@
                                             <td>
                                                 @if (template.IsDefault)
                                                 {
-                                                    <span class="badge bg-green text-green-fg">Varsayilan</span>
+                                                    <span class="badge bg-green text-green-fg">Varsayılan</span>
                                                 }
                                                 else
                                                 {
@@ -156,14 +156,14 @@
                                                         @Html.AntiForgeryToken()
                                                         <input type="hidden" name="templateId" value="@template.Id" />
                                                         <button type="submit" class="btn btn-ghost-primary btn-sm">
-                                                            Varsayilan Yap
+                                                            Varsayılan Yap
                                                         </button>
                                                     </form>
                                                 }
                                             </td>
                                             <td class="text-end">
                                                 <form method="post" action="/settings/printing/delete-template" class="d-inline"
-                                                      onsubmit="return confirm('Bu sablonu silmek istediginize emin misiniz?')">
+                                                      onsubmit="return confirm('Bu şablonu silmek istediğinize emin misiniz?')">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="templateId" value="@template.Id" />
                                                     <button type="submit" class="btn btn-ghost-danger btn-sm">Sil</button>
@@ -179,9 +179,9 @@
                     {
                         <div class="card-body">
                             <div class="empty py-3">
-                                <p class="empty-title">Henüz etiket sablonu yok</p>
+                                <p class="empty-title">Henüz etiket şablonu yok</p>
                                 <p class="empty-subtitle text-secondary">
-                                    Ürün barkodu veya raf etiketi için sablon olusturun.
+                                    Ürün barkodu veya raf etiketi için şablon oluşturun.
                                 </p>
                             </div>
                         </div>
@@ -200,17 +200,17 @@
             <form method="post" action="/settings/printing/save-template">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni Etiket Sablonu</h5>
+                    <h5 class="modal-title">Yeni Etiket Şablonu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label required">Sablon Adi</label>
+                        <label class="form-label required">Şablon Adı</label>
                         <input type="text" name="name" class="form-control" required
-                               placeholder="orn. Standart Barkod 40x25" />
+                               placeholder="örn. Standart Barkod 40x25" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label required">Etiket Turu</label>
+                        <label class="form-label required">Etiket Türü</label>
                         <select name="type" class="form-select" required>
                             <option value="1">Ürün Barkodu</option>
                             <option value="2">Raf Etiketi</option>
@@ -219,14 +219,14 @@
                     <div class="row">
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label class="form-label required">Genislik (mm)</label>
+                                <label class="form-label required">Genişlik (mm)</label>
                                 <input type="number" name="widthMm" class="form-control"
                                        min="10" max="200" value="40" required />
                             </div>
                         </div>
                         <div class="col-md-4">
                             <div class="mb-3">
-                                <label class="form-label required">Yukseklik (mm)</label>
+                                <label class="form-label required">Yükseklik (mm)</label>
                                 <input type="number" name="heightMm" class="form-control"
                                        min="10" max="200" value="25" required />
                             </div>
@@ -245,12 +245,12 @@
                     <div class="mb-0">
                         <label class="form-check form-switch">
                             <input class="form-check-input" type="checkbox" name="isDefault" value="true" />
-                            <span class="form-check-label">Varsayilan sablon olarak ayarla</span>
+                            <span class="form-check-label">Varsayılan şablon olarak ayarla</span>
                         </label>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="submit" class="btn btn-primary">Kaydet</button>
                 </div>
             </form>

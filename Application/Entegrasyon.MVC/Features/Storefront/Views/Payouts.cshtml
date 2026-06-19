@@ -8,14 +8,14 @@
                     <div class="mb-3">
                         <i class="ti ti-wallet icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Bekleyen odeme talebi yok</h3>
-                    <p class="text-secondary">Saticilardan gelen odeme talepleri burada gorunecektir.</p>
+                    <h3 class="text-secondary">Bekleyen ödeme talebi yok</h3>
+                    <p class="text-secondary">Satıcılardan gelen ödeme talepleri burada görünecektir.</p>
                 </div>
             }
             else
             {
                 <div class="card-header">
-                    <h3 class="card-title">Bekleyen Odeme Talepleri</h3>
+                    <h3 class="card-title">Bekleyen Ödeme Talepleri</h3>
                     <div class="card-actions">
                         <span class="badge bg-yellow-lt">@Model.PendingPayouts.Count bekleyen</span>
                     </div>
@@ -25,13 +25,13 @@
                         <thead>
                             <tr>
                                 <th>ID</th>
-                                <th>Satici</th>
+                                <th>Satıcı</th>
                                 <th>Tutar</th>
                                 <th>IBAN</th>
                                 <th>Durum</th>
                                 <th>Talep Tarihi</th>
                                 <th>Not</th>
-                                <th>Islemler</th>
+                                <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -39,7 +39,7 @@
                             {
                                 <tr>
                                     <td><span class="text-secondary">#@p.Id</span></td>
-                                    <td>@(p.Seller?.StoreName ?? $"Satici #{p.SellerId}")</td>
+                                    <td>@(p.Seller?.StoreName ?? $"Satıcı #{p.SellerId}")</td>
                                     <td>
                                         <span class="fw-bold">@p.Amount.ToString("C2", new System.Globalization.CultureInfo("tr-TR"))</span>
                                     </td>
@@ -59,8 +59,8 @@
                                             var statusText = p.Status switch
                                             {
                                                 PayoutStatus.Pending => "Bekliyor",
-                                                PayoutStatus.Processing => "Isleniyor",
-                                                PayoutStatus.Completed => "Tamamlandi",
+                                                PayoutStatus.Processing => "İşleniyor",
+                                                PayoutStatus.Completed => "Tamamlandı",
                                                 PayoutStatus.Rejected => "Reddedildi",
                                                 _ => p.Status.ToString()
                                             };
@@ -77,14 +77,14 @@
                                                         hx-post="/storefront/payouts/@p.Id/process"
                                                         hx-vals='{"approve": true}'
                                                         hx-swap="none"
-                                                        hx-confirm="Bu odemeyi onaylamak istediginizden emin misiniz?">
+                                                        hx-confirm="Bu ödemeyi onaylamak istediğinizden emin misiniz?">
                                                     Onayla
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-danger"
                                                         hx-post="/storefront/payouts/@p.Id/process"
-                                                        hx-vals='{"approve": false, "note": "Admin tarafindan reddedildi."}'
+                                                        hx-vals='{"approve": false, "note": "Admin tarafından reddedildi."}'
                                                         hx-swap="none"
-                                                        hx-confirm="Bu odemeyi reddetmek istediginizden emin misiniz?">
+                                                        hx-confirm="Bu ödemeyi reddetmek istediğinizden emin misiniz?">
                                                     Reddet
                                                 </button>
                                             </div>

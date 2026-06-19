@@ -10,7 +10,7 @@
             Düzenle
         </button>
         <a href="/products/@Model.ProductId/variants" class="btn btn-outline-secondary">
-            Varyantlara Don
+            Varyantlara Dön
         </a>
     </div>
 </div>
@@ -44,11 +44,11 @@
                         <div class="datagrid-content">@Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Olusturulma</div>
+                        <div class="datagrid-title">Oluşturulma</div>
                         <div class="datagrid-content">@Model.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Son Guncelleme</div>
+                        <div class="datagrid-title">Son Güncelleme</div>
                         <div class="datagrid-content">@Model.UpdatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm")</div>
                     </div>
                 </div>
@@ -63,11 +63,11 @@
             <div class="card-body">
                 <div class="datagrid">
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Liste Fiyati</div>
+                        <div class="datagrid-title">Liste Fiyatı</div>
                         <div class="datagrid-content fw-bold">@Model.ListPrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Satış Fiyati</div>
+                        <div class="datagrid-title">Satış Fiyatı</div>
                         <div class="datagrid-content fw-bold text-primary">@Model.SalePrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
@@ -75,7 +75,7 @@
                         <div class="datagrid-content">@Model.CostPrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">E-Ticaret Fiyati</div>
+                        <div class="datagrid-title">E-Ticaret Fiyatı</div>
                         <div class="datagrid-content">@Model.ECommercePrice.ToString("N2") @Model.CurrencyType</div>
                     </div>
                     <div class="datagrid-item">
@@ -103,7 +103,7 @@
                             <tr>
                                 <th>Depo</th>
                                 <th class="text-center">Başlangıç</th>
-                                <th class="text-center">Satilan</th>
+                                <th class="text-center">Satılan</th>
                                 <th class="text-center">Mevcut</th>
                             </tr>
                         </thead>
@@ -167,11 +167,11 @@
                             {
                                 MarketplaceSyncState.Synced => "Senkronize",
                                 MarketplaceSyncState.Waiting => "Bekleyen",
-                                MarketplaceSyncState.Processing => "Isleniyor",
-                                MarketplaceSyncState.OutOfSync => "Guncellenmemis",
+                                MarketplaceSyncState.Processing => "İşleniyor",
+                                MarketplaceSyncState.OutOfSync => "Güncellenmemiş",
                                 MarketplaceSyncState.Failed => "Hatalı",
                                 MarketplaceSyncState.Rejected => "Reddedildi",
-                                _ => "Hic Senkronize Edilmemis"
+                                _ => "Hiç Senkronize Edilmemiş"
                             };
                             <div class="col-md-6">
                                 <div class="card card-sm">
@@ -222,7 +222,7 @@
         }
     </div>
 
-    <!-- Sag Kolon: Görseller -->
+    <!-- Sağ Kolon: Görseller -->
     <div class="col-lg-4">
         <div class="card mb-3">
             <div class="card-header">

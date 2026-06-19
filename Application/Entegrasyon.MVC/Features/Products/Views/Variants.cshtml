@@ -14,7 +14,7 @@
             Senkronizasyon
         </a>
         <a href="/products/@Model.Id" class="btn btn-outline-secondary">
-            Ürüne Don
+            Ürüne Dön
         </a>
     </div>
 </div>
@@ -34,11 +34,11 @@
                     {
                         MarketplaceSyncState.Synced => ("bg-green-lt", "Senkronize"),
                         MarketplaceSyncState.Waiting => ("bg-warning-lt", "Bekleyen"),
-                        MarketplaceSyncState.Processing => ("bg-info-lt", "Isleniyor"),
-                        MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Guncellenmemis"),
+                        MarketplaceSyncState.Processing => ("bg-info-lt", "İşleniyor"),
+                        MarketplaceSyncState.OutOfSync => ("bg-orange-lt", "Güncellenmemiş"),
                         MarketplaceSyncState.Failed => ("bg-danger-lt", "Hatalı"),
                         MarketplaceSyncState.Rejected => ("bg-danger-lt", "Reddedildi"),
-                        _ => ("bg-secondary-lt", "Hic Senkronize Edilmemis")
+                        _ => ("bg-secondary-lt", "Hiç Senkronize Edilmemiş")
                     };
                     <span class="badge @badgeClass">@mp.MarketPlaceName: @badgeText</span>
                 }
@@ -63,13 +63,13 @@
                                 <th>Varyant</th>
                                 <th>Barkod</th>
                                 <th>Stok Kodu</th>
-                                <th class="text-end">Liste Fiyati</th>
-                                <th class="text-end">Satış Fiyati</th>
+                                <th class="text-end">Liste Fiyatı</th>
+                                <th class="text-end">Satış Fiyatı</th>
                                 <th class="text-end">Maliyet</th>
                                 <th class="text-center">KDV</th>
                                 <th class="text-center">Desi</th>
                                 <th class="text-center">Stok</th>
-                                <th class="text-end">Islemler</th>
+                                <th class="text-end">İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -107,7 +107,7 @@
                                                     hx-post="/products/@Model.Id/variants/@variant.Id/delete"
                                                     hx-target="closest tr"
                                                     hx-swap="outerHTML swap:300ms"
-                                                    hx-confirm="Bu varyanti silmek istediginize emin misiniz?">
+                                                    hx-confirm="Bu varyantı silmek istediğinize emin misiniz?">
                                                 Sil
                                             </button>
                                         </div>
@@ -126,7 +126,7 @@
                     <div class="empty py-5">
                         <p class="empty-title">Varyant bulunamadı</p>
                         <p class="empty-subtitle text-secondary">
-                            Bu urune henüz varyant eklenmemis.
+                            Bu ürüne henüz varyant eklenmemiş.
                         </p>
                     </div>
                 </div>

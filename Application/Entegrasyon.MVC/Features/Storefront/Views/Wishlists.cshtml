@@ -27,7 +27,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Aktif Kullanici</div>
+                                <div class="font-weight-medium">Aktif Kullanıcı</div>
                                 <div class="text-secondary">312</div>
                             </div>
                         </div>
@@ -61,7 +61,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Favoriden Satin Alma</div>
+                                <div class="font-weight-medium">Favoriden Satın Alma</div>
                                 <div class="text-secondary">23%</div>
                             </div>
                         </div>
@@ -74,7 +74,7 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">En Cok Favorilenen Ürünler</h3>
+                        <h3 class="card-title">En Çok Favorilenen Ürünler</h3>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-vcenter card-table table-hover">
@@ -91,14 +91,14 @@
                                 @{
                                     var topProducts = new[]
                                     {
-                                        new { Rank = 1, Name = "Kadin Deri Ceket (S-XL)", Wishlist = 148, InStock = true, Price = 1299.90m },
-                                        new { Rank = 2, Name = "Erkek Slim Fit Gomlek Beyaz", Wishlist = 112, InStock = true, Price = 449.90m },
-                                        new { Rank = 3, Name = "Unisex Spor Ayakkabi 42", Wishlist = 97, InStock = false, Price = 899.00m },
-                                        new { Rank = 4, Name = "Mini Kol Cantasi Siyah", Wishlist = 83, InStock = true, Price = 749.50m },
-                                        new { Rank = 5, Name = "Kadin Blazer Ceket Gri", Wishlist = 71, InStock = true, Price = 1099.00m },
-                                        new { Rank = 6, Name = "Erkek Jogger Esofman Alt", Wishlist = 65, InStock = false, Price = 379.90m },
-                                        new { Rank = 7, Name = "Kadin Elbise Cicek Desenli", Wishlist = 59, InStock = true, Price = 599.90m },
-                                        new { Rank = 8, Name = "Gunluk Sneaker Beyaz", Wishlist = 52, InStock = true, Price = 699.00m },
+                                        new { Rank = 1, Name = "Kadın Deri Ceket (S-XL)", Wishlist = 148, InStock = true, Price = 1299.90m },
+                                        new { Rank = 2, Name = "Erkek Slim Fit Gömlek Beyaz", Wishlist = 112, InStock = true, Price = 449.90m },
+                                        new { Rank = 3, Name = "Unisex Spor Ayakkabı 42", Wishlist = 97, InStock = false, Price = 899.00m },
+                                        new { Rank = 4, Name = "Mini Kol Çantası Siyah", Wishlist = 83, InStock = true, Price = 749.50m },
+                                        new { Rank = 5, Name = "Kadın Blazer Ceket Gri", Wishlist = 71, InStock = true, Price = 1099.00m },
+                                        new { Rank = 6, Name = "Erkek Jogger Eşofman Alt", Wishlist = 65, InStock = false, Price = 379.90m },
+                                        new { Rank = 7, Name = "Kadın Elbise Çiçek Desenli", Wishlist = 59, InStock = true, Price = 599.90m },
+                                        new { Rank = 8, Name = "Günlük Sneaker Beyaz", Wishlist = 52, InStock = true, Price = 699.00m },
                                     };
                                 }
                                 @foreach (var p in topProducts)
@@ -139,11 +139,11 @@
                         @{
                             var cats = new[]
                             {
-                                new { Name = "Kadin Giyim", Count = 487, Pct = 39 },
+                                new { Name = "Kadın Giyim", Count = 487, Pct = 39 },
                                 new { Name = "Erkek Giyim", Count = 312, Pct = 25 },
-                                new { Name = "Ayakkabi", Count = 249, Pct = 20 },
-                                new { Name = "Canta & Aksesuar", Count = 137, Pct = 11 },
-                                new { Name = "Diger", Count = 63, Pct = 5 },
+                                new { Name = "Ayakkabı", Count = 249, Pct = 20 },
+                                new { Name = "Çanta & Aksesuar", Count = 137, Pct = 11 },
+                                new { Name = "Diğer", Count = 63, Pct = 5 },
                             };
                         }
                         @foreach (var cat in cats)

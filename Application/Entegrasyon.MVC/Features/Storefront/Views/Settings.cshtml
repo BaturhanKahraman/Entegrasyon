@@ -5,8 +5,8 @@
             <div class="card">
                 <div class="card-body text-center py-5">
                     <i class="ti ti-settings icon-lg text-muted mb-3" style="font-size: 2rem;"></i>
-                    <h3 class="text-secondary">Mağaza ayarlari henüz yapilandirilmamis</h3>
-                    <p class="text-secondary">Asagidaki formu doldurarak Mağaza ayarlarinizi olusturun.</p>
+                    <h3 class="text-secondary">Mağaza ayarları henüz yapılandırılmamış</h3>
+                    <p class="text-secondary">Aşağıdaki formu doldurarak Mağaza ayarlarınızı oluşturun.</p>
                 </div>
             </div>
         }
@@ -24,14 +24,14 @@
                     <input type="hidden" name="Id" value="@(Model?.Id ?? 0)" />
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Mağaza Adi</label>
+                            <label class="form-label required">Mağaza Adı</label>
                             <input type="text" name="StoreName" class="form-control"
-                                   value="@Model?.StoreName" placeholder="Mağaza adinizi girin" required />
+                                   value="@Model?.StoreName" placeholder="Mağaza adınızı girin" required />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Mağaza Slogani</label>
+                            <label class="form-label">Mağaza Sloganı</label>
                             <input type="text" name="StoreSlogan" class="form-control"
-                                   value="@Model?.StoreSlogan" placeholder="Mağaza sloganiniz" />
+                                   value="@Model?.StoreSlogan" placeholder="Mağaza sloganınız" />
                         </div>
                     </div>
                     <div class="row">
@@ -57,7 +57,7 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Şirket Adi</label>
+                            <label class="form-label required">Şirket Adı</label>
                             <input type="text" name="CompanyName" class="form-control"
                                    value="@Model?.CompanyName" required />
                         </div>
@@ -117,12 +117,12 @@
                                    value="@Model?.Address" required />
                         </div>
                         <div class="col-md-2 mb-3">
-                            <label class="form-label required">Sehir</label>
+                            <label class="form-label required">Şehir</label>
                             <input type="text" name="City" class="form-control"
                                    value="@Model?.City" required />
                         </div>
                         <div class="col-md-2 mb-3">
-                            <label class="form-label">Ilce</label>
+                            <label class="form-label">İlçe</label>
                             <input type="text" name="District" class="form-control"
                                    value="@Model?.District" />
                         </div>
@@ -176,17 +176,17 @@
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Ucretsiz Kargo Limiti (TL)</label>
+                            <label class="form-label">Ücretsiz Kargo Limiti (TL)</label>
                             <input type="number" step="0.01" name="FreeShippingThreshold" class="form-control"
                                    value="@Model?.FreeShippingThreshold" />
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Sabit Kargo Ucreti (TL)</label>
+                            <label class="form-label">Sabit Kargo Ücreti (TL)</label>
                             <input type="number" step="0.01" name="FlatShippingRate" class="form-control"
                                    value="@Model?.FlatShippingRate" />
                         </div>
                         <div class="col-md-4 mb-3">
-                            <label class="form-label">Tahmini Teslimat (gun)</label>
+                            <label class="form-label">Tahmini Teslimat (gün)</label>
                             <input type="number" name="EstimatedDeliveryDays" class="form-control"
                                    value="@(Model?.EstimatedDeliveryDays ?? 3)" />
                         </div>
@@ -207,7 +207,7 @@
                                    value="@(Model?.PrimaryColor ?? "#2563EB")" />
                         </div>
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Ikincil Renk</label>
+                            <label class="form-label">İkincil Renk</label>
                             <input type="color" name="SecondaryColor" class="form-control form-control-color"
                                    value="@(Model?.SecondaryColor ?? "#64748B")" />
                         </div>
@@ -223,22 +223,22 @@
             @* ── SEO ────────────────────────────────────────────────────── *@
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">SEO Varsayilanlari</h3>
+                    <h3 class="card-title">SEO Varsayılanları</h3>
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label class="form-label">Varsayilan SEO Basligi</label>
+                        <label class="form-label">Varsayılan SEO Başlığı</label>
                         <input type="text" name="DefaultSeoTitle" class="form-control"
                                value="@Model?.DefaultSeoTitle" />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Varsayilan SEO Açıklamasi</label>
+                        <label class="form-label">Varsayılan SEO Açıklaması</label>
                         <textarea name="DefaultSeoDescription" class="form-control" rows="2">@Model?.DefaultSeoDescription</textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Varsayilan SEO Anahtar Kelimeler</label>
+                        <label class="form-label">Varsayılan SEO Anahtar Kelimeler</label>
                         <input type="text" name="DefaultSeoKeywords" class="form-control"
-                               value="@Model?.DefaultSeoKeywords" placeholder="virgul ile ayirin" />
+                               value="@Model?.DefaultSeoKeywords" placeholder="virgül ile ayırın" />
                     </div>
                 </div>
             </div>
@@ -272,7 +272,7 @@
             @* ── Özellik Flagleri ──────────────────────────────────────── *@
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">Özellik Ayarlari</h3>
+                    <h3 class="card-title">Özellik Ayarları</h3>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -280,7 +280,7 @@
                             <label class="form-check">
                                 <input type="checkbox" name="CookieConsentActive" value="true" class="form-check-input"
                                        @(Model?.CookieConsentActive == true ? "checked" : "") />
-                                <span class="form-check-label">Cerez Onay Bildirimi</span>
+                                <span class="form-check-label">Çerez Onay Bildirimi</span>
                             </label>
                         </div>
                         <div class="col-md-4 mb-3">
@@ -294,7 +294,7 @@
                             <label class="form-check">
                                 <input type="checkbox" name="NewsletterEnabled" value="true" class="form-check-input"
                                        @(Model?.NewsletterEnabled == true ? "checked" : "") />
-                                <span class="form-check-label">Bulten Aboneligi</span>
+                                <span class="form-check-label">Bülten Aboneliği</span>
                             </label>
                         </div>
                     </div>
@@ -320,7 +320,7 @@
             <div class="d-flex justify-content-between">
                 <div class="btn-list">
                     <a href="/settings/storefront/banners" class="btn btn-outline-secondary">Banner Yönetimi</a>
-                    <a href="/settings/storefront/payment" class="btn btn-outline-secondary">Odeme Ayarlari</a>
+                    <a href="/settings/storefront/payment" class="btn btn-outline-secondary">Ödeme Ayarları</a>
                     <a href="/settings/storefront/legal" class="btn btn-outline-secondary">Yasal Bilgiler</a>
                     <a href="/storefront/reviews" class="btn btn-outline-secondary">Değerlendirmeler</a>
                     <a href="/storefront/returns" class="btn btn-outline-secondary">İadeler</a>

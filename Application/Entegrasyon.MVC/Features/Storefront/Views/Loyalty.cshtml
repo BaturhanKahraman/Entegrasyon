@@ -9,7 +9,7 @@
                         <span class="bg-yellow text-white avatar"><i class="ti ti-users"></i></span>
                     </div>
                     <div class="col">
-                        <div class="font-weight-medium">Aktif Uye</div>
+                        <div class="font-weight-medium">Aktif Üye</div>
                         <div class="text-secondary">@Model.Dashboard.ActiveMembers</div>
                     </div>
                 </div>
@@ -24,7 +24,7 @@
                         <span class="bg-green text-white avatar"><i class="ti ti-arrow-up-right"></i></span>
                     </div>
                     <div class="col">
-                        <div class="font-weight-medium">Toplam Kazanim</div>
+                        <div class="font-weight-medium">Toplam Kazanım</div>
                         <div class="text-secondary">@Model.Dashboard.TotalEarnedPoints.ToString("N0")</div>
                     </div>
                 </div>
@@ -54,7 +54,7 @@
                         <span class="bg-purple text-white avatar"><i class="ti ti-trending-up"></i></span>
                     </div>
                     <div class="col">
-                        <div class="font-weight-medium">Bu Ay Kazanilan</div>
+                        <div class="font-weight-medium">Bu Ay Kazanılan</div>
                         <div class="text-secondary">@Model.Dashboard.ThisMonthEarned.ToString("N0")</div>
                     </div>
                 </div>
@@ -65,17 +65,17 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">En Sadik Musteriler</h3>
+        <h3 class="card-title">En Sadık Müşteriler</h3>
         <div class="card-actions">
-            <span class="badge bg-secondary-lt">@Model.Dashboard.TopMembers.Count kayit</span>
+            <span class="badge bg-secondary-lt">@Model.Dashboard.TopMembers.Count kayıt</span>
         </div>
     </div>
     @if (Model.Dashboard.TopMembers.Count == 0)
     {
         <div class="card-body text-center py-5">
             <div class="mb-3"><i class="ti ti-star icon-lg text-secondary" style="font-size: 2.5rem;"></i></div>
-            <h3 class="text-secondary">Henuz sadakat uyesi yok</h3>
-            <p class="text-secondary">Musterileriniz puan kazanmaya basladiginda burada listelenecektir.</p>
+            <h3 class="text-secondary">Henüz sadakat üyesi yok</h3>
+            <p class="text-secondary">Müşterileriniz puan kazanmaya başladığında burada listelenecektir.</p>
         </div>
     }
     else
@@ -84,10 +84,10 @@
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Musteri</th>
+                        <th>Müşteri</th>
                         <th class="text-center">Tier</th>
-                        <th class="text-end">Toplam Kazanim</th>
-                        <th class="text-end">Guncel Bakiye</th>
+                        <th class="text-end">Toplam Kazanım</th>
+                        <th class="text-end">Güncel Bakiye</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -97,7 +97,7 @@
                         <tr>
                             <td>
                                 <span class="avatar avatar-sm me-2 bg-yellow-lt text-yellow">#</span>
-                                <span class="fw-medium">@(m.CustomerName ?? $"Musteri #{m.CustomerId}")</span>
+                                <span class="fw-medium">@(m.CustomerName ?? $"Müşteri #{m.CustomerId}")</span>
                             </td>
                             <td class="text-center">
                                 <span class="badge bg-secondary-lt">@m.Level</span>

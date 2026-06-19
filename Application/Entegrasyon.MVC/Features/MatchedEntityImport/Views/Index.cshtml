@@ -26,7 +26,7 @@
                                 hx-target="#package-table"
                                 hx-swap="outerHTML"
                                 hx-include="[name='search']">
-                            <option value="">Tum Turler</option>
+                            <option value="">Tüm Türler</option>
                             <option value="0" selected="@(ViewBag.TypeFilter != null && (int)ViewBag.TypeFilter == 0)">Kategori</option>
                             <option value="1" selected="@(ViewBag.TypeFilter != null && (int)ViewBag.TypeFilter == 1)">Marka</option>
                             <option value="2" selected="@(ViewBag.TypeFilter != null && (int)ViewBag.TypeFilter == 2)">Kargo Şirketi</option>
@@ -57,7 +57,7 @@
         <div class="modal-content" id="conflict-modal-content">
             <div class="modal-body text-center py-5">
                 <div class="spinner-border text-primary" role="status"></div>
-                <p class="text-secondary mt-2">Cakismalar kontrol ediliyor...</p>
+                <p class="text-secondary mt-2">Çakışmalar kontrol ediliyor...</p>
             </div>
         </div>
 

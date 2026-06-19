@@ -3,31 +3,31 @@
                 <!-- Profile Info -->
                 <div class="card mb-3">
                     <div class="card-header">
-                        <h3 class="card-title">Kisisel Bilgiler</h3>
+                        <h3 class="card-title">Kişisel Bilgiler</h3>
                     </div>
                     <div class="card-body">
                         <form method="post" action="/profile">
                             @Html.AntiForgeryToken()
                             <div class="mb-3">
-                                <label class="form-label">Kullanici Adi</label>
+                                <label class="form-label">Kullanıcı Adı</label>
                                 <input type="text" class="form-control" value="@ViewBag.UserName" readonly />
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label required">Ad</label>
                                     <input type="text" name="name" class="form-control" value="@ViewBag.Name"
-                                           placeholder="Adinizi girin" required />
+                                           placeholder="Adınızı girin" required />
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label required">Soyad</label>
                                     <input type="text" name="surname" class="form-control" value="@ViewBag.Surname"
-                                           placeholder="Soyadinizi girin" required />
+                                           placeholder="Soyadınızı girin" required />
                                 </div>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">E-posta</label>
                                 <input type="email" class="form-control" value="@ViewBag.Email" readonly />
-                                <small class="form-hint">E-posta degisikligi için yoneticinize basvurun.</small>
+                                <small class="form-hint">E-posta değişikliği için yöneticinize başvurun.</small>
                             </div>
                             <button type="submit" class="btn btn-primary">Kaydet</button>
                         </form>
@@ -40,7 +40,7 @@
                         <h3 class="card-title">Şifre Değiştir</h3>
                     </div>
                     <div class="card-body">
-                        <p class="text-secondary">Şifrenizi Değiştirmek için asagidaki baglantiya tıklayın.</p>
+                        <p class="text-secondary">Şifrenizi değiştirmek için aşağıdaki bağlantıya tıklayın.</p>
                         <a href="/profile/change-password" class="btn btn-warning">Şifre Değiştir</a>
                     </div>
                 </div>

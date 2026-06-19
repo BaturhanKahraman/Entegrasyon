@@ -15,11 +15,11 @@
 
     string TypeLabel(StockMovementType t) => t switch
     {
-        StockMovementType.InitialStock => "Ilk Stok",
+        StockMovementType.InitialStock => "İlk Stok",
         StockMovementType.Sale => "Satış",
         StockMovementType.MarketplaceSale => "Pazaryeri Satışı",
         StockMovementType.Return => "İade",
-        StockMovementType.ManualAdjustment => "Manuel Duzeltme",
+        StockMovementType.ManualAdjustment => "Manuel Düzeltme",
         StockMovementType.Transfer => "Transfer",
         _ => "Bilinmiyor"
     };
@@ -37,7 +37,7 @@
                         <th>Barkod</th>
                         <th>Tip</th>
                         <th>Miktar</th>
-                        <th>Onceki Stok</th>
+                        <th>Önceki Stok</th>
                         <th>Sonraki Stok</th>
                         <th>Referans</th>
                     </tr>
@@ -114,7 +114,7 @@
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
                          Title = "Stok hareketi bulunamadı",
-                         Subtitle = "Secilen filtrelere gore stok hareketi kaydi yok."
+                         Subtitle = "Seçilen filtrelere göre stok hareketi kaydı yok."
                      }' />
         </div>
     }

@@ -43,7 +43,7 @@
                             </div>
                             <div class="col">
                                 <div class="font-weight-medium">Onaylanan</div>
-                                <div class="text-secondary">iade onaylandi</div>
+                                <div class="text-secondary">iade onaylandı</div>
                             </div>
                         </div>
                     </div>
@@ -58,7 +58,7 @@
                             </div>
                             <div class="col">
                                 <div class="font-weight-medium">Tamamlanan</div>
-                                <div class="text-secondary">iade tamamlandi</div>
+                                <div class="text-secondary">iade tamamlandı</div>
                             </div>
                         </div>
                     </div>
@@ -88,9 +88,9 @@
                                 <th>Müşteri</th>
                                 <th>Sebep</th>
                                 <th>Durum</th>
-                                <th>İade Tutari</th>
+                                <th>İade Tutarı</th>
                                 <th>Tarih</th>
-                                <th class="w-1">Islem</th>
+                                <th class="w-1">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -109,7 +109,7 @@
                                     ReturnStatus.Pending => "Beklemede",
                                     ReturnStatus.Approved => "Onaylandı",
                                     ReturnStatus.Rejected => "Reddedildi",
-                                    ReturnStatus.Completed => "Tamamlandi",
+                                    ReturnStatus.Completed => "Tamamlandı",
                                     _ => "Bilinmiyor"
                                 };
 
@@ -143,7 +143,7 @@
                                         <span class="text-secondary">@ret.CreatedAt.ToString("dd.MM.yyyy")</span>
                                         @if (ret.ReviewedAt.HasValue)
                                         {
-                                            <div class="text-secondary small">Inceleme: @ret.ReviewedAt.Value.ToString("dd.MM.yyyy")</div>
+                                            <div class="text-secondary small">İnceleme: @ret.ReviewedAt.Value.ToString("dd.MM.yyyy")</div>
                                         }
                                     </td>
                                     <td>
@@ -187,16 +187,16 @@
                                                 <div>
                                                     <label class="form-label small">Not</label>
                                                     <input type="text" name="reviewNote" class="form-control form-control-sm"
-                                                           placeholder="Inceleme notu..." />
+                                                           placeholder="İnceleme notu..." />
                                                 </div>
                                                 <div>
-                                                    <label class="form-label small">İade Tutari (TL)</label>
+                                                    <label class="form-label small">İade Tutarı (TL)</label>
                                                     <input type="number" step="0.01" name="refundAmount" class="form-control form-control-sm"
                                                            placeholder="0.00" />
                                                 </div>
                                                 <button type="submit" class="btn btn-primary btn-sm">Kaydet</button>
                                                 <button type="button" class="btn btn-ghost-secondary btn-sm"
-                                                        onclick="document.getElementById('return-action-@ret.Id').style.display='none'">Iptal</button>
+                                                        onclick="document.getElementById('return-action-@ret.Id').style.display='none'">İptal</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -211,7 +211,7 @@
         <div class="mt-3">
             <a href="/settings/storefront" class="btn btn-outline-secondary">
                 <i class="ti ti-arrow-left"></i>
-                Mağaza Ayarlarina Don
+                Mağaza Ayarlarına Dön
             </a>
         </div>
 

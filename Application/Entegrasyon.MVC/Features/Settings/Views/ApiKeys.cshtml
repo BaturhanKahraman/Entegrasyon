@@ -15,8 +15,8 @@
                         <div class="d-flex align-items-center">
                             <i class="ti ti-key me-2" style="font-size:1.5rem;"></i>
                             <div>
-                                <strong>API anahtariniz olusturuldu!</strong>
-                                <p class="mb-1">Bu anahtari simdi kopyalayin. Sayfa yenilendiginde tekrar gosterilemez.</p>
+                                <strong>API anahtarınız oluşturuldu!</strong>
+                                <p class="mb-1">Bu anahtarı şimdi kopyalayın. Sayfa yenilendiğinde tekrar gösterilemez.</p>
                                 <code class="fs-5 user-select-all">@newKey</code>
                             </div>
                         </div>
@@ -25,7 +25,7 @@
 
                 <div class="card mb-3">
                     <div class="card-header d-flex align-items-center justify-content-between">
-                        <h3 class="card-title">API Anahtarlari</h3>
+                        <h3 class="card-title">API Anahtarları</h3>
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addApiKeyModal">
                             <i class="ti ti-plus me-1"></i>Yeni Anahtar
                         </button>
@@ -39,7 +39,7 @@
                                         <th>Ad</th>
                                         <th>Prefix</th>
                                         <th>Scope'lar</th>
-                                        <th>Son Kullanim</th>
+                                        <th>Son Kullanım</th>
                                         <th>Son Tarih</th>
                                         <th>Durum</th>
                                         <th class="w-1"></th>
@@ -60,19 +60,19 @@
                                                 }
                                             </td>
                                             <td class="text-secondary">
-                                                @(key.LastUsedAt.HasValue ? key.LastUsedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm") : "Hic")
+                                                @(key.LastUsedAt.HasValue ? key.LastUsedAt.Value.ToLocalTime().ToString("dd.MM.yyyy HH:mm") : "Hiç")
                                             </td>
                                             <td class="text-secondary">
-                                                @(key.ExpiresAt.HasValue ? key.ExpiresAt.Value.ToLocalTime().ToString("dd.MM.yyyy") : "Suressiz")
+                                                @(key.ExpiresAt.HasValue ? key.ExpiresAt.Value.ToLocalTime().ToString("dd.MM.yyyy") : "Süresiz")
                                             </td>
                                             <td>
                                                 @if (!key.IsActive)
                                                 {
-                                                    <span class="badge bg-red-lt">Iptal</span>
+                                                    <span class="badge bg-red-lt">İptal</span>
                                                 }
                                                 else if (isExpired)
                                                 {
-                                                    <span class="badge bg-orange-lt">Suresi Doldu</span>
+                                                    <span class="badge bg-orange-lt">Süresi Doldu</span>
                                                 }
                                                 else
                                                 {
@@ -85,8 +85,8 @@
                                                     <form method="post" action="/settings/api-keys/@key.Id/revoke">
                                                         @Html.AntiForgeryToken()
                                                         <button type="submit" class="btn btn-sm btn-outline-danger"
-                                                                onclick="return confirm('Bu API anahtarini iptal etmek istediginize emin misiniz?')">
-                                                            Iptal Et
+                                                                onclick="return confirm('Bu API anahtarını iptal etmek istediğinize emin misiniz?')">
+                                                            İptal Et
                                                         </button>
                                                     </form>
                                                 }
@@ -102,8 +102,8 @@
                         <div class="card-body">
                             <div class="empty py-3">
                                 <div class="empty-icon"><i class="ti ti-key" style="font-size:2.5rem;"></i></div>
-                                <p class="empty-title">Henüz API anahtari yok</p>
-                                <p class="empty-subtitle text-secondary">Dis sistemlerle entegrasyon için API anahtari olusturun.</p>
+                                <p class="empty-title">Henüz API anahtarı yok</p>
+                                <p class="empty-subtitle text-secondary">Dış sistemlerle entegrasyon için API anahtarı oluşturun.</p>
                             </div>
                         </div>
                     }
@@ -112,10 +112,10 @@
                 <!-- Kullanim Rehberi -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Kullanim Rehberi</h3>
+                        <h3 class="card-title">Kullanım Rehberi</h3>
                     </div>
                     <div class="card-body">
-                        <p>API isteklerinizde <code>Authorization</code> header'ini kullanin:</p>
+                        <p>API isteklerinizde <code>Authorization</code> header'ini kullanın:</p>
                         <pre class="p-3 bg-dark text-light rounded"><code>Authorization: Bearer ent_xxxxxxxxxxxx</code></pre>
                     </div>
                 </div>
@@ -129,13 +129,13 @@
             <form method="post" action="/settings/api-keys/create">
                 @Html.AntiForgeryToken()
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni API Anahtari</h5>
+                    <h5 class="modal-title">Yeni API Anahtarı</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label required">Anahtar Adi</label>
-                        <input type="text" name="name" class="form-control" required placeholder="orn. Mobil Uygulama"/>
+                        <label class="form-label required">Anahtar Adı</label>
+                        <input type="text" name="name" class="form-control" required placeholder="örn. Mobil Uygulama"/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label required">Yetkiler (Scope)</label>
@@ -179,14 +179,14 @@
                         </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Son Kullanim Tarihi</label>
+                        <label class="form-label">Son Kullanım Tarihi</label>
                         <input type="date" name="expiresAt" class="form-control"/>
-                        <small class="form-hint">Bos birakilirsa anahtar suressiz olur.</small>
+                        <small class="form-hint">Boş bırakılırsa anahtar süresiz olur.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">Iptal</button>
-                    <button type="submit" class="btn btn-primary">Olustur</button>
+                    <button type="button" class="btn btn-link" data-bs-dismiss="modal">İptal</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
                 </div>
             </form>
         </div>

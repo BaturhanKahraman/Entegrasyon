@@ -40,7 +40,7 @@
         <ol class="breadcrumb">
             <li class="breadcrumb-item">
                 <a asp-action="Categories">
-                    <i class="bi bi-house"></i> Kok
+                    <i class="bi bi-house"></i> Kök
                 </a>
             </li>
             @foreach (var crumb in Model.Breadcrumbs)
@@ -65,7 +65,7 @@
         <form method="get" asp-action="Categories" class="row g-2 mb-3">
             <div class="col-auto flex-grow-1">
                 <input type="text" name="search" value="@Model.Search"
-                       class="form-control" placeholder="Kategori adi ara..." />
+                       class="form-control" placeholder="Kategori adı ara..." />
             </div>
             <div class="col-auto">
                 <button type="submit" class="btn btn-outline-secondary">Ara</button>
@@ -82,7 +82,7 @@
         {
             <div class="alert alert-info py-2 small mb-3">
                 <i class="bi bi-search me-1"></i>
-                <strong>"@Model.Search"</strong> icin @Model.Categories.Count sonuc bulundu.
+                <strong>"@Model.Search"</strong> için @Model.Categories.Count sonuç bulundu.
             </div>
         }
 
@@ -90,15 +90,15 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="table-light">
                     <tr>
-                        <th>Kategori Adi</th>
+                        <th>Kategori Adı</th>
                         @if (!string.IsNullOrEmpty(Model.Search))
                         {
                             <th>Tam Yol</th>
                         }
                         <th class="text-center">Alt Kategori</th>
-                        <th class="text-center">Ozellik</th>
+                        <th class="text-center">Özellik</th>
                         <th>Marketplace</th>
-                        <th class="text-end">Islemler</th>
+                        <th class="text-end">İşlemler</th>
                     </tr>
                 </thead>
                 <tbody>

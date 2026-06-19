@@ -3,7 +3,7 @@
 <div class="d-flex justify-content-end mb-3">
     <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#createSizeGuideModal">
         <i class="ti ti-plus"></i>
-        Yeni Kilavuz
+        Yeni Kılavuz
     </button>
 </div>
 
@@ -14,14 +14,14 @@
                     <div class="mb-3">
                         <i class="ti ti-file-text icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Henüz beden kilavuzu olusturulmamis</h3>
-                    <p class="text-secondary">Kategorilerinize ozel beden kilavuzlari olusturarak musterilerinize yardimci olun.</p>
+                    <h3 class="text-secondary">Henüz beden kılavuzu oluşturulmamış</h3>
+                    <p class="text-secondary">Kategorilerinize özel beden kılavuzları oluşturarak müşterilerinize yardımcı olun.</p>
                 </div>
             }
             else
             {
                 <div class="card-header">
-                    <h3 class="card-title">Beden Kilavuzlari</h3>
+                    <h3 class="card-title">Beden Kılavuzları</h3>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-vcenter card-table table-hover">
@@ -29,10 +29,10 @@
                             <tr>
                                 <th>Ad</th>
                                 <th>Kategori ID'leri</th>
-                                <th>Olcum Talimatlari</th>
+                                <th>Ölçüm Talimatları</th>
                                 <th>Durum</th>
-                                <th>Olusturulma</th>
-                                <th>Islemler</th>
+                                <th>Oluşturulma</th>
+                                <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -86,7 +86,7 @@
                                             <button class="btn btn-sm btn-outline-danger"
                                                     hx-delete="/storefront/size-guides/@guide.Id"
                                                     hx-swap="none"
-                                                    hx-confirm="Bu kilavuzu silmek istediginizden emin misiniz?">
+                                                    hx-confirm="Bu kılavuzu silmek istediğinizden emin misiniz?">
                                                 Sil
                                             </button>
                                         </div>
@@ -105,29 +105,29 @@
         <div class="modal-content">
             <form hx-post="/storefront/size-guides" hx-swap="none">
                 <div class="modal-header">
-                    <h5 class="modal-title">Yeni Beden Kilavuzu</h5>
+                    <h5 class="modal-title">Yeni Beden Kılavuzu</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label class="form-label required">Kilavuz Adi</label>
-                        <input type="text" name="Name" class="form-control" required placeholder="ornegin: Erkek Ust Giyim" />
+                        <label class="form-label required">Kılavuz Adı</label>
+                        <input type="text" name="Name" class="form-control" required placeholder="örneğin: Erkek Üst Giyim" />
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Kategori ID'leri</label>
-                        <input type="text" name="CategoryIds" class="form-control" placeholder="Virgul ile ayrilmis kategori ID'leri (istege bagli)" />
-                        <small class="form-hint">Bos birakilirsa genel kilavuz olarak kullanilir.</small>
+                        <input type="text" name="CategoryIds" class="form-control" placeholder="Virgül ile ayrılmış kategori ID'leri (isteğe bağlı)" />
+                        <small class="form-hint">Boş bırakılırsa genel kılavuz olarak kullanılır.</small>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Olcum Talimatlari</label>
+                        <label class="form-label">Ölçüm Talimatları</label>
                         <textarea name="MeasurementInstructions" class="form-control" rows="3"
-                                  placeholder="Müşteriye nasil olcum alacagini anlatin..."></textarea>
+                                  placeholder="Müşteriye nasıl ölçüm alacağını anlatın..."></textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label required">Beden Verisi (JSON)</label>
                         <textarea name="SizeData" class="form-control" rows="6" required
                                   placeholder='[{"size":"S","chest":"88-92","waist":"72-76"},...]'></textarea>
-                        <small class="form-hint">JSON formatinda beden tablosu verisi girin.</small>
+                        <small class="form-hint">JSON formatında beden tablosu verisi girin.</small>
                     </div>
                     <div class="mb-3">
                         <label class="form-check form-switch">
@@ -137,8 +137,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
-                    <button type="submit" class="btn btn-primary">Olustur</button>
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
                 </div>
             </form>
         </div>
@@ -153,12 +153,12 @@
             <div class="modal-content">
                 <form hx-put="/storefront/size-guides/@guide.Id" hx-swap="none">
                     <div class="modal-header">
-                        <h5 class="modal-title">Beden Kilavuzu Düzenle</h5>
+                        <h5 class="modal-title">Beden Kılavuzu Düzenle</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label class="form-label required">Kilavuz Adi</label>
+                            <label class="form-label required">Kılavuz Adı</label>
                             <input type="text" name="Name" class="form-control" required value="@guide.Name" />
                         </div>
                         <div class="mb-3">
@@ -166,7 +166,7 @@
                             <input type="text" name="CategoryIds" class="form-control" value="@(guide.CategoryIds ?? "")" />
                         </div>
                         <div class="mb-3">
-                            <label class="form-label">Olcum Talimatlari</label>
+                            <label class="form-label">Ölçüm Talimatları</label>
                             <textarea name="MeasurementInstructions" class="form-control" rows="3">@(guide.MeasurementInstructions ?? "")</textarea>
                         </div>
                         <div class="mb-3">
@@ -181,7 +181,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
+                        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgeç</button>
                         <button type="submit" class="btn btn-primary">Kaydet</button>
                     </div>
                 </form>

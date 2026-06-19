@@ -5,15 +5,15 @@
         <button class="btn btn-primary"
                 hx-post="/marketplace/matching/sync-all?mp=@Model.SelectedMarketPlaceId"
                 hx-swap="none"
-                hx-confirm="Tum bekleyen urunleri senkronize etmek istediginize emin misiniz?">
+                hx-confirm="Tüm bekleyen ürünleri senkronize etmek istediğinize emin misiniz?">
             <i class="ti ti-refresh"></i>
-            Tumu Senkronize Et
+            Tümü Senkronize Et
         </button>
         <button class="btn btn-outline-danger"
                 hx-post="/marketplace/matching/retry-all?mp=@Model.SelectedMarketPlaceId"
                 hx-swap="none"
-                hx-confirm="Tum Hatalı urunleri yeniden denemek istediginize emin misiniz?">
-            Hatalılari Yeniden Dene
+                hx-confirm="Tüm Hatalı ürünleri yeniden denemek istediğinize emin misiniz?">
+            Hatalıları Yeniden Dene
         </button>
     </div>
 </div>

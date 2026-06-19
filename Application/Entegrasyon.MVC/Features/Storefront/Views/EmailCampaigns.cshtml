@@ -23,7 +23,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Gonderildi</div>
+                            <div class="subheader">Gönderildi</div>
                         </div>
                         <div class="h1 mb-0 text-success">@sent</div>
                     </div>
@@ -33,7 +33,7 @@
                 <div class="card">
                     <div class="card-body">
                         <div class="d-flex align-items-center">
-                            <div class="subheader">Zamanlandi</div>
+                            <div class="subheader">Zamanlandı</div>
                         </div>
                         <div class="h1 mb-0 text-info">@scheduled</div>
                     </div>
@@ -55,15 +55,15 @@
             @if (Model.Campaigns.Count == 0)
             {
                 <div class="card-body text-center py-5">
-                    <h3 class="text-secondary">Henüz e-posta kampanyasi yok</h3>
-                    <p class="text-secondary">Kampanyalar sayfasindan yeni kampanya olusturabilirsiniz.</p>
+                    <h3 class="text-secondary">Henüz e-posta kampanyası yok</h3>
+                    <p class="text-secondary">Kampanyalar sayfasından yeni kampanya oluşturabilirsiniz.</p>
                     <a href="/storefront/campaigns" class="btn btn-outline-primary mt-2">Kampanyalara Git</a>
                 </div>
             }
             else
             {
                 <div class="card-header">
-                    <h3 class="card-title">Kampanya Gecmisi</h3>
+                    <h3 class="card-title">Kampanya Geçmişi</h3>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-vcenter card-table table-hover">
@@ -71,10 +71,10 @@
                             <tr>
                                 <th>Konu</th>
                                 <th>Durum</th>
-                                <th>Gonderim Tarihi</th>
-                                <th>Alici</th>
-                                <th>Gonderilen</th>
-                                <th>Acilma Oranı</th>
+                                <th>Gönderim Tarihi</th>
+                                <th>Alıcı</th>
+                                <th>Gönderilen</th>
+                                <th>Açılma Oranı</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -98,10 +98,10 @@
                                             var statusText = c.Status switch
                                             {
                                                 CampaignStatus.Draft => "Taslak",
-                                                CampaignStatus.Scheduled => "Zamanlandi",
-                                                CampaignStatus.Sending => "Gonderiliyor",
-                                                CampaignStatus.Sent => "Gonderildi",
-                                                CampaignStatus.Cancelled => "Iptal",
+                                                CampaignStatus.Scheduled => "Zamanlandı",
+                                                CampaignStatus.Sending => "Gönderiliyor",
+                                                CampaignStatus.Sent => "Gönderildi",
+                                                CampaignStatus.Cancelled => "İptal",
                                                 _ => c.Status.ToString()
                                             };
                                         }

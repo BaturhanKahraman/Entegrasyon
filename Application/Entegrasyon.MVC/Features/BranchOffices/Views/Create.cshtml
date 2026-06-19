@@ -1,7 +1,7 @@
 @model Entegrasyon.MVC.Features.BranchOffices.ViewModels.BranchOfficeCreateVm
 
 <div class="d-flex justify-content-end mb-3">
-    <a href="/branch-offices" class="btn btn-outline-secondary">Listeye Don</a>
+    <a href="/branch-offices" class="btn btn-outline-secondary">Listeye Dön</a>
 </div>
 
         <form method="post" action="/branch-offices/create">
@@ -12,8 +12,8 @@
                 </div>
                 <div class="card-body">
                     <div class="mb-3">
-                        <label asp-for="Name" class="form-label required">Depo Adi</label>
-                        <input asp-for="Name" class="form-control" placeholder="Depo adi giriniz" />
+                        <label asp-for="Name" class="form-label required">Depo Adı</label>
+                        <input asp-for="Name" class="form-control" placeholder="Depo adı giriniz" />
                         <span asp-validation-for="Name" class="text-danger"></span>
                     </div>
                     <div class="mb-3">
@@ -24,7 +24,7 @@
                     </div>
                 </div>
                 <div class="card-footer text-end">
-                    <a href="/branch-offices" class="btn btn-ghost-secondary me-2">Iptal</a>
+                    <a href="/branch-offices" class="btn btn-ghost-secondary me-2">İptal</a>
                     <button type="submit" class="btn btn-primary">Kaydet</button>
                 </div>
             </div>

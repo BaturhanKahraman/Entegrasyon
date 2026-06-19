@@ -47,15 +47,15 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Islem Gecmisi</h3>
+                        <h3 class="card-title">İşlem Geçmişi</h3>
                         <div class="card-actions">
-                            <span class="badge bg-secondary-lt">@Model.Transactions.Count islem</span>
+                            <span class="badge bg-secondary-lt">@Model.Transactions.Count işlem</span>
                         </div>
                     </div>
                     @if (Model.Transactions.Count == 0)
                     {
                         <div class="card-body text-center py-4">
-                            <div class="text-secondary">Henüz islem yok.</div>
+                            <div class="text-secondary">Henüz işlem yok.</div>
                         </div>
                     }
                     else
@@ -65,7 +65,7 @@
                                 <thead>
                                     <tr>
                                         <th>Tarih</th>
-                                        <th>Tur</th>
+                                        <th>Tür</th>
                                         <th>Açıklama</th>
                                         <th class="text-end">Tutar</th>
                                         <th class="text-end">Sonraki Bakiye</th>
@@ -78,7 +78,7 @@
                                         var typeText = tx.TransactionType switch
                                         {
                                             WalletTransactionType.Refund => "İade",
-                                            WalletTransactionType.OrderPayment => "Sipariş Odemesi",
+                                            WalletTransactionType.OrderPayment => "Sipariş Ödemesi",
                                             WalletTransactionType.Promotion => "Promosyon",
                                             _ => tx.TransactionType.ToString()
                                         };

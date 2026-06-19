@@ -15,12 +15,12 @@
                     <div class="mb-3">
                         <label class="form-label">Barkod</label>
                         <input type="text" name="Barcode" class="form-control"
-                               placeholder="Bos birakirsaniz otomatik uretilir" />
-                        <small class="form-hint">Bos birakilirsa sistem otomatik barkod uretir.</small>
+                               placeholder="Boş bırakırsanız otomatik üretilir" />
+                        <small class="form-hint">Boş bırakılırsa sistem otomatik barkod üretir.</small>
                     </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Liste Fiyati</label>
+                            <label class="form-label required">Liste Fiyatı</label>
                             <div class="input-group">
                                 <span class="input-group-text">₺</span>
                                 <input type="text" name="ListPrice" class="form-control currency-input"
@@ -28,7 +28,7 @@
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label required">Satış Fiyati</label>
+                            <label class="form-label required">Satış Fiyatı</label>
                             <div class="input-group">
                                 <span class="input-group-text">₺</span>
                                 <input type="text" name="SalePrice" class="form-control currency-input"
@@ -71,13 +71,13 @@
                     <h4 class="mb-2">Görsel Yükle</h4>
                     <div class="mb-3">
                         <input type="file" name="files" class="form-control" multiple accept="image/*" />
-                        <small class="form-hint">Birden fazla görsel secebilirsiniz.</small>
+                        <small class="form-hint">Birden fazla görsel seçebilirsiniz.</small>
                     </div>
 
-                    <!-- Diger Varyantlardan Sec -->
+                    <!-- Diğer Varyantlardan Seç -->
                     @if (Model.OtherVariantImages.Any())
                     {
-                        <h4 class="mb-2">Mevcut Görsellerden Sec</h4>
+                        <h4 class="mb-2">Mevcut Görsellerden Seç</h4>
                         @foreach (var group in Model.OtherVariantImages)
                         {
                             <p class="mb-1 text-secondary" style="font-size:0.8rem">
@@ -104,7 +104,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost-secondary"
-                            onclick="closeVariantModal()">Vazgec</button>
+                            onclick="closeVariantModal()">Vazgeç</button>
                     <button type="submit" class="btn btn-primary">Ekle</button>
                 </div>
             </form>

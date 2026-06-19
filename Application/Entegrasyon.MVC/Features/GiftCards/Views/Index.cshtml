@@ -3,21 +3,21 @@
         <div class="card">
             <div class="card-header">
                 <div class="col">
-                    <h3 class="card-title">Hediye Kartlari</h3>
+                    <h3 class="card-title">Hediye Kartları</h3>
                 </div>
                 <div class="col-auto d-flex gap-2">
                     <select class="form-select form-select-sm" style="width:auto;"
                             hx-get="/gift-cards" hx-target="#gift-card-table" hx-swap="innerHTML"
                             name="status">
-                        <option value="">Tum Durumlar</option>
+                        <option value="">Tüm Durumlar</option>
                         <option value="Active" selected="@(ViewBag.Status == "Active")">Aktif</option>
-                        <option value="Used" selected="@(ViewBag.Status == "Used")">Kullanildi</option>
-                        <option value="Expired" selected="@(ViewBag.Status == "Expired")">Suresi Doldu</option>
-                        <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">Iptal</option>
+                        <option value="Used" selected="@(ViewBag.Status == "Used")">Kullanıldı</option>
+                        <option value="Expired" selected="@(ViewBag.Status == "Expired")">Süresi Doldu</option>
+                        <option value="Cancelled" selected="@(ViewBag.Status == "Cancelled")">İptal</option>
                     </select>
                     <a href="/gift-cards/create" class="btn btn-primary">
                         <i class="ti ti-plus icon"></i>
-                        Yeni Hediye Karti
+                        Yeni Hediye Kartı
                     </a>
                 </div>
             </div>

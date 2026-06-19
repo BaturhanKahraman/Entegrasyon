@@ -5,9 +5,9 @@
         {
             <div class="card">
                 <div class="card-body text-center py-5">
-                    <h3 class="text-secondary">Once Mağaza ayarlarini yapilandirin</h3>
-                    <p class="text-secondary">Odeme ayarlarini duzenleyebilmek için once genel Mağaza ayarlarini kaydetmeniz gerekmektedir.</p>
-                    <a href="/settings/storefront" class="btn btn-primary mt-2">Mağaza Ayarlarina Git</a>
+                    <h3 class="text-secondary">Önce Mağaza ayarlarını yapılandırın</h3>
+                    <p class="text-secondary">Ödeme ayarlarını düzenleyebilmek için önce genel Mağaza ayarlarını kaydetmeniz gerekmektedir.</p>
+                    <a href="/settings/storefront" class="btn btn-primary mt-2">Mağaza Ayarlarına Git</a>
                 </div>
             </div>
         }
@@ -16,7 +16,7 @@
             @* ── Kargo & Teslimat ──────────────────────────────────── *@
             <div class="card mb-3">
                 <div class="card-header">
-                    <h3 class="card-title">Kargo & Teslimat Ayarlari</h3>
+                    <h3 class="card-title">Kargo & Teslimat Ayarları</h3>
                 </div>
                 <div class="card-body">
                     <form method="post" action="/settings/storefront"
@@ -34,16 +34,16 @@
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Ucretsiz Kargo Limiti (TL)</label>
+                                <label class="form-label">Ücretsiz Kargo Limiti (TL)</label>
                                 <div class="input-group">
                                     <span class="input-group-text">TL</span>
                                     <input type="number" step="0.01" name="FreeShippingThreshold" class="form-control"
                                            value="@Model.FreeShippingThreshold" />
                                 </div>
-                                <small class="form-hint">Bu tutarin uzerindeki Siparişlerde kargo ucretsizdir.</small>
+                                <small class="form-hint">Bu tutarın üzerindeki Siparişlerde kargo ücretsizdir.</small>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Sabit Kargo Ucreti (TL)</label>
+                                <label class="form-label">Sabit Kargo Ücreti (TL)</label>
                                 <div class="input-group">
                                     <span class="input-group-text">TL</span>
                                     <input type="number" step="0.01" name="FlatShippingRate" class="form-control"
@@ -51,7 +51,7 @@
                                 </div>
                             </div>
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Tahmini Teslimat Suresi (gun)</label>
+                                <label class="form-label">Tahmini Teslimat Süresi (gün)</label>
                                 <input type="number" name="EstimatedDeliveryDays" class="form-control"
                                        value="@Model.EstimatedDeliveryDays" />
                             </div>
@@ -72,11 +72,11 @@
                             <label class="form-check form-switch">
                                 <input type="checkbox" class="form-check-input" disabled
                                        @(Model.GiftWrappingEnabled ? "checked" : "") />
-                                <span class="form-check-label">Hediye paketi secenegi</span>
+                                <span class="form-check-label">Hediye paketi seçeneği</span>
                             </label>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label">Hediye Paketi Ucreti</label>
+                            <label class="form-label">Hediye Paketi Ücreti</label>
                             <div class="input-group">
                                 <span class="input-group-text">TL</span>
                                 <input type="number" step="0.01" class="form-control" disabled
@@ -85,7 +85,7 @@
                         </div>
                     </div>
                     <div class="mt-2">
-                        <small class="text-secondary">Hediye paketi ayarlarini Değiştirmek için genel ayarlar sayfasini kullanin.</small>
+                        <small class="text-secondary">Hediye paketi ayarlarını Değiştirmek için genel ayarlar sayfasını kullanın.</small>
                     </div>
                 </div>
             </div>
@@ -101,13 +101,13 @@
                             <div class="card card-sm">
                                 <div class="card-body">
                                     <div class="d-flex align-items-center mb-2">
-                                        <span class="badge bg-green-lt me-2">Hosgeldin</span>
+                                        <span class="badge bg-green-lt me-2">Hoşgeldin</span>
                                         <span class="badge @(Model.AutoWelcomeCouponEnabled ? "bg-success" : "bg-secondary")">
                                             @(Model.AutoWelcomeCouponEnabled ? "Aktif" : "Pasif")
                                         </span>
                                     </div>
                                     <p class="text-secondary mb-0">
-                                        Yeni uyeye otomatik kupon: <strong>%@(Model.AutoWelcomeCouponPercent ?? 0)</strong> indirim
+                                        Yeni üyeye otomatik kupon: <strong>%@(Model.AutoWelcomeCouponPercent ?? 0)</strong> indirim
                                     </p>
                                 </div>
                             </div>
@@ -150,7 +150,7 @@
                                     <div class="card-body text-center">
                                         <div class="text-secondary small">1. E-posta</div>
                                         <div class="h3 mb-0">@Model.AbandonedCartEmail1Hours saat</div>
-                                        <div class="text-secondary small">sonra gonderilir</div>
+                                        <div class="text-secondary small">sonra gönderilir</div>
                                     </div>
                                 </div>
                             </div>
@@ -159,7 +159,7 @@
                                     <div class="card-body text-center">
                                         <div class="text-secondary small">2. E-posta</div>
                                         <div class="h3 mb-0">@Model.AbandonedCartEmail2Hours saat</div>
-                                        <div class="text-secondary small">sonra gonderilir</div>
+                                        <div class="text-secondary small">sonra gönderilir</div>
                                     </div>
                                 </div>
                             </div>
@@ -184,6 +184,6 @@
         <div class="mt-3">
             <a href="/settings/storefront" class="btn btn-outline-secondary">
                 <i class="ti ti-arrow-left"></i>
-                Mağaza Ayarlarina Don
+                Mağaza Ayarlarına Dön
             </a>
         </div>

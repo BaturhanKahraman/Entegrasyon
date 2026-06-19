@@ -14,7 +14,7 @@
                             </div>
                             <div class="col">
                                 <div class="font-weight-medium">@Model.Count Toplam</div>
-                                <div class="text-secondary">degerlendirme</div>
+                                <div class="text-secondary">değerlendirme</div>
                             </div>
                         </div>
                     </div>
@@ -47,8 +47,8 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">@Model.Count(r => r.IsApproved) Onaylanmis</div>
-                                <div class="text-secondary">yayinda</div>
+                                <div class="font-weight-medium">@Model.Count(r => r.IsApproved) Onaylanmış</div>
+                                <div class="text-secondary">yayında</div>
                             </div>
                         </div>
                     </div>
@@ -82,7 +82,7 @@
             @if (Model.Count == 0)
             {
                 <div class="card-body text-center py-5">
-                    <p class="text-secondary">Henüz degerlendirme yok.</p>
+                    <p class="text-secondary">Henüz değerlendirme yok.</p>
                 </div>
             }
             else
@@ -96,7 +96,7 @@
                                 <th>Yorum</th>
                                 <th>Durum</th>
                                 <th>Tarih</th>
-                                <th class="w-1">Islem</th>
+                                <th class="w-1">İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -108,7 +108,7 @@
                                             <span class="text-secondary small">ID: @review.CustomerId</span>
                                             @if (review.IsVerifiedPurchase)
                                             {
-                                                <span class="badge bg-green-lt ms-1">Dogrulanmis</span>
+                                                <span class="badge bg-green-lt ms-1">Doğrulanmış</span>
                                             }
                                         </div>
                                     </td>
@@ -136,14 +136,14 @@
                                         @if (!string.IsNullOrEmpty(review.ReplyText))
                                         {
                                             <div class="mt-1 ps-2 border-start border-primary">
-                                                <small class="text-primary">Yanit: @review.ReplyText</small>
+                                                <small class="text-primary">Yanıt: @review.ReplyText</small>
                                             </div>
                                         }
                                     </td>
                                     <td>
                                         @if (review.IsApproved)
                                         {
-                                            <span class="badge bg-green-lt">Onaylanmis</span>
+                                            <span class="badge bg-green-lt">Onaylanmış</span>
                                         }
                                         else
                                         {
@@ -166,7 +166,7 @@
                                                 <button class="btn btn-ghost-danger btn-sm"
                                                         hx-post="/storefront/reviews/@review.Id/reject"
                                                         hx-swap="none"
-                                                        hx-confirm="Bu degerlendirmeyi reddetmek istediginize emin misiniz?"
+                                                        hx-confirm="Bu değerlendirmeyi reddetmek istediğinize emin misiniz?"
                                                         title="Reddet">
                                                     <i class="ti ti-x"></i>
                                                 </button>
@@ -175,7 +175,7 @@
                                             {
                                                 <button class="btn btn-ghost-primary btn-sm"
                                                         onclick="showReplyForm(@review.Id)"
-                                                        title="Yanitla">
+                                                        title="Yanıtla">
                                                     <i class="ti ti-message-reply"></i>
                                                 </button>
                                             }
@@ -190,10 +190,10 @@
                                                   hx-post="/storefront/reviews/@review.Id/reply"
                                                   hx-swap="none">
                                                 <input type="text" name="replyText" class="form-control"
-                                                       placeholder="Yanitinizi yazin..." required />
-                                                <button type="submit" class="btn btn-primary btn-sm">Gonder</button>
+                                                       placeholder="Yanıtınızı yazın..." required />
+                                                <button type="submit" class="btn btn-primary btn-sm">Gönder</button>
                                                 <button type="button" class="btn btn-ghost-secondary btn-sm"
-                                                        onclick="document.getElementById('reply-row-@review.Id').style.display='none'">Iptal</button>
+                                                        onclick="document.getElementById('reply-row-@review.Id').style.display='none'">İptal</button>
                                             </form>
                                         </td>
                                     </tr>
@@ -208,7 +208,7 @@
         <div class="mt-3">
             <a href="/settings/storefront" class="btn btn-outline-secondary">
                 <i class="ti ti-arrow-left"></i>
-                Mağaza Ayarlarina Don
+                Mağaza Ayarlarına Dön
             </a>
         </div>
 

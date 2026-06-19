@@ -1,7 +1,7 @@
 @model Entegrasyon.MVC.Features.GiftCards.ViewModels.GiftCardCreateVm
 
 <div class="d-flex justify-content-end mb-3">
-    <a href="/gift-cards" class="btn btn-outline-secondary">Geri Don</a>
+    <a href="/gift-cards" class="btn btn-outline-secondary">Geri Dön</a>
 </div>
 
         <div class="card">
@@ -33,16 +33,16 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Alici Adi</label>
+                            <label class="form-label">Alıcı Adı</label>
                             <input type="text"
                                    name="RecipientName"
                                    class="form-control"
                                    value="@Model?.RecipientName"
-                                   placeholder="Alicinin adi soyadı..."/>
+                                   placeholder="Alıcının adı soyadı..."/>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Alici E-Posta</label>
+                            <label class="form-label">Alıcı E-Posta</label>
                             <input type="email"
                                    name="RecipientEmail"
                                    class="form-control"
@@ -57,13 +57,13 @@
                             <textarea name="Message"
                                       class="form-control"
                                       rows="3"
-                                      placeholder="Hediye karti ile birlikte iletilecek mesaj...">@Model?.Message</textarea>
+                                      placeholder="Hediye kartı ile birlikte iletilecek mesaj...">@Model?.Message</textarea>
                         </div>
                     </div>
 
                     <div class="text-end">
-                        <a href="/gift-cards" class="btn btn-link me-2">Iptal</a>
-                        <button type="submit" class="btn btn-primary">Olustur</button>
+                        <a href="/gift-cards" class="btn btn-link me-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Oluştur</button>
                     </div>
                 </form>
             </div>

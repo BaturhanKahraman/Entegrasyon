@@ -7,7 +7,7 @@
 <div class="d-flex justify-content-end mb-3">
     <a href="/marketplace/sync/categories?mp=@Model.SelectedMarketPlaceId" class="btn btn-outline-secondary">
         <i class="ti ti-arrow-left"></i>
-        Tekli Esleme
+        Tekli Eşleme
     </a>
 </div>
 
@@ -37,7 +37,7 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        <span class="text-secondary">Eslenmemis Kategoriler:</span>
+                        <span class="text-secondary">Eşlenmemiş Kategoriler:</span>
                     </div>
                     <div class="col-auto">
                         <span class="badge bg-orange-lt fs-5">@unmappedCount</span>
@@ -54,7 +54,7 @@
                             <button type="button" class="btn btn-purple" id="auto-match-btn"
                                     onclick="requestAutoMatch()">
                                 <i class="ti ti-sparkles auto-match-icon"></i>
-                                <span class="auto-match-label">Otomatik Esle (AI)</span>
+                                <span class="auto-match-label">Otomatik Eşle (AI)</span>
                                 <span class="spinner-border spinner-border-sm d-none auto-match-spinner" role="status"></span>
                             </button>
                         </div>
@@ -62,9 +62,9 @@
                     else if (!Model.AutoMatchAvailable && unmappedCount > 0)
                     {
                         <div class="col-auto ms-auto">
-                            <span class="badge bg-secondary-lt" title="Ollama servisi erisilemez durumda">
+                            <span class="badge bg-secondary-lt" title="Ollama servisi erişilemez durumda">
                                 <i class="ti ti-sparkles-off"></i>
-                                AI Devre Disi
+                                AI Devre Dışı
                             </span>
                         </div>
                     }
@@ -97,7 +97,7 @@
         btn.disabled = loading;
         icon.classList.toggle('d-none', loading);
         spinner.classList.toggle('d-none', !loading);
-        label.textContent = loading ? 'AI analiz ediyor...' : 'Otomatik Esle (AI)';
+        label.textContent = loading ? 'AI analiz ediyor...' : 'Otomatik Eşle (AI)';
     }
 
     function requestAutoMatch() {
@@ -145,7 +145,7 @@
     function updateSuggestionCount() {
         var checked = document.querySelectorAll('.suggestion-checkbox:checked').length;
         var el = document.getElementById('suggestion-selected-count');
-        if (el) el.textContent = checked + ' oneri secildi';
+        if (el) el.textContent = checked + ' öneri seçildi';
     }
 
     function applySuggestions() {
@@ -164,7 +164,7 @@
         var applyBtn = document.getElementById('apply-suggestions-btn');
         if (applyBtn) {
             applyBtn.disabled = true;
-            applyBtn.querySelector('.apply-label').textContent = 'Uygulaniyor...';
+            applyBtn.querySelector('.apply-label').textContent = 'Uygulanıyor...';
             applyBtn.querySelector('.apply-spinner').classList.remove('d-none');
         }
 
@@ -182,7 +182,7 @@
         var applyBtn = document.getElementById('apply-suggestions-btn');
         if (applyBtn) {
             applyBtn.disabled = false;
-            applyBtn.querySelector('.apply-label').textContent = 'Secilenleri Uygula';
+            applyBtn.querySelector('.apply-label').textContent = 'Seçilenleri Uygula';
             applyBtn.querySelector('.apply-spinner').classList.add('d-none');
         }
     }

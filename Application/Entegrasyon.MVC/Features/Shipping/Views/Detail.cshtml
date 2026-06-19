@@ -17,14 +17,14 @@
 
     string StatusText(ShipmentStatus status) => status switch
     {
-        ShipmentStatus.Created          => "Olusturuldu",
-        ShipmentStatus.PickedUp         => "Teslim Alindi",
+        ShipmentStatus.Created          => "Oluşturuldu",
+        ShipmentStatus.PickedUp         => "Teslim Alındı",
         ShipmentStatus.InTransit        => "Yolda",
-        ShipmentStatus.OutForDelivery   => "Dagitimda",
+        ShipmentStatus.OutForDelivery   => "Dağıtımda",
         ShipmentStatus.Delivered        => "Teslim Edildi",
         ShipmentStatus.ReturnedToSender => "Göndericiye İade",
-        ShipmentStatus.Failed           => "başarısız",
-        ShipmentStatus.Cancelled        => "Iptal",
+        ShipmentStatus.Failed           => "Başarısız",
+        ShipmentStatus.Cancelled        => "İptal",
         _                               => status.ToString()
     };
 }
@@ -32,13 +32,13 @@
 <div class="d-flex justify-content-end mb-3">
     <a href="/shipping" class="btn btn-outline-secondary">
         <i class="ti ti-arrow-left icon"></i>
-        Listeye Don
+        Listeye Dön
     </a>
 </div>
 
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Takip Gecmisi</h3>
+                <h3 class="card-title">Takip Geçmişi</h3>
             </div>
             @if (Model.Count > 0)
             {
@@ -80,7 +80,7 @@
                     <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
-                                 Title = "Takip gecmisi bulunamadı",
+                                 Title = "Takip geçmişi bulunamadı",
                                  Subtitle = "Bu kargo için henüz takip kaydı yok."
                              }'/>
                 </div>

@@ -18,12 +18,12 @@
 
     string StatusText(string? status) => status switch
     {
-        "Created" => "Olusturuldu",
-        "Picking" => "Hazirlaniyor",
+        "Created" => "Oluşturuldu",
+        "Picking" => "Hazırlanıyor",
         "Invoiced" => "Fatura Kesildi",
         "Shipped" => "Kargoya Verildi",
         "Delivered" => "Teslim Edildi",
-        "Cancelled" => "Iptal",
+        "Cancelled" => "İptal",
         "UnDelivered" => "Teslim Edilemedi",
         "ReturnAccepted" => "İade Onaylandı",
         _ => status ?? "-"
@@ -36,14 +36,14 @@
         {
             <button class="btn btn-outline-danger"
                     hx-post="/orders/@Model.Id/mark-unsupplied"
-                    hx-confirm="Bu Siparişi tedarik edilemez olarak isaretlemek istediginize emin misiniz?"
+                    hx-confirm="Bu Siparişi tedarik edilemez olarak işaretlemek istediğinize emin misiniz?"
                     hx-swap="none">
                 <i class="ti ti-package-off icon"></i>
                 Tedarik Edilemez
             </button>
         }
         <a href="/orders" class="btn btn-outline-secondary">
-            Listeye Don
+            Listeye Dön
         </a>
     </div>
 </div>
@@ -87,7 +87,7 @@
                             @if (Model.IsFastDelivery)
                             {
                                 <div class="datagrid-item">
-                                    <div class="datagrid-title">Hizli Teslimat</div>
+                                    <div class="datagrid-title">Hızlı Teslimat</div>
                                     <div class="datagrid-content">
                                         <span class="badge bg-green-lt">Evet</span>
                                     </div>
@@ -175,7 +175,7 @@
                     <div class="card-body">
                         <div class="datagrid">
                             <div class="datagrid-item">
-                                <div class="datagrid-title">Kargo Firmasi</div>
+                                <div class="datagrid-title">Kargo Firması</div>
                                 <div class="datagrid-content">@(Model.CargoProviderName ?? "-")</div>
                             </div>
                             <div class="datagrid-item">
@@ -207,7 +207,7 @@
                 <!-- Price Summary -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h3 class="card-title">Tutar Ozeti</h3>
+                        <h3 class="card-title">Tutar Özeti</h3>
                     </div>
                     <div class="card-body">
                         <div class="datagrid">
@@ -221,14 +221,14 @@
                             @if (Model.ShippingCost.HasValue && Model.ShippingCost > 0)
                             {
                                 <div class="datagrid-item">
-                                    <div class="datagrid-title">Kargo Ucreti</div>
+                                    <div class="datagrid-title">Kargo Ücreti</div>
                                     <div class="datagrid-content">@Model.ShippingCost.Value.ToString("N2") TL</div>
                                 </div>
                             }
                             @if (Model.DiscountAmount.HasValue && Model.DiscountAmount > 0)
                             {
                                 <div class="datagrid-item">
-                                    <div class="datagrid-title">Indirim</div>
+                                    <div class="datagrid-title">İndirim</div>
                                     <div class="datagrid-content text-red">-@Model.DiscountAmount.Value.ToString("N2") TL</div>
                                 </div>
                             }
@@ -243,22 +243,22 @@
                 <!-- Status Update -->
                 <div class="card mt-3">
                     <div class="card-header">
-                        <h3 class="card-title">Durum Guncelle</h3>
+                        <h3 class="card-title">Durum Güncelle</h3>
                     </div>
                     <div class="card-body">
                         <form hx-post="/orders/@Model.Id/status"
                               hx-swap="none">
                             <div class="mb-3">
                                 <select class="form-select" name="newStatus">
-                                    <option value="Created">Olusturuldu</option>
-                                    <option value="Picking">Hazirlaniyor</option>
+                                    <option value="Created">Oluşturuldu</option>
+                                    <option value="Picking">Hazırlanıyor</option>
                                     <option value="Invoiced">Fatura Kesildi</option>
                                     <option value="Shipped">Kargoya Verildi</option>
                                     <option value="Delivered">Teslim Edildi</option>
-                                    <option value="Cancelled">Iptal</option>
+                                    <option value="Cancelled">İptal</option>
                                 </select>
                             </div>
-                            <button type="submit" class="btn btn-primary w-100">Durumu Guncelle</button>
+                            <button type="submit" class="btn btn-primary w-100">Durumu Güncelle</button>
                         </form>
                     </div>
                 </div>

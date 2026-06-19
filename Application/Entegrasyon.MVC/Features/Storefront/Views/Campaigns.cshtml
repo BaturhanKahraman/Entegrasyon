@@ -14,8 +14,8 @@
                     <div class="mb-3">
                         <i class="ti ti-speakerphone icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Henüz kampanya olusturulmamis</h3>
-                    <p class="text-secondary">Yeni bir e-posta kampanyasi olusturarak musterilerinize ulasin.</p>
+                    <h3 class="text-secondary">Henüz kampanya oluşturulmamış</h3>
+                    <p class="text-secondary">Yeni bir e-posta kampanyası oluşturarak müşterilerinize ulaşın.</p>
                 </div>
             }
             else
@@ -27,11 +27,11 @@
                                 <th>Konu</th>
                                 <th>Hedef Kitle</th>
                                 <th>Durum</th>
-                                <th>Alici</th>
-                                <th>Gonderilen</th>
-                                <th>Acilma</th>
-                                <th>Zamanlandi</th>
-                                <th>Islemler</th>
+                                <th>Alıcı</th>
+                                <th>Gönderilen</th>
+                                <th>Açılma</th>
+                                <th>Zamanlandı</th>
+                                <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -42,8 +42,8 @@
                                     <td>
                                         @(c.Target switch
                                         {
-                                            CampaignTarget.AllSubscribers => "Tum Aboneler",
-                                            CampaignTarget.AllCustomers => "Tum Müşteriler",
+                                            CampaignTarget.AllSubscribers => "Tüm Aboneler",
+                                            CampaignTarget.AllCustomers => "Tüm Müşteriler",
                                             CampaignTarget.ActiveCustomers => "Aktif Müşteriler",
                                             _ => c.Target.ToString()
                                         })
@@ -62,10 +62,10 @@
                                             var statusText = c.Status switch
                                             {
                                                 CampaignStatus.Draft => "Taslak",
-                                                CampaignStatus.Scheduled => "Zamanlandi",
-                                                CampaignStatus.Sending => "Gonderiliyor",
-                                                CampaignStatus.Sent => "Gonderildi",
-                                                CampaignStatus.Cancelled => "Iptal",
+                                                CampaignStatus.Scheduled => "Zamanlandı",
+                                                CampaignStatus.Sending => "Gönderiliyor",
+                                                CampaignStatus.Sent => "Gönderildi",
+                                                CampaignStatus.Cancelled => "İptal",
                                                 _ => c.Status.ToString()
                                             };
                                         }
@@ -101,12 +101,12 @@
                                                 <button class="btn btn-sm btn-outline-primary"
                                                         hx-post="/storefront/campaigns/@c.Id/schedule"
                                                         hx-vals='{"scheduleAt": "@DateTimeOffset.UtcNow.AddHours(1).ToString("o")"}'
-                                                        hx-confirm="Kampanya 1 saat sonra gonderilecek. Onayliyor musunuz?">
+                                                        hx-confirm="Kampanya 1 saat sonra gönderilecek. Onaylıyor musunuz?">
                                                     Zamanla
                                                 </button>
                                                 <button class="btn btn-sm btn-outline-danger"
                                                         hx-delete="/storefront/campaigns/@c.Id"
-                                                        hx-confirm="Kampanyayi silmek istediginizden emin misiniz?">
+                                                        hx-confirm="Kampanyayı silmek istediğinizden emin misiniz?">
                                                     Sil
                                                 </button>
                                             </div>
@@ -115,8 +115,8 @@
                                         {
                                             <button class="btn btn-sm btn-outline-warning"
                                                     hx-post="/storefront/campaigns/@c.Id/cancel"
-                                                    hx-confirm="Kampanyayi iptal etmek istediginizden emin misiniz?">
-                                                Iptal Et
+                                                    hx-confirm="Kampanyayı iptal etmek istediğinizden emin misiniz?">
+                                                İptal Et
                                             </button>
                                         }
                                     </td>
@@ -147,20 +147,20 @@
                     <div class="mb-3">
                         <label class="form-label required">Hedef Kitle</label>
                         <select name="Target" class="form-select">
-                            <option value="0">Tum Aboneler</option>
-                            <option value="1">Tum Müşteriler</option>
+                            <option value="0">Tüm Aboneler</option>
+                            <option value="1">Tüm Müşteriler</option>
                             <option value="2">Aktif Müşteriler</option>
                         </select>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label required">Icerik (HTML)</label>
+                        <label class="form-label required">İçerik (HTML)</label>
                         <textarea name="HtmlContent" class="form-control" rows="8" required
-                                  placeholder="E-posta icerigini HTML olarak girin..."></textarea>
+                                  placeholder="E-posta içeriğini HTML olarak girin..."></textarea>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
-                    <button type="submit" class="btn btn-primary">Olustur</button>
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgeç</button>
+                    <button type="submit" class="btn btn-primary">Oluştur</button>
                 </div>
             </form>
         </div>

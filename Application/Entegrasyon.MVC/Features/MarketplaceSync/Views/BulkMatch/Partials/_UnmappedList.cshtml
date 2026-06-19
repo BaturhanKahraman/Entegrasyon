@@ -2,7 +2,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Eslenmemis Kategoriler</h3>
+        <h3 class="card-title">Eşlenmemiş Kategoriler</h3>
         <div class="card-actions">
             <div class="input-icon">
                 <span class="input-icon-addon">
@@ -21,9 +21,9 @@
                 <div class="empty-icon">
                     <i class="ti ti-circle-check text-success" style="font-size:2.5rem;"></i>
                 </div>
-                <p class="empty-title">Tum kategoriler eslenmis</p>
+                <p class="empty-title">Tüm kategoriler eşlenmiş</p>
                 <p class="empty-subtitle text-secondary">
-                    Bu pazaryeri için eslenmemis kategori bulunmuyor.
+                    Bu pazaryeri için eşlenmemiş kategori bulunmuyor.
                 </p>
             </div>
         </div>
@@ -44,7 +44,7 @@
                             <th>Uygulama Kategorisi</th>
                             <th>Pazaryeri Kategori ID</th>
                             <th>Harici Kategori ID</th>
-                            <th>Pazaryeri Kategori Adi</th>
+                            <th>Pazaryeri Kategori Adı</th>
                         </tr>
                     </thead>
                     <tbody id="unmapped-category-list">
@@ -71,7 +71,7 @@
                                 </td>
                                 <td>
                                     <input type="text" class="form-control form-control-sm mapping-input"
-                                           name="marketPlaceCategoryNames" placeholder="Kategori adi (opsiyonel)" disabled />
+                                           name="marketPlaceCategoryNames" placeholder="Kategori adı (opsiyonel)" disabled />
                                 </td>
                             </tr>
                         }
@@ -80,10 +80,10 @@
             </div>
 
             <div class="card-footer d-flex align-items-center justify-content-between">
-                <span class="text-secondary" id="selected-count">0 kategori secildi</span>
+                <span class="text-secondary" id="selected-count">0 kategori seçildi</span>
                 <button type="submit" class="btn btn-primary">
                     <i class="ti ti-check"></i>
-                    Toplu Esle
+                    Toplu Eşle
                 </button>
             </div>
         </form>
@@ -112,7 +112,7 @@
     function updateSelectedCount() {
         var checked = document.querySelectorAll('.category-checkbox:checked').length;
         var el = document.getElementById('selected-count');
-        if (el) el.textContent = checked + ' kategori secildi';
+        if (el) el.textContent = checked + ' kategori seçildi';
     }
 
     function filterUnmappedList(query) {

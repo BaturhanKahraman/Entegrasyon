@@ -5,7 +5,7 @@
 <div class="d-flex justify-content-end mb-3">
     <a href="/marketplace/matching" class="btn btn-outline-secondary">
         <i class="ti ti-arrow-left"></i>
-        Listeye Don
+        Listeye Dön
     </a>
 </div>
 
@@ -93,7 +93,7 @@
                                 {
                                     <div class="alert alert-warning">
                                         <i class="ti ti-alert-triangle alert-icon"></i>
-                                        API kimlik bilgileri yapilandirilmamis. Senkronizasyon için marketplace ayarlarindan API anahtarlarini yapilandirin.
+                                        API kimlik bilgileri yapılandırılmamış. Senkronizasyon için marketplace ayarlarından API anahtarlarını yapılandırın.
                                     </div>
                                 }
 
@@ -134,7 +134,7 @@
                                             @if (!string.IsNullOrWhiteSpace(mp.ExternalProductId))
                                             {
                                                 <div class="datagrid-item">
-                                                    <div class="datagrid-title">Dis Ürün ID</div>
+                                                    <div class="datagrid-title">Dış Ürün ID</div>
                                                     <div class="datagrid-content"><code>@mp.ExternalProductId</code></div>
                                                 </div>
                                             }
@@ -171,16 +171,16 @@
                                             @if (mp.IsArchived.HasValue && mp.IsArchived.Value)
                                             {
                                                 <div class="datagrid-item">
-                                                    <div class="datagrid-title">Arsiv Durumu</div>
+                                                    <div class="datagrid-title">Arşiv Durumu</div>
                                                     <div class="datagrid-content">
-                                                        <span class="badge bg-secondary-lt">Arsivlenmis</span>
+                                                        <span class="badge bg-secondary-lt">Arşivlenmiş</span>
                                                     </div>
                                                 </div>
                                             }
                                             @if (!string.IsNullOrWhiteSpace(mp.StatusMessage))
                                             {
                                                 <div class="datagrid-item">
-                                                    <div class="datagrid-title">Durum Mesaji</div>
+                                                    <div class="datagrid-title">Durum Mesajı</div>
                                                     <div class="datagrid-content text-secondary">@mp.StatusMessage</div>
                                                 </div>
                                             }
@@ -194,7 +194,7 @@
                                                         hx-post="/marketplace/matching/@Model.Product.ProductId/sync?mp=@mp.MarketPlaceId"
                                                         hx-swap="none">
                                                     <i class="ti ti-refresh"></i>
-                                                    Simdi Senkronize Et
+                                                    Şimdi Senkronize Et
                                                 </button>
                                             </div>
                                         }
@@ -214,7 +214,7 @@
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
                                  Title = "Pazaryeri durumu bulunamadı",
-                                 Subtitle = "Bu ürün için pazaryeri senkronizasyon bilgisi mevcut degil."
+                                 Subtitle = "Bu ürün için pazaryeri senkronizasyon bilgisi mevcut değil."
                              }'/>
                 </div>
             </div>
@@ -223,7 +223,7 @@
         <!-- Activity Timeline -->
         <div class="card">
             <div class="card-header">
-                <h3 class="card-title">Aktivite Gecmisi</h3>
+                <h3 class="card-title">Aktivite Geçmişi</h3>
             </div>
             <div class="card-body">
                 @if (Model.ActivityTimeline.Count == 0)
@@ -234,7 +234,7 @@
                         </div>
                         <p class="empty-title">Henüz aktivite yok</p>
                         <p class="empty-subtitle text-secondary">
-                            Ürün senkronize edildiginde aktivite gecmisi burada gorunecektir.
+                            Ürün senkronize edildiğinde aktivite geçmişi burada görünecektir.
                         </p>
                     </div>
                 }
@@ -263,8 +263,8 @@
                                             @{
                                                 var statusBadge = entry.Status switch
                                                 {
-                                                    ProductActivityStatus.Success => ("bg-green-lt", "Basarili"),
-                                                    ProductActivityStatus.Warning => ("bg-warning-lt", "Uyari"),
+                                                    ProductActivityStatus.Success => ("bg-green-lt", "Başarılı"),
+                                                    ProductActivityStatus.Warning => ("bg-warning-lt", "Uyarı"),
                                                     ProductActivityStatus.Error => ("bg-danger-lt", "Hata"),
                                                     _ => ("bg-blue-lt", "Bilgi")
                                                 };

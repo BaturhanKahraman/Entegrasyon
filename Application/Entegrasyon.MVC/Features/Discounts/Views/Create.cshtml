@@ -1,7 +1,7 @@
 @model Entegrasyon.MVC.Features.Discounts.ViewModels.DiscountCreateVm
 
 <div class="d-flex justify-content-end mb-3">
-    <a href="/discounts" class="btn btn-outline-secondary">Geri Don</a>
+    <a href="/discounts" class="btn btn-outline-secondary">Geri Dön</a>
 </div>
 
         <div class="card">
@@ -14,7 +14,7 @@
                             <select name="DiscountType" id="discountType" class="form-select"
                                     onchange="toggleDiscountFields()">
                                 <option value="0" selected="@(Model.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.FixedAmount)">Sabit Tutar (TL)</option>
-                                <option value="1" selected="@(Model.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.Percentage)">Yuzde (%)</option>
+                                <option value="1" selected="@(Model.DiscountType == Entegrasyon.Entity.DiscountVouchers.DiscountType.Percentage)">Yüzde (%)</option>
                             </select>
                         </div>
 
@@ -40,7 +40,7 @@
                         </div>
 
                         <div class="col-md-6 mb-3" id="percentageField" style="display:none;">
-                            <label class="form-label required">Yuzde</label>
+                            <label class="form-label required">Yüzde</label>
                             <div class="input-group">
                                 <input type="number"
                                        name="Percentage"
@@ -64,12 +64,12 @@
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Son Kullanim Tarihi</label>
+                            <label class="form-label">Son Kullanım Tarihi</label>
                             <input type="date"
                                    name="ExpiringDate"
                                    class="form-control"
                                    value="@(Model?.ExpiringDate.HasValue == true ? Model.ExpiringDate.Value.ToString("yyyy-MM-dd") : "")"/>
-                            <div class="form-text">Bos birakilirsa kod suressiz olur.</div>
+                            <div class="form-text">Boş bırakılırsa kod süresiz olur.</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
@@ -79,24 +79,24 @@
                                    class="form-control"
                                    value="@Model?.CustomerId"
                                    placeholder="Belirli bir müşteri için..."/>
-                            <div class="form-text">Bos birakilirsa herkes kullanabilir.</div>
+                            <div class="form-text">Boş bırakılırsa herkes kullanabilir.</div>
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Kullanim Limiti</label>
+                            <label class="form-label">Kullanım Limiti</label>
                             <input type="number"
                                    name="MaxUsageCount"
                                    class="form-control"
                                    min="1"
                                    value="@Model?.MaxUsageCount"
-                                   placeholder="Sinirsiz"/>
-                            <div class="form-text">Bos birakilirsa sinirsiz kullanim.</div>
+                                   placeholder="Sınırsız"/>
+                            <div class="form-text">Boş bırakılırsa sınırsız kullanım.</div>
                         </div>
 
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Minimum Sepet Tutari</label>
+                            <label class="form-label">Minimum Sepet Tutarı</label>
                             <div class="input-group">
                                 <input type="number"
                                        name="MinimumCartAmount"
@@ -107,13 +107,13 @@
                                        placeholder="Yok"/>
                                 <span class="input-group-text">TL</span>
                             </div>
-                            <div class="form-text">Bos birakilirsa minimum tutar siniri yok.</div>
+                            <div class="form-text">Boş bırakılırsa minimum tutar sınırı yok.</div>
                         </div>
                     </div>
 
                     <div class="text-end">
-                        <a href="/discounts" class="btn btn-link me-2">Iptal</a>
-                        <button type="submit" class="btn btn-primary">Olustur</button>
+                        <a href="/discounts" class="btn btn-link me-2">İptal</a>
+                        <button type="submit" class="btn btn-primary">Oluştur</button>
                     </div>
                 </form>
             </div>

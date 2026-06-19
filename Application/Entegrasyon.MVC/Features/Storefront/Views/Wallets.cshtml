@@ -12,7 +12,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Toplam Cuzdan</div>
+                                <div class="font-weight-medium">Toplam Cüzdan</div>
                                 <div class="text-secondary">@Model.Wallets.Count</div>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Toplam Islem</div>
+                                <div class="font-weight-medium">Toplam İşlem</div>
                                 <div class="text-secondary">@Model.Wallets.Sum(w => w.TransactionCount)</div>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Aktif Cuzdan</div>
+                                <div class="font-weight-medium">Aktif Cüzdan</div>
                                 <div class="text-secondary">@Model.Wallets.Count(w => w.Balance > 0)</div>
                             </div>
                         </div>
@@ -79,16 +79,16 @@
                     <div class="mb-3">
                         <i class="ti ti-wallet icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Henüz cuzdan yok</h3>
-                    <p class="text-secondary">Müşterilerin cuzdanlari burada listelenecektir.</p>
+                    <h3 class="text-secondary">Henüz cüzdan yok</h3>
+                    <p class="text-secondary">Müşterilerin cüzdanları burada listelenecektir.</p>
                 </div>
             }
             else
             {
                 <div class="card-header">
-                    <h3 class="card-title">Müşteri Cuzdanlari</h3>
+                    <h3 class="card-title">Müşteri Cüzdanları</h3>
                     <div class="card-actions">
-                        <span class="badge bg-secondary-lt">@Model.Wallets.Count kayit</span>
+                        <span class="badge bg-secondary-lt">@Model.Wallets.Count kayıt</span>
                     </div>
                 </div>
                 <div class="table-responsive">
@@ -97,8 +97,8 @@
                             <tr>
                                 <th>Müşteri ID</th>
                                 <th class="text-end">Bakiye</th>
-                                <th class="text-center">Islem Sayısı</th>
-                                <th>Son Islem</th>
+                                <th class="text-center">İşlem Sayısı</th>
+                                <th>Son İşlem</th>
                                 <th></th>
                             </tr>
                         </thead>

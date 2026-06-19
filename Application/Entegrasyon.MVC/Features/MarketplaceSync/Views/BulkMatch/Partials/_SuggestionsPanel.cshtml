@@ -4,10 +4,10 @@
     <div class="card-header">
         <h3 class="card-title">
             <i class="ti ti-sparkles text-purple me-1"></i>
-            AI Esleme Onerileri
+            AI Eşleme Önerileri
         </h3>
         <div class="card-actions">
-            <span class="badge bg-purple-lt">@Model.Suggestions.Count oneri</span>
+            <span class="badge bg-purple-lt">@Model.Suggestions.Count öneri</span>
         </div>
     </div>
 
@@ -20,8 +20,8 @@
                                onchange="toggleSuggestionSelectAll(this)" />
                     </th>
                     <th>Uygulama Kategorisi</th>
-                    <th>Onerilen Pazaryeri Kategorisi</th>
-                    <th class="w-1">Guven</th>
+                    <th>Önerilen Pazaryeri Kategorisi</th>
+                    <th class="w-1">Güven</th>
                     <th>Açıklama</th>
                 </tr>
             </thead>
@@ -58,11 +58,11 @@
     </div>
 
     <div class="card-footer d-flex align-items-center justify-content-between">
-        <span class="text-secondary" id="suggestion-selected-count">@Model.Suggestions.Count oneri secildi</span>
+        <span class="text-secondary" id="suggestion-selected-count">@Model.Suggestions.Count öneri seçildi</span>
         <button type="button" class="btn btn-purple" id="apply-suggestions-btn"
                 onclick="applySuggestions()">
             <i class="ti ti-check"></i>
-            <span class="apply-label">Secilenleri Uygula</span>
+            <span class="apply-label">Seçilenleri Uygula</span>
             <span class="spinner-border spinner-border-sm d-none apply-spinner" role="status"></span>
         </button>
     </div>

@@ -13,7 +13,7 @@
                     @Html.AntiForgeryToken()
                     <div class="row">
                         <div class="col-md-4 mb-3">
-                            <label class="form-label required">Baslik</label>
+                            <label class="form-label required">Başlık</label>
                             <input type="text" name="Title" class="form-control" required />
                         </div>
                         <div class="col-md-4 mb-3">
@@ -27,7 +27,7 @@
                     </div>
                     <div class="row">
                         <div class="col-md-3 mb-3">
-                            <label class="form-label">Baglanti URL</label>
+                            <label class="form-label">Bağlantı URL</label>
                             <input type="url" name="LinkUrl" class="form-control" placeholder="https://..." />
                         </div>
                         <div class="col-md-2 mb-3">
@@ -40,7 +40,7 @@
                             </select>
                         </div>
                         <div class="col-md-1 mb-3">
-                            <label class="form-label">Sira</label>
+                            <label class="form-label">Sıra</label>
                             <input type="number" name="DisplayOrder" class="form-control" value="0" />
                         </div>
                         <div class="col-md-2 mb-3">
@@ -70,7 +70,7 @@
             @if (Model.Count == 0)
             {
                 <div class="card-body text-center py-5">
-                    <p class="text-secondary">Henüz banner eklenmemis.</p>
+                    <p class="text-secondary">Henüz banner eklenmemiş.</p>
                 </div>
             }
             else
@@ -79,9 +79,9 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th>Baslik</th>
+                                <th>Başlık</th>
                                 <th>Konum</th>
-                                <th>Sira</th>
+                                <th>Sıra</th>
                                 <th>Başlangıç</th>
                                 <th>Bitiş</th>
                                 <th>Durum</th>
@@ -124,7 +124,7 @@
                                         <div class="btn-list flex-nowrap">
                                             <button class="btn btn-ghost-danger btn-sm"
                                                     hx-delete="/settings/storefront/banners/@banner.Id"
-                                                    hx-confirm="Bu banneri silmek istediginize emin misiniz?"
+                                                    hx-confirm="Bu banneri silmek istediğinize emin misiniz?"
                                                     hx-swap="none">
                                                 <i class="ti ti-trash"></i>
                                             </button>
@@ -141,6 +141,6 @@
         <div class="mt-3">
             <a href="/settings/storefront" class="btn btn-outline-secondary">
                 <i class="ti ti-arrow-left"></i>
-                Mağaza Ayarlarina Don
+                Mağaza Ayarlarına Dön
             </a>
         </div>

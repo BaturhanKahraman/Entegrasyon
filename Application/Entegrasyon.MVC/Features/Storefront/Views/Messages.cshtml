@@ -6,7 +6,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(Model.ActiveTab == "contact" ? "active" : "")"
                            href="/storefront/messages?tab=contact">
-                            İletişim Mesajlari
+                            İletişim Mesajları
                             @if (Model.ContactMessages.Count(m => !m.IsRead) > 0)
                             {
                                 <span class="badge bg-red text-red-fg ms-1">@Model.ContactMessages.Count(m => !m.IsRead)</span>
@@ -16,7 +16,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(Model.ActiveTab == "qna" ? "active" : "")"
                            href="/storefront/messages?tab=qna">
-                            Ürün Sorulari
+                            Ürün Soruları
                             @if (Model.UnansweredQuestions.Count > 0)
                             {
                                 <span class="badge bg-secondary-lt ms-1">@Model.UnansweredQuestions.Count</span>
@@ -32,7 +32,7 @@
                 {
                     <div class="card-body text-center py-5">
                         <h3 class="text-secondary">Henüz mesaj yok</h3>
-                        <p class="text-secondary">Müşterilerden gelen İletişim mesajlari burada gorunecektir.</p>
+                        <p class="text-secondary">Müşterilerden gelen İletişim mesajları burada görünecektir.</p>
                     </div>
                 }
                 else
@@ -42,13 +42,13 @@
                             <thead>
                                 <tr>
                                     <th>Durum</th>
-                                    <th>Gonderen</th>
+                                    <th>Gönderen</th>
                                     <th>E-posta</th>
                                     <th>Telefon</th>
                                     <th>Konu</th>
                                     <th>Mesaj</th>
                                     <th>Tarih</th>
-                                    <th>Islem</th>
+                                    <th>İşlem</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -99,8 +99,8 @@
                 @if (Model.UnansweredQuestions.Count == 0)
                 {
                     <div class="card-body text-center py-5">
-                        <h3 class="text-secondary">Cevaplanmamis soru yok</h3>
-                        <p class="text-secondary">Tum ürün sorulari yanitlanmis durumda.</p>
+                        <h3 class="text-secondary">Cevaplanmamış soru yok</h3>
+                        <p class="text-secondary">Tüm ürün soruları yanıtlanmış durumda.</p>
                     </div>
                 }
                 else
@@ -127,8 +127,8 @@
                                         <form hx-post="/storefront/questions/@q.Id/answer" hx-swap="none"
                                               class="d-flex gap-2">
                                             <input type="text" name="answer" class="form-control form-control-sm"
-                                                   placeholder="Yanitiniz..." required style="min-width: 250px;" />
-                                            <button type="submit" class="btn btn-sm btn-primary">Yanitla</button>
+                                                   placeholder="Yanıtınız..." required style="min-width: 250px;" />
+                                            <button type="submit" class="btn btn-sm btn-primary">Yanıtla</button>
                                         </form>
                                     </div>
                                 </div>

@@ -41,7 +41,7 @@
             {
                 <div class="card-body text-center py-5">
                     <h3 class="text-secondary">Henüz abone yok</h3>
-                    <p class="text-secondary">Müşteriler bulteninize abone olduklarinda burada gorunecektir.</p>
+                    <p class="text-secondary">Müşteriler bülteninize abone olduklarında burada görünecektir.</p>
                 </div>
             }
             else
@@ -56,8 +56,8 @@
                                 <th>E-posta</th>
                                 <th>Ad</th>
                                 <th>Durum</th>
-                                <th>Kayit Tarihi</th>
-                                <th>Islem</th>
+                                <th>Kayıt Tarihi</th>
+                                <th>İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,8 +84,8 @@
                                                     hx-post="/storefront/newsletter/unsubscribe"
                                                     hx-vals='{"email": "@sub.Email"}'
                                                     hx-swap="none"
-                                                    hx-confirm="Bu aboneyi kaldirmak istediginizden emin misiniz?">
-                                                Abonelikten Cikar
+                                                    hx-confirm="Bu aboneyi kaldırmak istediğinizden emin misiniz?">
+                                                Abonelikten Çıkar
                                             </button>
                                         }
                                     </td>
@@ -115,11 +115,11 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Ad Soyad</label>
-                        <input type="text" name="name" class="form-control" placeholder="Ad Soyad (istege bagli)" />
+                        <input type="text" name="name" class="form-control" placeholder="Ad Soyad (isteğe bağlı)" />
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgec</button>
+                    <button type="button" class="btn me-auto" data-bs-dismiss="modal">Vazgeç</button>
                     <button type="submit" class="btn btn-primary">Ekle</button>
                 </div>
             </form>

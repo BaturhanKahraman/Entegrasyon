@@ -41,17 +41,17 @@
                     <form method="post" action="/marketplace/matching/sync-all?mp=@ViewBag.SelectedMarketPlaceId">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-primary">
-                            Tumu Senkronize Et
+                            Tümü Senkronize Et
                         </button>
                     </form>
                     <form method="post" action="/marketplace/matching/retry-all?mp=@ViewBag.SelectedMarketPlaceId">
                         @Html.AntiForgeryToken()
                         <button type="submit" class="btn btn-warning">
-                            Hatalılari Yeniden Dene
+                            Hatalıları Yeniden Dene
                         </button>
                     </form>
                     <a href="/marketplace/matching?mp=@ViewBag.SelectedMarketPlaceId" class="btn btn-outline-secondary">
-                        Detayli Listeye Git
+                        Detaylı Listeye Git
                     </a>
                 </div>
             </div>

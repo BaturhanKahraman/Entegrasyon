@@ -29,7 +29,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Gonderilen</div>
+                                <div class="font-weight-medium">Gönderilen</div>
                                 <div class="text-secondary">@Model.SentNotifications.Count</div>
                             </div>
                         </div>
@@ -46,7 +46,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Ortalama Erisim</div>
+                                <div class="font-weight-medium">Ortalama Erişim</div>
                                 <div class="text-secondary">
                                     @(Model.SentNotifications.Count > 0
                                         ? ((int)Model.SentNotifications.Average(n => n.Reached)).ToString()
@@ -67,7 +67,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Tiklama Oranı</div>
+                                <div class="font-weight-medium">Tıklama Oranı</div>
                                 <div class="text-secondary">8.4%</div>
                             </div>
                         </div>
@@ -80,17 +80,17 @@
             <div class="col-lg-4">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Bildirim Gonder</h3>
+                        <h3 class="card-title">Bildirim Gönder</h3>
                     </div>
                     <div class="card-body">
                         <form id="push-form">
                             <div class="mb-3">
-                                <label class="form-label required">Baslik</label>
-                                <input type="text" name="title" class="form-control" placeholder="Bildirim basligi..." required maxlength="100" />
+                                <label class="form-label required">Başlık</label>
+                                <input type="text" name="title" class="form-control" placeholder="Bildirim başlığı..." required maxlength="100" />
                             </div>
                             <div class="mb-3">
                                 <label class="form-label required">Mesaj</label>
-                                <textarea name="body" class="form-control" rows="3" placeholder="Bildirim icerik..." required maxlength="300"></textarea>
+                                <textarea name="body" class="form-control" rows="3" placeholder="Bildirim içeriği..." required maxlength="300"></textarea>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">URL (Opsiyonel)</label>
@@ -106,7 +106,7 @@
                                 hx-include="#push-form"
                                 hx-swap="innerHTML">
                             <i class="ti ti-send me-1"></i>
-                            Tum Abonelere Gonder (@Model.SubscriberCount kisi)
+                            Tüm Abonelere Gönder (@Model.SubscriberCount kişi)
                         </button>
                     </div>
                 </div>
@@ -115,7 +115,7 @@
             <div class="col-lg-8">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Gonderilen Bildirimler</h3>
+                        <h3 class="card-title">Gönderilen Bildirimler</h3>
                     </div>
                     @if (Model.SentNotifications.Count == 0)
                     {
@@ -123,7 +123,7 @@
                             <div class="mb-2">
                                 <i class="ti ti-send icon-lg text-secondary" style="font-size: 2rem;"></i>
                             </div>
-                            <div class="text-secondary">Henüz bildirim gonderilmedi.</div>
+                            <div class="text-secondary">Henüz bildirim gönderilmedi.</div>
                         </div>
                     }
                     else
@@ -133,9 +133,9 @@
                                 <thead>
                                     <tr>
                                         <th>Tarih</th>
-                                        <th>Baslik</th>
+                                        <th>Başlık</th>
                                         <th>Mesaj</th>
-                                        <th class="text-center">Erisim</th>
+                                        <th class="text-center">Erişim</th>
                                     </tr>
                                 </thead>
                                 <tbody>

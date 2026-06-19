@@ -1,10 +1,10 @@
 @model Entegrasyon.AdminPanel.Features.Logs.LogListViewModel
 @{
-    ViewData["Title"] = "Uygulama Loglari";
+    ViewData["Title"] = "Uygulama Logları";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Uygulama Loglari</h2>
+    <h2>Uygulama Logları</h2>
     <span class="badge bg-secondary fs-6">Toplam: @Model.TotalCount</span>
 </div>
 
@@ -14,7 +14,7 @@
             <div class="col-md-3">
                 <label class="form-label">Firma</label>
                 <select name="tenantId" class="form-select">
-                    <option value="">Tum Firmalar</option>
+                    <option value="">Tüm Firmalar</option>
                     @foreach (var tenant in Model.Tenants)
                     {
                         <option value="@tenant.Id" selected="@(Model.Filter.TenantId == tenant.Id)">@tenant.CompanyName</option>
@@ -24,7 +24,7 @@
             <div class="col-md-2">
                 <label class="form-label">Seviye</label>
                 <select name="level" class="form-select">
-                    <option value="">Tumu</option>
+                    <option value="">Tümü</option>
                     <option value="Information" selected="@(Model.Filter.Level == "Information")">Information</option>
                     <option value="Warning" selected="@(Model.Filter.Level == "Warning")">Warning</option>
                     <option value="Error" selected="@(Model.Filter.Level == "Error")">Error</option>
@@ -58,7 +58,7 @@
                         <th>Seviye</th>
                         <th>Kaynak</th>
                         <th>Mesaj</th>
-                        <th>Kullanici</th>
+                        <th>Kullanıcı</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -97,7 +97,7 @@
                 <a class="page-link" asp-controller="Logs" asp-action="Index"
                    asp-route-tenantId="@Model.Filter.TenantId" asp-route-level="@Model.Filter.Level"
                    asp-route-from="@Model.Filter.From?.ToString("yyyy-MM-ddTHH:mm")" asp-route-to="@Model.Filter.To?.ToString("yyyy-MM-ddTHH:mm")"
-                   asp-route-page="@(Model.CurrentPage - 1)">Onceki</a>
+                   asp-route-page="@(Model.CurrentPage - 1)">Önceki</a>
             </li>
             @for (var i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
             {

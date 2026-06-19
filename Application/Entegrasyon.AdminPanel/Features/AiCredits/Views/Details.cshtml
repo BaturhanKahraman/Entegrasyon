@@ -7,7 +7,7 @@
     <h2>@Model.CompanyName - AI Kredileri</h2>
     <div>
         <a asp-controller="AiCredits" asp-action="AddCredits" asp-route-tenantId="@Model.TenantId" class="btn btn-success me-2">Kredi Ekle</a>
-        <a asp-controller="AiCredits" asp-action="Index" class="btn btn-outline-secondary">Listeye Don</a>
+        <a asp-controller="AiCredits" asp-action="Index" class="btn btn-outline-secondary">Listeye Dön</a>
     </div>
 </div>
 
@@ -23,7 +23,7 @@
     <div class="col-md-6">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
-                <h6 class="text-muted mb-2">Resim Olusturma Kredisi</h6>
+                <h6 class="text-muted mb-2">Resim Oluşturma Kredisi</h6>
                 <h1 class="display-4 fw-bold text-primary">@Model.ImageGenerationCredits</h1>
             </div>
         </div>
@@ -31,7 +31,7 @@
     <div class="col-md-6">
         <div class="card border-0 shadow-sm">
             <div class="card-body text-center">
-                <h6 class="text-muted mb-2">Urun Aciklamasi Kredisi</h6>
+                <h6 class="text-muted mb-2">Ürün Açıklaması Kredisi</h6>
                 <h1 class="display-4 fw-bold text-info">@Model.ProductDescriptionCredits</h1>
             </div>
         </div>
@@ -40,7 +40,7 @@
 
 <div class="card border-0 shadow-sm">
     <div class="card-header bg-white border-bottom">
-        <h5 class="card-title mb-0">Islem Gecmisi</h5>
+        <h5 class="card-title mb-0">İşlem Geçmişi</h5>
     </div>
     <div class="card-body p-0">
         <div class="table-responsive">
@@ -50,7 +50,7 @@
                         <th>Tarih</th>
                         <th>Kredi Tipi</th>
                         <th class="text-center">Miktar</th>
-                        <th>Aciklama</th>
+                        <th>Açıklama</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -75,7 +75,7 @@
                     @if (!Model.Transactions.Any())
                     {
                         <tr>
-                            <td colspan="4" class="text-center text-muted py-4">Henuz islem bulunmuyor.</td>
+                            <td colspan="4" class="text-center text-muted py-4">Henüz işlem bulunmuyor.</td>
                         </tr>
                     }
                 </tbody>

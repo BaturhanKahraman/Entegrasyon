@@ -16,12 +16,12 @@
 <div class="row g-3 mb-4">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header fw-bold">Ozellik Bilgileri</div>
+            <div class="card-header fw-bold">Özellik Bilgileri</div>
             <div class="card-body">
                 <dl class="row mb-0">
                     <dt class="col-sm-4">Anahtar</dt>
                     <dd class="col-sm-8"><code>@Model.Key</code></dd>
-                    <dt class="col-sm-4">Gorunen Ad</dt>
+                    <dt class="col-sm-4">Görünen Ad</dt>
                     <dd class="col-sm-8">@Model.HumanizedName</dd>
                     <dt class="col-sm-4">Durum</dt>
                     <dd class="col-sm-8">
@@ -75,14 +75,14 @@
 
 <div class="card mb-4">
     <div class="card-header fw-bold">
-        <i class="bi bi-collection me-1"></i> Degerler
+        <i class="bi bi-collection me-1"></i> Değerler
         <span class="badge bg-secondary ms-1">@Model.Values.Count</span>
     </div>
     <div class="card-body p-0">
         @if (Model.Values.Count == 0)
         {
             <div class="text-center text-muted py-4">
-                Bu ozellik icin tanimlanmis deger bulunamadı.
+                Bu özellik için tanımlanmış değer bulunamadı.
             </div>
         }
         else
@@ -91,7 +91,7 @@
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th>Deger Adi</th>
+                            <th>Değer Adı</th>
                             <th>Durum</th>
                             <th>Marketplace Eşleşmeleri</th>
                         </tr>
@@ -140,7 +140,7 @@
 {
     <div class="card mb-4">
         <div class="card-header fw-bold">
-            <i class="bi bi-diagram-3 me-1"></i> Bagli Kategoriler
+            <i class="bi bi-diagram-3 me-1"></i> Bağlı Kategoriler
             <span class="badge bg-info ms-1">@Model.LinkedCategories.Count</span>
         </div>
         <div class="card-body p-0">

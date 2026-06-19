@@ -1,8 +1,8 @@
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CommissionRatesVm
 @{
-    ViewData.SetPageTitle("Komisyon Oranlari");
+    ViewData.SetPageTitle("Komisyon Oranları");
     ViewData.SetActiveNav("commission-rates");
-    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Komisyon Oranlari", null));
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Komisyon Oranları", null));
 }
 
 
@@ -40,7 +40,7 @@
 
                     <div class="col-md-2">
                         <label class="form-label">Kategori ID (opsiyonel)</label>
-                        <input type="number" class="form-control" name="CategoryId" placeholder="Bos = varsayilan" />
+                        <input type="number" class="form-control" name="CategoryId" placeholder="Boş = varsayılan" />
                     </div>
                     <div class="col-md-2">
                         <label class="form-label">Komisyon %</label>
@@ -51,7 +51,7 @@
                         <input type="number" class="form-control" name="ServiceFeePercent" step="0.01" min="0" max="100" />
                     </div>
                     <div class="col-md-2">
-                        <label class="form-label">Islem Ucreti (TL)</label>
+                        <label class="form-label">İşlem Ücreti (TL)</label>
                         <input type="number" class="form-control" name="TransactionFeeFixed" step="0.01" min="0" />
                     </div>
                     <div class="col-md-2">
@@ -61,7 +61,7 @@
                     <div class="col-md-1">
                         <div class="form-check mt-2">
                             <input type="checkbox" class="form-check-input" name="IsDefault" value="true" id="isDefaultCheck" />
-                            <label class="form-check-label" for="isDefaultCheck">Varsayilan</label>
+                            <label class="form-check-label" for="isDefaultCheck">Varsayılan</label>
                         </div>
                     </div>
                     <div class="col-md-1">

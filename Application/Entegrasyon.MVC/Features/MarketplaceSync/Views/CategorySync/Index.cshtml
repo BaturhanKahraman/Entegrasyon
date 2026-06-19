@@ -1,8 +1,8 @@
 @model Entegrasyon.MVC.Features.MarketplaceSync.ViewModels.CategorySyncVm
 @{
-    ViewData.SetPageTitle("Kategori Eslemesi");
+    ViewData.SetPageTitle("Kategori Eşlemesi");
     ViewData.SetActiveNav("marketplace-sync");
-    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Kategori Eslemesi", null));
+    ViewData.SetBreadcrumb(("Pazaryeri Senkronizasyonu", "/marketplace/sync"), ("Kategori Eşlemesi", null));
 
     var mapped = Model.Summary.MappedCategories;
     var total = Model.Summary.TotalCategories;
@@ -15,10 +15,10 @@
                 <div class="d-flex align-items-center">
                     <i class="ti ti-info-circle icon me-2"></i>
                     <div class="flex-fill">
-                        Eşleştirmeyi tamamladiginizda otomatik olarak geri yonlendirileceksiniz.
+                        Eşleştirmeyi tamamladığınızda otomatik olarak geri yönlendirileceksiniz.
                     </div>
                     <a href="@Model.ReturnUrl" class="btn btn-sm btn-outline-primary ms-2">
-                        <i class="ti ti-arrow-left me-1"></i>Geri Don
+                        <i class="ti ti-arrow-left me-1"></i>Geri Dön
                     </a>
                 </div>
             </div>
@@ -50,7 +50,7 @@
             <div class="card-body">
                 <div class="row align-items-center">
                     <div class="col-auto">
-                        <span class="text-secondary">Esleme Durumu:</span>
+                        <span class="text-secondary">Eşleme Durumu:</span>
                     </div>
                     <div class="col">
                         <div class="progress" style="height: 8px;">
@@ -58,11 +58,11 @@
                         </div>
                     </div>
                     <div class="col-auto">
-                        <strong>@mapped / @total</strong> kategori eslendi
+                        <strong>@mapped / @total</strong> kategori eşlendi
                     </div>
                     <div class="col-auto">
-                        <span class="badge bg-success-lt">@mapped eslendi</span>
-                        <span class="badge bg-secondary-lt">@(Model.Summary.UnmappedCategories) eslenmedi</span>
+                        <span class="badge bg-success-lt">@mapped eşlendi</span>
+                        <span class="badge bg-secondary-lt">@(Model.Summary.UnmappedCategories) eşlenmedi</span>
                     </div>
                 </div>
             </div>

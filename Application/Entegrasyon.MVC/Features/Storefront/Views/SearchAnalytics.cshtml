@@ -29,7 +29,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Sonucsuz Arama</div>
+                                <div class="font-weight-medium">Sonuçsuz Arama</div>
                                 <div class="text-secondary">312</div>
                             </div>
                         </div>
@@ -63,7 +63,7 @@
                                 </span>
                             </div>
                             <div class="col">
-                                <div class="font-weight-medium">Arama Donusumu</div>
+                                <div class="font-weight-medium">Arama Dönüşümü</div>
                                 <div class="text-secondary">18%</div>
                             </div>
                         </div>
@@ -76,11 +76,11 @@
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Populer Arama Terimleri</h3>
+                        <h3 class="card-title">Popüler Arama Terimleri</h3>
                         @if (Model != null && Model.Count > 0)
                         {
                             <div class="card-actions">
-                                <span class="badge bg-secondary-lt">Canli Veri</span>
+                                <span class="badge bg-secondary-lt">Canlı Veri</span>
                             </div>
                         }
                     </div>
@@ -141,7 +141,7 @@
             <div class="col-lg-6">
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Sonucsuz Aramalar</h3>
+                        <h3 class="card-title">Sonuçsuz Aramalar</h3>
                         <div class="card-actions">
                             <span class="badge bg-red text-red-fg">Dikkat Gerektiriyor</span>
                         </div>
@@ -152,7 +152,7 @@
                                 <tr>
                                     <th>Arama Terimi</th>
                                     <th class="text-center">Arama Sayısı</th>
-                                    <th class="text-end">Oneri</th>
+                                    <th class="text-end">Öneri</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -160,12 +160,12 @@
                                     var noResults = new[]
                                     {
                                         new { Term = "trencokot bej", Count = 47, Action = "Ürün Ekle" },
-                                        new { Term = "bikini mayo", Count = 38, Action = "Kategori Ac" },
+                                        new { Term = "bikini mayo", Count = 38, Action = "Kategori Aç" },
                                         new { Term = "bere orgu kalin", Count = 31, Action = "Ürün Ekle" },
-                                        new { Term = "cocuk elbise 6-7 yas", Count = 27, Action = "Kategori Ac" },
+                                        new { Term = "cocuk elbise 6-7 yas", Count = 27, Action = "Kategori Aç" },
                                         new { Term = "yagmurluk transparan", Count = 22, Action = "Ürün Ekle" },
                                         new { Term = "gelin kiyafeti", Count = 19, Action = "Ürün Ekle" },
-                                        new { Term = "hamile pantolon", Count = 15, Action = "Kategori Ac" },
+                                        new { Term = "hamile pantolon", Count = 15, Action = "Kategori Aç" },
                                         new { Term = "pijama takim kadife", Count = 12, Action = "Ürün Ekle" },
                                     };
                                 }

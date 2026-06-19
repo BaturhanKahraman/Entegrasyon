@@ -5,9 +5,9 @@
 @{
     string ConflictTypeLabel(ConflictType type) => type switch
     {
-        ConflictType.NameMatch => "Isim Eşleşmesi",
-        ConflictType.ExternalIdMatch => "Dis ID Eşleşmesi",
-        ConflictType.Both => "Isim + Dis ID Eşleşmesi",
+        ConflictType.NameMatch => "İsim Eşleşmesi",
+        ConflictType.ExternalIdMatch => "Dış ID Eşleşmesi",
+        ConflictType.Both => "İsim + Dış ID Eşleşmesi",
         _ => type.ToString()
     };
 }
@@ -17,14 +17,14 @@
     {
         <h5 class="modal-title">
             <i class="ti ti-alert-triangle text-warning me-1"></i>
-            Cakisma Tespit Edildi (@Model.Conflicts.Count)
+            Çakışma Tespit Edildi (@Model.Conflicts.Count)
         </h5>
     }
     else
     {
         <h5 class="modal-title">
             <i class="ti ti-circle-check text-success me-1"></i>
-            Cakisma Yok
+            Çakışma Yok
         </h5>
     }
     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
@@ -37,8 +37,8 @@
         <div class="modal-body">
             <div class="alert alert-warning mb-3">
                 <p class="mb-0">
-                    Sisteminizde bu paketle eslesen varliklar bulundu.
-                    Her cakisma için bir strateji seçin:
+                    Sisteminizde bu paketle eşleşen varlıklar bulundu.
+                    Her çakışma için bir strateji seçin:
                 </p>
             </div>
 
@@ -46,10 +46,10 @@
                 <table class="table table-vcenter table-hover table-sm card-table">
                     <thead>
                         <tr>
-                            <th>Tur</th>
+                            <th>Tür</th>
                             <th>Paketteki</th>
                             <th>Sistemdeki</th>
-                            <th>Cakisma</th>
+                            <th>Çakışma</th>
                             <th>Strateji</th>
                         </tr>
                     </thead>
@@ -84,10 +84,10 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+            <button type="button" class="btn me-auto" data-bs-dismiss="modal">İptal</button>
             <button type="submit" class="btn btn-warning">
                 <i class="ti ti-download"></i>
-                Cakismalari Cozumle ve Aktar
+                Çakışmaları Çözümle ve Aktar
             </button>
         </div>
     </form>
@@ -97,12 +97,12 @@ else
     <div class="modal-body">
         <div class="alert alert-success mb-0">
             <p class="mb-0">
-                Bu paket mevcut verilerinizle cakismiyor. Guvenle import edebilirsiniz.
+                Bu paket mevcut verilerinizle çakışmıyor. Güvenle import edebilirsiniz.
             </p>
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn me-auto" data-bs-dismiss="modal">Iptal</button>
+        <button type="button" class="btn me-auto" data-bs-dismiss="modal">İptal</button>
         <button class="btn btn-primary"
                 hx-post="/matched-entities/@Model.PackageId/import"
                 hx-swap="none">

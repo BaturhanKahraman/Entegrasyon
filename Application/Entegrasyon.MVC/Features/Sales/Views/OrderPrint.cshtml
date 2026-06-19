@@ -5,12 +5,12 @@
 
     string StatusText(string? status) => status switch
     {
-        "Created" => "Olusturuldu",
-        "Picking" => "Hazirlaniyor",
+        "Created" => "Oluşturuldu",
+        "Picking" => "Hazırlanıyor",
         "Invoiced" => "Fatura Kesildi",
         "Shipped" => "Kargoya Verildi",
         "Delivered" => "Teslim Edildi",
-        "Cancelled" => "Iptal",
+        "Cancelled" => "İptal",
         "UnDelivered" => "Teslim Edilemedi",
         "ReturnAccepted" => "İade Onaylandı",
         _ => status ?? "-"
@@ -197,7 +197,7 @@
     <div class="print-header">
         <div>
             <div class="company-name">Entegrasyon</div>
-            <div class="company-sub">Sipariş / Fatura Dokümani</div>
+            <div class="company-sub">Sipariş / Fatura Dokümanı</div>
         </div>
         <div class="order-title">
             <h2>Sipariş #@title</h2>
@@ -299,14 +299,14 @@
                 @if (Model.ShippingCost.HasValue && Model.ShippingCost > 0)
                 {
                     <tr>
-                        <td>Kargo Ucreti</td>
+                        <td>Kargo Ücreti</td>
                         <td class="text-right">@Model.ShippingCost.Value.ToString("N2") TL</td>
                     </tr>
                 }
                 @if (Model.DiscountAmount.HasValue && Model.DiscountAmount > 0)
                 {
                     <tr>
-                        <td>Indirim</td>
+                        <td>İndirim</td>
                         <td class="text-right">-@Model.DiscountAmount.Value.ToString("N2") TL</td>
                     </tr>
                 }
@@ -334,7 +334,7 @@
                 @if (!string.IsNullOrWhiteSpace(Model.CargoProviderName))
                 {
                     <div>
-                        <div class="info-item-label">Kargo Firmasi</div>
+                        <div class="info-item-label">Kargo Firması</div>
                         <div class="info-item-value">@Model.CargoProviderName</div>
                     </div>
                 }
@@ -359,7 +359,7 @@
     }
 
     <div class="print-footer">
-        Bu belge @DateTime.Now.ToString("dd.MM.yyyy HH:mm") tarihinde otomatik olarak olusturulmustur.
+        Bu belge @DateTime.Now.ToString("dd.MM.yyyy HH:mm") tarihinde otomatik olarak oluşturulmuştur.
     </div>
 
     <script>

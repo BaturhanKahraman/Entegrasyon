@@ -4,7 +4,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Indirim Uygula &mdash; @Model.ProductTitle</h5>
+                <h5 class="modal-title">İndirim Uygula &mdash; @Model.ProductTitle</h5>
                 <button type="button" class="btn-close" onclick="closeDiscountModal()"></button>
             </div>
             <form method="post" action="/products/@Model.ProductId/discount">
@@ -12,7 +12,7 @@
                 <div class="modal-body">
                     <!-- Discount Percentage -->
                     <div class="mb-3">
-                        <label class="form-label required">Indirim Oranı (%)</label>
+                        <label class="form-label required">İndirim Oranı (%)</label>
                         <input type="number" name="discountPercentage" id="discountPercentage"
                                class="form-control" value="10" min="0.01" max="100" step="0.01" required />
                     </div>
@@ -71,8 +71,8 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-ghost-secondary"
-                            onclick="closeDiscountModal()">Vazgec</button>
-                    <button type="submit" class="btn btn-warning">Indirimi Uygula</button>
+                            onclick="closeDiscountModal()">Vazgeç</button>
+                    <button type="submit" class="btn btn-warning">İndirimi Uygula</button>
                 </div>
             </form>
         </div>

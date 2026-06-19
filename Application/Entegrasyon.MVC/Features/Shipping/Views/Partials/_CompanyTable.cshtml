@@ -7,10 +7,10 @@
             <table class="table table-vcenter card-table table-hover">
                 <thead>
                     <tr>
-                        <th>Firma Adi</th>
+                        <th>Firma Adı</th>
                         <th>Kod</th>
-                        <th>Vergi Numarasi</th>
-                        <th>Olusturma Tarihi</th>
+                        <th>Vergi Numarası</th>
+                        <th>Oluşturma Tarihi</th>
                         <th class="w-1"></th>
                     </tr>
                 </thead>
@@ -27,7 +27,7 @@
                                         hx-post="/shipping/companies/@company.Id/delete"
                                         hx-target="closest tr"
                                         hx-swap="outerHTML swap:300ms"
-                                        hx-confirm="Bu kargo firmasini silmek istediginize emin misiniz?">
+                                        hx-confirm="Bu kargo firmasını silmek istediğinize emin misiniz?">
                                     Sil
                                 </button>
                             </td>
@@ -43,8 +43,8 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Kargo firmasi bulunamadı",
-                         Subtitle = "Henüz kargo firmasi eklenmemis veya arama kriterinize uygun firma yok."
+                         Title = "Kargo firması bulunamadı",
+                         Subtitle = "Henüz kargo firması eklenmemiş veya arama kriterinize uygun firma yok."
                      }'/>
         </div>
     }

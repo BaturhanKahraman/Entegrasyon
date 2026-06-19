@@ -5,10 +5,10 @@
                 <partial name="~/Features/Settings/Views/_SettingsNav.cshtml"/>
             </div>
             <div class="col-md-9">
-                <!-- KDV Oranlari Tablosu -->
+                <!-- KDV Oranları Tablosu -->
                 <div class="card mb-3">
                     <div class="card-header d-flex align-items-center justify-content-between">
-                        <h3 class="card-title">KDV Oranlari</h3>
+                        <h3 class="card-title">KDV Oranları</h3>
                         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addTaxModal">
                             <i class="ti ti-plus me-1"></i>Oran Ekle
                         </button>
@@ -20,7 +20,7 @@
                                     <th>Oran (%)</th>
                                     <th>Ad</th>
                                     <th>Açıklama</th>
-                                    <th>Varsayilan</th>
+                                    <th>Varsayılan</th>
                                     <th class="w-1"></th>
                                 </tr>
                             </thead>
@@ -34,13 +34,13 @@
                                         <td>
                                             @if (rate.IsDefault)
                                             {
-                                                <span class="badge bg-blue-lt">Varsayilan</span>
+                                                <span class="badge bg-blue-lt">Varsayılan</span>
                                             }
                                             else
                                             {
                                                 <form method="post" action="/settings/tax/@rate.Id/set-default" class="d-inline">
                                                     @Html.AntiForgeryToken()
-                                                    <button type="submit" class="btn btn-ghost-secondary btn-sm" title="Varsayilan yap">
+                                                    <button type="submit" class="btn btn-ghost-secondary btn-sm" title="Varsayılan yap">
                                                         <i class="ti ti-star"></i>
                                                     </button>
                                                 </form>
@@ -58,7 +58,7 @@
                                                     <form method="post" action="/settings/tax/@rate.Id/delete" class="d-inline">
                                                         @Html.AntiForgeryToken()
                                                         <button type="submit" class="btn btn-ghost-danger btn-sm"
-                                                                onclick="return confirm('Bu KDV oranıni silmek istediginize emin misiniz?')"
+                                                                onclick="return confirm('Bu KDV oranını silmek istediğinize emin misiniz?')"
                                                                 title="Sil">
                                                             <i class="ti ti-trash"></i>
                                                         </button>
@@ -76,13 +76,13 @@
                 <!-- Kategori Bazli KDV -->
                 <div class="card">
                     <div class="card-header">
-                        <h3 class="card-title">Kategori Bazli KDV Eşleşme</h3>
+                        <h3 class="card-title">Kategori Bazlı KDV Eşleşme</h3>
                     </div>
                     <div class="card-body">
                         <div class="text-secondary">
                             <i class="ti ti-info-circle me-1"></i>
-                            Kategorilere ozgu KDV oranı atamak için <a href="/categories">Kategori Yönetimi</a> sayfasindan
-                            ilgili kategoriyi duzenleyin ve "Varsayilan KDV Oranı" alanini ayarlayin.
+                            Kategorilere özgü KDV oranı atamak için <a href="/categories">Kategori Yönetimi</a> sayfasından
+                            ilgili kategoriyi düzenleyin ve "Varsayılan KDV Oranı" alanını ayarlayın.
                         </div>
                     </div>
                 </div>
@@ -102,19 +102,19 @@
                 <div class="modal-body">
                     <div class="mb-3">
                         <label class="form-label required">KDV Oranı (%)</label>
-                        <input type="number" name="rate" class="form-control" step="0.01" min="0" max="100" required placeholder="orn. 20"/>
+                        <input type="number" name="rate" class="form-control" step="0.01" min="0" max="100" required placeholder="örn. 20"/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label required">Ad</label>
-                        <input type="text" name="name" class="form-control" required placeholder="orn. Standart KDV"/>
+                        <input type="text" name="name" class="form-control" required placeholder="örn. Standart KDV"/>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Açıklama</label>
-                        <input type="text" name="description" class="form-control" placeholder="orn. Genel mal ve hizmetler"/>
+                        <input type="text" name="description" class="form-control" placeholder="örn. Genel mal ve hizmetler"/>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
+                    <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">İptal</button>
                     <button type="submit" class="btn btn-primary">Kaydet</button>
                 </div>
             </form>
@@ -149,7 +149,7 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">Iptal</button>
+                        <button type="button" class="btn btn-ghost-secondary me-auto" data-bs-dismiss="modal">İptal</button>
                         <button type="submit" class="btn btn-primary">Kaydet</button>
                     </div>
                 </form>

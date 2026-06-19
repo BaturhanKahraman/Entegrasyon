@@ -14,11 +14,11 @@
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th>Depo Adi</th>
-                                <th>Kullanici Sayısı</th>
+                                <th>Depo Adı</th>
+                                <th>Kullanıcı Sayısı</th>
                                 <th>Toplam Stok</th>
                                 <th>Pazaryeri</th>
-                                <th>Olusturma Tarihi</th>
+                                <th>Oluşturma Tarihi</th>
                                 <th class="w-1"></th>
                             </tr>
                         </thead>
@@ -30,7 +30,7 @@
                                         @branch.Name
                                         @if (branch.IsDefaultMarketPlaceStock)
                                         {
-                                            <span class="badge bg-green-lt ms-1">Varsayilan</span>
+                                            <span class="badge bg-green-lt ms-1">Varsayılan</span>
                                         }
                                     </td>
                                     <td class="text-secondary">@branch.UserCount</td>
@@ -70,7 +70,7 @@
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
                                  Title = "Depo bulunamadı",
-                                 Subtitle = "Henüz depo tanimlanmamis."
+                                 Subtitle = "Henüz depo tanımlanmamış."
                              }'/>
                 </div>
             }

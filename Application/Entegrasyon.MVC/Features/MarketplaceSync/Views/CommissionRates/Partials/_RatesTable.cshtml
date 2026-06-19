@@ -2,9 +2,9 @@
 
 <div class="card">
     <div class="card-header">
-        <h3 class="card-title">Komisyon Oranlari</h3>
+        <h3 class="card-title">Komisyon Oranları</h3>
         <div class="card-actions">
-            <span class="badge bg-blue-lt">@Model.Rates.Count oran tanimli</span>
+            <span class="badge bg-blue-lt">@Model.Rates.Count oran tanımlı</span>
         </div>
     </div>
     <div class="table-responsive">
@@ -14,10 +14,10 @@
                     <th>Kategori</th>
                     <th>Komisyon %</th>
                     <th>Hizmet Bedeli %</th>
-                    <th>Islem Ucreti (TL)</th>
+                    <th>İşlem Ücreti (TL)</th>
                     <th>Açıklama</th>
-                    <th>Varsayilan</th>
-                    <th class="w-1">Islemler</th>
+                    <th>Varsayılan</th>
+                    <th class="w-1">İşlemler</th>
                 </tr>
             </thead>
             <tbody>
@@ -25,7 +25,7 @@
                 {
                     <tr>
                         <td colspan="7" class="text-center text-secondary py-4">
-                            Henüz komisyon oranı tanimlanmamis.
+                            Henüz komisyon oranı tanımlanmamış.
                         </td>
                     </tr>
                 }
@@ -84,14 +84,14 @@
                                 }
                                 else
                                 {
-                                    <span class="text-secondary">Hayir</span>
+                                    <span class="text-secondary">Hayır</span>
                                 }
                             </td>
                             <td>
                                 <button class="btn btn-ghost-danger btn-sm"
                                         hx-post="/marketplace/commission-rates/@rate.Id/delete?mp=@Model.SelectedMarketPlaceId"
                                         hx-swap="none"
-                                        hx-confirm="Bu komisyon oranıni silmek istediginizden emin misiniz?">
+                                        hx-confirm="Bu komisyon oranını silmek istediğinizden emin misiniz?">
                                     <i class="ti ti-trash"></i>
                                     Sil
                                 </button>

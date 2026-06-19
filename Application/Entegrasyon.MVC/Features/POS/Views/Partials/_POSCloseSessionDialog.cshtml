@@ -12,16 +12,16 @@
             <input type="hidden" name="sessionId" value="@Model.SessionId" />
 
             <div class="modal-header">
-                <h5 class="modal-title">Kasayi Kapat</h5>
+                <h5 class="modal-title">Kasayı Kapat</h5>
                 <button type="button" class="btn-close" onclick="closePosCloseSessionModal()" aria-label="Kapat"></button>
             </div>
 
             <div class="modal-body">
                 <!-- Oturum Ozeti -->
-                <h4 class="mb-3">Oturum Ozeti</h4>
+                <h4 class="mb-3">Oturum Özeti</h4>
                 <div class="datagrid mb-4">
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Islem Sayısı</div>
+                        <div class="datagrid-title">İşlem Sayısı</div>
                         <div class="datagrid-content">
                             <span class="badge bg-secondary-lt">@Model.TransactionCount</span>
                         </div>
@@ -31,7 +31,7 @@
                         <div class="datagrid-content text-green fw-bold">@Model.TotalSales.ToString("C", culture)</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Acilis Kasasi</div>
+                        <div class="datagrid-title">Açılış Kasası</div>
                         <div class="datagrid-content">@Model.OpeningCash.ToString("C", culture)</div>
                     </div>
                     <div class="datagrid-item">
@@ -53,12 +53,12 @@
                 <hr />
 
                 <!-- Kasa Mutabakat -->
-                <h4 class="mb-3">Kasa Mutabakati</h4>
+                <h4 class="mb-3">Kasa Mutabakatı</h4>
                 <div class="mb-3">
-                    <label class="form-label">Kasadaki Gercek Nakit (TL)</label>
+                    <label class="form-label">Kasadaki Gerçek Nakit (TL)</label>
                     <input type="number" name="closingCash" id="csClosingCash"
                            class="form-control form-control-lg" step="0.01" min="0" required
-                           placeholder="Kasadaki nakit tutari girin" />
+                           placeholder="Kasadaki nakit tutarı girin" />
                 </div>
 
                 <div id="csDifferenceRow" class="alert py-2 mb-0" style="display:none;">
@@ -71,8 +71,8 @@
             </div>
 
             <div class="modal-footer">
-                <button type="button" class="btn btn-ghost-secondary" onclick="closePosCloseSessionModal()">Iptal</button>
-                <button type="submit" class="btn btn-danger">Kasayi Kapat</button>
+                <button type="button" class="btn btn-ghost-secondary" onclick="closePosCloseSessionModal()">İptal</button>
+                <button type="submit" class="btn btn-danger">Kasayı Kapat</button>
             </div>
         </form>
     </div>
@@ -109,7 +109,7 @@
         if (Math.abs(diff) < 0.01) {
             diffRow.className = 'alert alert-success py-2 mb-0';
             diffAmount.textContent = '0.00 TL';
-            diffLabel.textContent = 'Kasa tutarli.';
+            diffLabel.textContent = 'Kasa tutarlı.';
         } else if (diff > 0) {
             diffRow.className = 'alert alert-warning py-2 mb-0';
             diffAmount.textContent = '+' + diff.toFixed(2) + ' TL';

@@ -93,7 +93,7 @@
     <!-- Variant Image Assignment -->
     <div class="card mb-3">
         <div class="card-header">
-            <h3 class="card-title">Varyant Görsel Atamasi</h3>
+            <h3 class="card-title">Varyant Görsel Ataması</h3>
             <span class="card-subtitle">Her varyanta görsel atayabilirsiniz (isteğe bağlı)</span>
         </div>
         <div class="card-body">
@@ -145,15 +145,15 @@
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Görsel Sec</h5>
+                    <h5 class="modal-title">Görsel Seç</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p class="text-muted small mb-2">Görsellere tıklayarak seçin. Ilk secilen görsel ana görsel olur.</p>
+                    <p class="text-muted small mb-2">Görsellere tıklayarak seçin. İlk seçilen görsel ana görsel olur.</p>
                     <div id="picker-grid" class="d-flex flex-wrap gap-2"></div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Iptal</button>
+                    <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">İptal</button>
                     <button type="button" class="btn btn-primary" id="picker-confirm">Tamam</button>
                 </div>
             </div>
@@ -233,7 +233,7 @@
                 completed++;
                 var pct = Math.round((completed / total) * 100);
                 progressBar.style.width = pct + '%';
-                uploadStatus.textContent = completed + ' / ' + total + ' yuklendi';
+                uploadStatus.textContent = completed + ' / ' + total + ' yüklendi';
 
                 if (completed === total) {
                     setTimeout(function () {

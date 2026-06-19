@@ -15,9 +15,9 @@
                     <tr>
                         <th>Tarih</th>
                         <th>Dosya</th>
-                        <th>Tur</th>
+                        <th>Tür</th>
                         <th>Durum</th>
-                        <th>Basarili</th>
+                        <th>Başarılı</th>
                         <th>Hatalı</th>
                     </tr>
                 </thead>
@@ -55,12 +55,12 @@
                                     };
                                     var statusLabel = op.Status switch
                                     {
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Completed => "Tamamlandi",
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.CompletedWithErrors => "Kismen Basarili",
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Failed => "başarısız",
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Processing => "Isleniyor",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Completed => "Tamamlandı",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.CompletedWithErrors => "Kısmen Başarılı",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Failed => "Başarısız",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Processing => "İşleniyor",
                                         Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Pending => "Bekliyor",
-                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Cancelled => "Iptal Edildi",
+                                        Entegrasyon.Entity.BulkOperations.BulkOperationStatus.Cancelled => "İptal Edildi",
                                         _ => op.Status.ToString()
                                     };
                                 }

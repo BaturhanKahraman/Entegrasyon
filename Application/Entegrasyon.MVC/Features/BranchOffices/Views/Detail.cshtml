@@ -11,7 +11,7 @@
                 hx-swap="innerHTML">
             Stok Transfer
         </button>
-        <a href="/branch-offices" class="btn btn-outline-secondary">Geri Don</a>
+        <a href="/branch-offices" class="btn btn-outline-secondary">Geri Dön</a>
     </div>
 </div>
 
@@ -23,15 +23,15 @@
             <div class="card-body">
                 <div class="datagrid">
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Depo Adi</div>
+                        <div class="datagrid-title">Depo Adı</div>
                         <div class="datagrid-content">@Model.Name</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Kullanici Sayısı</div>
+                        <div class="datagrid-title">Kullanıcı Sayısı</div>
                         <div class="datagrid-content">@Model.UserCount</div>
                     </div>
                     <div class="datagrid-item">
-                        <div class="datagrid-title">Olusturma Tarihi</div>
+                        <div class="datagrid-title">Oluşturma Tarihi</div>
                         <div class="datagrid-content">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</div>
                     </div>
                 </div>
@@ -52,7 +52,7 @@
                                 <th>Ürün</th>
                                 <th>Barkod</th>
                                 <th>Başlangıç Stok</th>
-                                <th>Satilan</th>
+                                <th>Satılan</th>
                                 <th>Mevcut Stok</th>
                             </tr>
                         </thead>
@@ -88,7 +88,7 @@
                              model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                              {
                                  Title = "Stok verisi yok",
-                                 Subtitle = "Bu depoda henüz stok kaydi bulunmuyor."
+                                 Subtitle = "Bu depoda henüz stok kaydı bulunmuyor."
                              }'/>
                 </div>
             }

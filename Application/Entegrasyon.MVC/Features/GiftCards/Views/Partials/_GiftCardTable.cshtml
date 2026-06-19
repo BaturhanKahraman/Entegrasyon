@@ -9,10 +9,10 @@
                 <thead>
                     <tr>
                         <th>Kod</th>
-                        <th>Başlangıç Tutari</th>
+                        <th>Başlangıç Tutarı</th>
                         <th>Kalan Bakiye</th>
                         <th>Durum</th>
-                        <th>Son Kullanim</th>
+                        <th>Son Kullanım</th>
                         <th class="w-1"></th>
                     </tr>
                 </thead>
@@ -22,9 +22,9 @@
                         var (badgeClass, statusText) = card.Status switch
                         {
                             GiftCardStatus.Active => ("bg-green-lt", "Aktif"),
-                            GiftCardStatus.Used => ("bg-secondary-lt", "Kullanildi"),
-                            GiftCardStatus.Expired => ("bg-red-lt", "Suresi Doldu"),
-                            GiftCardStatus.Cancelled => ("bg-orange-lt", "Iptal"),
+                            GiftCardStatus.Used => ("bg-secondary-lt", "Kullanıldı"),
+                            GiftCardStatus.Expired => ("bg-red-lt", "Süresi Doldu"),
+                            GiftCardStatus.Cancelled => ("bg-orange-lt", "İptal"),
                             _ => ("bg-secondary-lt", card.Status.ToString())
                         };
                         <tr>
@@ -77,10 +77,10 @@
             <partial name="~/Shared/Views/Partials/_EmptyState.cshtml"
                      model='new Entegrasyon.MVC.Shared.ViewModels.EmptyStateVm
                      {
-                         Title = "Hediye karti bulunamadı",
-                         Subtitle = "Henüz hediye karti olusturulmamis.",
+                         Title = "Hediye kartı bulunamadı",
+                         Subtitle = "Henüz hediye kartı oluşturulmamış.",
                          ActionUrl = "/gift-cards/create",
-                         ActionText = "Yeni Hediye Karti Olustur"
+                         ActionText = "Yeni Hediye Kartı Oluştur"
                      }'/>
         </div>
     }

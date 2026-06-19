@@ -7,7 +7,7 @@
                 <div class="row align-items-center">
                     <div class="col-auto"><span class="bg-yellow text-white avatar"><i class="ti ti-star"></i></span></div>
                     <div class="col">
-                        <div class="font-weight-medium">Guncel Bakiye</div>
+                        <div class="font-weight-medium">Güncel Bakiye</div>
                         <div class="text-secondary">@Model.Balance.CurrentBalance.ToString("N0") puan</div>
                     </div>
                 </div>
@@ -20,7 +20,7 @@
                 <div class="row align-items-center">
                     <div class="col-auto"><span class="bg-green text-white avatar"><i class="ti ti-arrow-up-right"></i></span></div>
                     <div class="col">
-                        <div class="font-weight-medium">Toplam Kazanim</div>
+                        <div class="font-weight-medium">Toplam Kazanım</div>
                         <div class="text-secondary">@Model.Balance.TotalEarned.ToString("N0")</div>
                     </div>
                 </div>
@@ -46,7 +46,7 @@
                 <div class="row align-items-center">
                     <div class="col-auto"><span class="bg-blue text-white avatar"><i class="ti ti-list"></i></span></div>
                     <div class="col">
-                        <div class="font-weight-medium">Islem Sayısı</div>
+                        <div class="font-weight-medium">İşlem Sayısı</div>
                         <div class="text-secondary">@Model.Transactions.Count</div>
                     </div>
                 </div>
@@ -66,7 +66,7 @@
                 <div class="card-body text-center py-5">
                     <div class="mb-3"><i class="ti ti-history icon-lg text-secondary" style="font-size: 2.5rem;"></i></div>
                     <h3 class="text-secondary">Hareket yok</h3>
-                    <p class="text-secondary">Bu musteri henuz puan kazanmadi.</p>
+                    <p class="text-secondary">Bu müşteri henüz puan kazanmadı.</p>
                 </div>
             }
             else
@@ -76,8 +76,8 @@
                         <thead>
                             <tr>
                                 <th>Tarih</th>
-                                <th>Aciklama</th>
-                                <th>Tur</th>
+                                <th>Açıklama</th>
+                                <th>Tür</th>
                                 <th class="text-end">Puan</th>
                             </tr>
                         </thead>
@@ -111,8 +111,8 @@
                         <input type="number" name="points" id="points" class="form-control" min="1" required />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label" for="description">Aciklama</label>
-                        <input type="text" name="description" id="description" class="form-control" placeholder="Ornek: Telafi puan" />
+                        <label class="form-label" for="description">Açıklama</label>
+                        <input type="text" name="description" id="description" class="form-control" placeholder="Örnek: Telafi puanı" />
                     </div>
                     <button type="submit" class="btn btn-primary w-100">
                         <i class="ti ti-plus me-1"></i>Puan Ekle

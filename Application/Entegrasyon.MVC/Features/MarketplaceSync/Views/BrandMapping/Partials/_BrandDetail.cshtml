@@ -10,7 +10,7 @@
             <div class="alert alert-success">
                 <div class="d-flex justify-content-between align-items-center">
                     <div>
-                        <strong>Eslendi</strong>
+                        <strong>Eşlendi</strong>
                         <div class="mt-1">
                             <span class="text-secondary">Pazaryeri Marka ID:</span>
                             <strong>@Model.Mapping.MarketPlaceBrandId</strong>
@@ -18,17 +18,17 @@
                         @if (!string.IsNullOrEmpty(Model.Mapping.MarketPlaceBrandName))
                         {
                             <div>
-                                <span class="text-secondary">Pazaryeri Marka Adi:</span>
+                                <span class="text-secondary">Pazaryeri Marka Adı:</span>
                                 <strong>@Model.Mapping.MarketPlaceBrandName</strong>
                             </div>
                         }
                     </div>
                     <button class="btn btn-outline-danger btn-sm"
                             hx-post="/marketplace/sync/brands/@Model.BrandId/unmap?mp=@Model.MarketPlaceId"
-                            hx-confirm="Marka eslemesini kaldirmak istediginize emin misiniz?"
+                            hx-confirm="Marka eşlemesini kaldırmak istediğinize emin misiniz?"
                             hx-swap="none"
                             hx-on::after-request="if(event.detail.successful) { htmx.ajax('GET', '/marketplace/sync/brands/@Model.BrandId/detail?mp=@Model.MarketPlaceId', {target:'#brand-detail-panel'}); }">
-                        Eslemeyi Kaldir
+                        Eşlemeyi Kaldır
                     </button>
                 </div>
             </div>
@@ -36,10 +36,10 @@
         else
         {
             <div class="alert alert-secondary mb-3">
-                <strong>Eslenmedi</strong> — Bu marka henüz bu pazaryeri ile eslenmemis.
+                <strong>Eşlenmedi</strong> — Bu marka henüz bu pazaryeri ile eşlenmemiş.
             </div>
 
-            <h4 class="mb-3">Yeni Esleme Olustur</h4>
+            <h4 class="mb-3">Yeni Eşleme Oluştur</h4>
             <form hx-post="/marketplace/sync/brands/@Model.BrandId/map"
                   hx-swap="none"
                   hx-on::after-request="if(event.detail.successful) { htmx.ajax('GET', '/marketplace/sync/brands/@Model.BrandId/detail?mp=@Model.MarketPlaceId', {target:'#brand-detail-panel'}); }"
@@ -60,7 +60,7 @@
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary">
                         <i class="ti ti-link"></i>
-                        Esle
+                        Eşle
                     </button>
                 </div>
             </form>
@@ -109,19 +109,19 @@
                 <div class="datagrid-content">@Model.BrandId</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Marka Adi</div>
+                <div class="datagrid-title">Marka Adı</div>
                 <div class="datagrid-content">@Model.BrandName</div>
             </div>
             <div class="datagrid-item">
-                <div class="datagrid-title">Esleme Durumu</div>
+                <div class="datagrid-title">Eşleme Durumu</div>
                 <div class="datagrid-content">
                     @if (Model.IsMapped)
                     {
-                        <span class="badge bg-success-lt">Eslendi</span>
+                        <span class="badge bg-success-lt">Eşlendi</span>
                     }
                     else
                     {
-                        <span class="badge bg-secondary-lt">Eslenmedi</span>
+                        <span class="badge bg-secondary-lt">Eşlenmedi</span>
                     }
                 </div>
             </div>

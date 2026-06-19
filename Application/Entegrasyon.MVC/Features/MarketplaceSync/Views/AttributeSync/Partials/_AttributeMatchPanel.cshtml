@@ -24,9 +24,9 @@
                     </div>
                     <button class="btn btn-outline-danger btn-sm"
                             hx-post="/marketplace/sync/attributes/@Model.AttributeId/unmap?mp=@Model.MarketPlaceId"
-                            hx-confirm="Özellik eslemesini kaldirmak istediginize emin misiniz?"
+                            hx-confirm="Özellik eşlemesini kaldırmak istediğinize emin misiniz?"
                             hx-swap="none">
-                        Kaldir
+                        Kaldır
                     </button>
                 </div>
             </div>
@@ -90,7 +90,7 @@
                             <th>Değer</th>
                             <th>Pazaryeri Değeri</th>
                             <th>Durum</th>
-                            <th class="w-1">Islem</th>
+                            <th class="w-1">İşlem</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -127,11 +127,11 @@
                                     {
                                         <button class="btn btn-outline-danger btn-sm"
                                                 hx-post="/marketplace/sync/attributes/values/@val.ValueId/unmap?mp=@Model.MarketPlaceId"
-                                                hx-confirm="Değer eslemesini kaldirmak istediginize emin misiniz?"
+                                                hx-confirm="Değer eşlemesini kaldırmak istediğinize emin misiniz?"
                                                 hx-target="closest tr"
                                                 hx-swap="outerHTML"
                                                 hx-on::after-request="htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'})">
-                                            Kaldir
+                                            Kaldır
                                         </button>
                                     }
                                     else if (Model.AttributeMatch is not null)
@@ -159,7 +159,7 @@
         }
         else
         {
-            <div class="text-muted mt-3">Bu ozelligin onceden tanimlanmis degeri yok.</div>
+            <div class="text-muted mt-3">Bu özelliğin önceden tanımlanmış değeri yok.</div>
         }
     </div>
 </div>
@@ -176,7 +176,7 @@
                   hx-on::after-request="if(event.detail.successful) { bootstrap.Modal.getInstance(document.getElementById('mapValueModal')).hide(); htmx.ajax('GET', '/marketplace/sync/attributes/@Model.AttributeId/detail?mp=@Model.MarketPlaceId', {target:'#attribute-detail-panel'}); }">
                 <div class="modal-body">
                     <p class="text-secondary mb-3">
-                        <strong id="modal-value-name"></strong> için pazaryeri degerini arayın.
+                        <strong id="modal-value-name"></strong> için pazaryeri değerini arayın.
                     </p>
                     <input type="hidden" name="mp" value="@Model.MarketPlaceId" />
                     <div class="mb-3">

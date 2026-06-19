@@ -7,26 +7,26 @@
                     <div class="mb-3">
                         <i class="ti ti-percentage icon-lg text-secondary" style="font-size: 2.5rem;"></i>
                     </div>
-                    <h3 class="text-secondary">Henüz komisyon tanimlanmamis</h3>
-                    <p class="text-secondary">Satici komisyon oranlari bu sayfada yonetilebilir.</p>
+                    <h3 class="text-secondary">Henüz komisyon tanımlanmamış</h3>
+                    <p class="text-secondary">Satıcı komisyon oranları bu sayfada yönetilebilir.</p>
                 </div>
             }
             else
             {
                 <div class="card-header">
-                    <h3 class="card-title">Satici Komisyon Oranlari</h3>
+                    <h3 class="card-title">Satıcı Komisyon Oranları</h3>
                     <div class="card-actions">
-                        <span class="badge bg-secondary-lt">@Model.Count komisyon kaydi</span>
+                        <span class="badge bg-secondary-lt">@Model.Count komisyon kaydı</span>
                     </div>
                 </div>
                 <div class="table-responsive">
                     <table class="table table-vcenter card-table table-hover">
                         <thead>
                             <tr>
-                                <th>Satici</th>
+                                <th>Satıcı</th>
                                 <th>Kategori ID</th>
                                 <th>Komisyon Oranı (%)</th>
-                                <th>Islemler</th>
+                                <th>İşlemler</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -34,7 +34,7 @@
                             {
                                 <tr>
                                     <td>
-                                        <div class="font-weight-medium">@(commission.Seller?.StoreName ?? $"Satici #{commission.SellerId}")</div>
+                                        <div class="font-weight-medium">@(commission.Seller?.StoreName ?? $"Satıcı #{commission.SellerId}")</div>
                                     </td>
                                     <td>
                                         @if (commission.CategoryId.HasValue)
@@ -43,7 +43,7 @@
                                         }
                                         else
                                         {
-                                            <span class="text-secondary">Varsayilan</span>
+                                            <span class="text-secondary">Varsayılan</span>
                                         }
                                     </td>
                                     <td>
@@ -64,7 +64,7 @@
                                                    required />
                                             <button type="submit" class="btn btn-sm btn-primary">
                                                 <i class="ti ti-check"></i>
-                                                Guncelle
+                                                Güncelle
                                             </button>
                                         </form>
                                     </td>
