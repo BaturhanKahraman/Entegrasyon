@@ -1974,5 +1974,17 @@
       "T110"
     ],
     "notes": "Kaynak: 2026-06-19 canlı dev Chrome E2E denetimi (TL otonom oturum). Gerçek Trendyol WireMock request body ile kanıtlandı. | 2026-06-19: SyncDetail tüm pazaryerini dinamik gösteriyor (görünürlük çözüldü); generic send formu (N11/Pazarama/… gönderim ekranı) henüz yok."
+  },
+  {
+    "id": "T120",
+    "priority": "medium",
+    "status": "todo",
+    "task": "Başarılı create sonrası Trendyol durumu 'Hatalı' kalıyor — batch-status mock/polling reconcile",
+    "description": "Canlı doğrulama (2026-06-19): ürün Trendyol'a gönderildiğinde create POST WireMock'a DOĞRU gidiyor (description düz metin, quantity:50 — T110/T109 fix doğrulandı). ANCAK SyncDetail kartı 'Hatalı' + ESKİ StatusMessage ('Hicbir varyant... gorsel eksik', ASCII, eski mapper'dan) + Batch batch-test-001 gösteriyor. Yani create başarılı ama batch-status sorgusu/polling Failed'e çekiyor (muhtemelen WireMock batch-status mapping reject/incomplete dönüyor VEYA status-update akışı stale message'ı temizlemiyor). İncele: (a) WireMock batch-status mapping doc-doğru başarılı response dönmeli (success batch), (b) PublishProductAsync sonrası status Processing→Published geçişi + StatusMessage temizleme. WireMock strict-rule: batch-status mock resmi Trendyol response'unu yansıtsın.",
+    "notes": "Otonom oturum 2 canlı denetim bulgusu. Payload bug DEĞİL — create doğru; batch-status reconcile.",
+    "plan": "",
+    "manual_test_steps": "",
+    "addOrUpdateUnitTests": "",
+    "addOrUpdateIntegrationTests": ""
   }
 ]
