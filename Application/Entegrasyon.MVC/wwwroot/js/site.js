@@ -39,6 +39,13 @@ function initCurrencyInputs(root) {
     var inputs = scope.querySelectorAll('.currency-input');
     inputs.forEach(function (el) {
         if (el.dataset.currencyMasked === '1') return;
+        // Prefill değeri server'da InvariantCulture ("0.##") ile NOKTA-ondalık render edilir
+        // (ör. "199.9"); IMask ise radix=',' / thousandsSeparator='.' (Türkçe) bekler. Maskeden
+        // ÖNCE noktayı virgüle çevirmezsek IMask "199.9"daki noktayı binlik ayraç sanıp "1.999"
+        // (×10) yapar. "0.##" formatında binlik gruplama olmadığı için tek nokta = ondalık.
+        if (el.value && el.value.indexOf('.') !== -1 && el.value.indexOf(',') === -1) {
+            el.value = el.value.replace('.', ',');
+        }
         IMask(el, {
             mask: Number,
             scale: 2,

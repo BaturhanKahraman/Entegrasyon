@@ -1828,7 +1828,7 @@
  },
  {
   "id": "T111",
-  "task": "Fiyat ondalık parse 10x — repro + IMask/normalize",
+  "task": "Fiyat ondalık ×10 — IMask prefill nokta/virgül uyumsuzluğu (KÖK NEDEN BULUNDU, JS fix uygulandı)",
   "description": "Denetimde gözlendi: varyant fiyatına 199.90/149.90 girildi, Onay özetinde ve Trendyol payload'da 1999.00/1499.00 (×10). NOT: input Playwright fill() ile set edildi (IMask baypas olmuş olabilir) — ÖNCE gerçek klavyeyle repro et. Gerçekse: fiyat inputlarına IMask tr (virgül-ondalık) tutarlı uygula + server-side normalize ('.' ve ',' ikisini de doğru parse). RED-first test: '199,90' ve '199.90' ikisi de 199.90 decimal olmalı.",
   "status": "todo",
   "priority": "high",
@@ -1841,7 +1841,7 @@
   "addOrUpdateUnitTests": true,
   "addOrUpdateIntegrationTests": false,
   "dependsOn": [],
-  "notes": "Kaynak: 2026-06-19 canlı dev Chrome E2E denetimi (TL otonom oturum). Gerçek Trendyol WireMock request body ile kanıtlandı."
+  "notes": "Kaynak: 2026-06-19 canlı dev Chrome E2E denetimi (TL otonom oturum). Gerçek Trendyol WireMock request body ile kanıtlandı. | 2026-06-19 KÖK NEDEN BULUNDU: site.js IMask thousandsSeparator='.' radix=',' (Türkçe) ama prefill InvariantCulture '0.##' nokta-ondalık ('199.9') render ediyor → IMask noktayı binlik sanıp '1.999' (×10). FIX uygulandı: initCurrencyInputs maskeden önce prefill nokta→virgül çeviriyor. KALAN: server-side decimal normalize (defense-in-depth, hem ',' hem '.' kabul) + browser regression doğrulama."
  },
  {
   "id": "T112",
