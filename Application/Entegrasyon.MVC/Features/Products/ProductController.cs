@@ -675,7 +675,7 @@ public class ProductController(
     [HttpGet("/products/{id:guid}/sync")]
     public async Task<IActionResult> SyncDetail(Guid id)
     {
-        var result = await productService.GetProductDetailById(id);
+        var result = await productSyncManager.GetProductSyncDetailAsync(id);
         if (!result.Success)
         {
             TempData.SetError(result.Message ?? "Ürün bulunamadı.");
@@ -689,6 +689,18 @@ public class ProductController(
             (result.Data!.Title, $"/products/{id}"),
             ("Senkronizasyon", null));
         return View("~/Features/Products/Views/SyncDetail.cshtml", result.Data);
+    }
+
+    [HttpPost("/products/{id:guid}/sync/{marketPlaceId:int}/retry")]
+    public async Task<IActionResult> SyncRetry(Guid id, int marketPlaceId)
+    {
+        var result = await productSyncManager.RetryFailedAsync(id, marketPlaceId);
+        if (result.Success)
+            TempData.SetSuccess(result.Message ?? "Ürün yeniden kuyruğa eklendi.");
+        else
+            TempData.SetError(result.Message ?? "Yeniden gönderim başarısız.");
+
+        return RedirectToAction(nameof(SyncDetail), new { id });
     }
 
     [HttpGet("/products/{id:guid}/sync/trendyol/send")]

@@ -177,7 +177,32 @@
                                         @log.CreatedAt.ToLocalTime().ToString("dd.MM.yyyy HH:mm:ss")
                                     </td>
                                     <td>
-                                        <span class="badge bg-red-lt">@log.LogAction</span>
+                                        @{
+                                            var actionLabel = log.LogAction switch
+                                            {
+                                                Entegrasyon.Entity.Logs.LogAction.Add => "Ekleme",
+                                                Entegrasyon.Entity.Logs.LogAction.Update => "Güncelleme",
+                                                Entegrasyon.Entity.Logs.LogAction.Delete => "Silme",
+                                                Entegrasyon.Entity.Logs.LogAction.List => "Listeleme",
+                                                Entegrasyon.Entity.Logs.LogAction.Sync => "Senkronizasyon",
+                                                Entegrasyon.Entity.Logs.LogAction.Import => "İçe Aktarma",
+                                                Entegrasyon.Entity.Logs.LogAction.Publish => "Yayınlama",
+                                                Entegrasyon.Entity.Logs.LogAction.Retry => "Yeniden Deneme",
+                                                Entegrasyon.Entity.Logs.LogAction.RequestOpen => "Talep Açma",
+                                                Entegrasyon.Entity.Logs.LogAction.RequestApprove => "Talep Onayı",
+                                                Entegrasyon.Entity.Logs.LogAction.RequestReject => "Talep Reddi",
+                                                Entegrasyon.Entity.Logs.LogAction.Transfer => "Transfer",
+                                                _ => "—"
+                                            };
+                                        }
+                                        @if (actionLabel == "—")
+                                        {
+                                            <span class="text-secondary">—</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-red-lt">@actionLabel</span>
+                                        }
                                     </td>
                                     <td>@log.Content</td>
                                 </tr>

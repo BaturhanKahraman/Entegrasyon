@@ -159,7 +159,12 @@ public class IntegrationDbContext(DbContextOptions<IntegrationDbContext> options
             if (entry.Entity is BaseEntity baseEntity)
             {
                 if (entry.State == EntityState.Added)
+                {
                     baseEntity.CreatedAt = DateTimeOffset.UtcNow;
+                    // T117: oluşturmada UpdatedAt = CreatedAt — aksi halde yeni kayıt UI'da
+                    // "Son Güncelleme 01.01.0001" (DateTimeOffset default) gösterir.
+                    baseEntity.UpdatedAt = baseEntity.CreatedAt;
+                }
                 else
                     baseEntity.UpdatedAt = DateTimeOffset.UtcNow;
             }
