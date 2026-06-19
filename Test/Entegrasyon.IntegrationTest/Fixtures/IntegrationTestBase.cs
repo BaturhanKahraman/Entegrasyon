@@ -166,6 +166,23 @@ public abstract class IntegrationTestBase : IAsyncLifetime
         return (service, scope);
     }
 
+    /// <summary>
+    /// Scoped servis resolve eder ve aynı scope'ta tenant context'i initialize eder.
+    /// Servis-seviyesi testlerde middleware koşmadığından, AddDomainEvent gibi TenantId'ye
+    /// erişen yollar (ör. SyncProductAsync) bunsuz "Tenant context is not initialized" fırlatır.
+    /// </summary>
+    protected (T Service, IServiceScope Scope) GetTenantScopedService<T>(int tenantId = 1) where T : notnull
+    {
+        var scope = Services.CreateScope();
+        var tenant = scope.ServiceProvider.GetRequiredService<Entegrasyon.Business.Abstract.ITenantContext>();
+        if (!tenant.IsInitialized)
+            tenant.Initialize(new Entegrasyon.Business.Tenants.TenantRegistryEntry(
+                TenantId: tenantId, Subdomain: "test", CompanyName: "Test",
+                ConnectionString: "test", IsActive: true, LicenseType: null));
+        var service = scope.ServiceProvider.GetRequiredService<T>();
+        return (service, scope);
+    }
+
     // ─── Phase 0: Shared Seed Helper Methods ─────────────────────────────
 
     /// <summary>
@@ -220,6 +237,22 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     }
 
     /// <summary>
+    /// Bir varyanta görsel ekler (preflight görsel kontrolü testleri için).
+    /// </summary>
+    protected async Task SeedVariantImageAsync(Guid variantId, string storageKey = "products/test.jpg", int displayOrder = 0)
+    {
+        using var dbContext = CreateDbContext();
+        dbContext.Set<Image>().Add(new Image
+        {
+            ProductVariantId = variantId,
+            StorageKey = storageKey,
+            DisplayOrder = displayOrder,
+            CreatedAt = DateTimeOffset.UtcNow
+        });
+        await dbContext.SaveChangesAsync();
+    }
+
+    /// <summary>
     /// MarketPlace kaydı seed eder. Respawn her test class'ta temizler.
     /// BaseUrl varsayilan olarak WireMock.BaseUrl — boylece runtime'da marketplace
     /// HTTP client'lari (TrendyolApiClient, HepsiburadaApiClient vb.) gercek API
@@ -236,6 +269,12 @@ public abstract class IntegrationTestBase : IAsyncLifetime
                 Id = id,
                 Name = name,
                 BaseUrl = baseUrl ?? WireMock.BaseUrl,
+                // Dummy credential'lar — SyncProductAsync'teki credential guard'ı (IsCredentialComplete)
+                // geçmek için. Gerçek API yok (WireMock), ama guard yalnız varlık kontrolü yapar.
+                SellerId = "1",
+                ApiKey = "test-api-key",
+                ApiSecret = "test-api-secret",
+                TokenUrl = "https://token.example.com",
                 CreatedAt = DateTimeOffset.UtcNow
             });
             await dbContext.SaveChangesAsync();

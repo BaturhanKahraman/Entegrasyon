@@ -63,16 +63,36 @@
                                     "Varyant Durumu",
                                     Model.Preflight.HasVariants
                                         ? "En az bir varyant mevcut"
-                                        : "Ürünün varyanti bulunmuyor",
+                                        : "Ürünün varyantı bulunmuyor",
                                     Model.Preflight.HasVariants ? null : $"/products/{Model.ProductId}/variants"); }
 
                                 @{ RenderCheck(Model.Preflight.AllVariantsHaveBarcodes,
                                     "Barkod Durumu",
                                     Model.Preflight.AllVariantsHaveBarcodes
-                                        ? "Tum varyantlarin barkodu mevcut"
+                                        ? "Tüm varyantların barkodu mevcut"
                                         : "Barkodu olmayan varyantlar var",
                                     Model.Preflight.AllVariantsHaveBarcodes ? null : $"/products/{Model.ProductId}/variants"); }
+
+                                @{ RenderCheck(Model.Preflight.AllVariantsHaveImages,
+                                    "Görsel Durumu",
+                                    Model.Preflight.AllVariantsHaveImages
+                                        ? "Tüm varyantların görseli mevcut"
+                                        : $"Görseli olmayan varyantlar var: {string.Join(", ", Model.Preflight.VariantsWithoutImages ?? new List<string>())}",
+                                    Model.Preflight.AllVariantsHaveImages ? null : $"/products/{Model.ProductId}/variants"); }
                             </div>
+
+                            @if (!Model.Preflight.StockSourceConfigured)
+                            {
+                                <div class="alert alert-warning mt-3 mb-0">
+                                    <div class="d-flex">
+                                        <div><i class="ti ti-building-warehouse icon alert-icon"></i></div>
+                                        <div>
+                                            Trendyol için stok kaynağı (depo) eşlenmemiş — ürün <strong>0 stokla</strong> gönderilir ve satılamaz listelenir.
+                                            Ayarlar → Entegrasyonlar'dan bir depoyu Trendyol'a eşleyin.
+                                        </div>
+                                    </div>
+                                </div>
+                            }
 
                             @if (Model.PreflightPassed)
                             {
@@ -81,7 +101,7 @@
                                         <div>
                                             <i class="ti ti-check icon alert-icon"></i>
                                         </div>
-                                        <div>Tum kontroller basarili. Ürün gonderime hazir.</div>
+                                        <div>Tüm kontroller başarılı. Ürün gönderime hazır.</div>
                                     </div>
                                 </div>
                             }
@@ -92,7 +112,7 @@
                                         <div>
                                             <i class="ti ti-alert-triangle icon alert-icon"></i>
                                         </div>
-                                        <div>Bazi kontroller başarısız. Lutfen eksikleri tamamlayin.</div>
+                                        <div>Bazı kontroller başarısız. Lütfen eksikleri tamamlayın.</div>
                                     </div>
                                 </div>
                             }

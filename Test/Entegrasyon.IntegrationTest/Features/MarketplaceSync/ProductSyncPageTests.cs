@@ -54,6 +54,10 @@ public class ProductSyncPageTests : IntegrationTestBase
         // Add variant 2
         var variantId2 = await AddProductVariantAsync(productId, "PREFLIGHT-PASS-001-V2", 50);
 
+        // Görsel (T112): gönderime hazır ürünün her varyantında görsel olmalı
+        await SeedVariantImageAsync(variantId1);
+        await SeedVariantImageAsync(variantId2);
+
         var (service, scope) = GetScopedService<IProductSyncManager>();
         using var _ = scope;
 
@@ -178,8 +182,8 @@ public class ProductSyncPageTests : IntegrationTestBase
 
         var data = result.Data!;
         data.RequiredAttributesMatched.Should().BeFalse();
-        data.MissingAttributes.Should().Contain("beden"); // lowercase key
-        data.MissingAttributes.Should().NotContain("renk");
+        data.MissingAttributes.Should().Contain("Beden"); // humanized ad (kullanıcıya gösterilen)
+        data.MissingAttributes.Should().NotContain("Renk");
         data.AllPassed.Should().BeFalse();
     }
 

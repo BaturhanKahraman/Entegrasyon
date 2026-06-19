@@ -43,5 +43,17 @@ public sealed record ProductSendPreflightDto(
     int? ProductBrandId = null,
 
     /// <summary>Application brand name for constructing fix URLs.</summary>
-    string? ProductBrandName = null
+    string? ProductBrandName = null,
+
+    /// <summary>Whether every variant has at least one image (Trendyol gönderim için zorunlu — bloklar).</summary>
+    bool AllVariantsHaveImages = true,
+
+    /// <summary>Görseli olmayan varyantların barkodları; hepsinde görsel varsa boş.</summary>
+    IReadOnlyList<string>? VariantsWithoutImages = null,
+
+    /// <summary>
+    /// Bu pazaryeri için stok kaynağı (depo) eşlenmiş mi. False ise tüm varyantlar quantity:0 gider —
+    /// uyarı niteliğinde (AllPassed'i bloklamaz, ortam/config sorunudur).
+    /// </summary>
+    bool StockSourceConfigured = true
 );

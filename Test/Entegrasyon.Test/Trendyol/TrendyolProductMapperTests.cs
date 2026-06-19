@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.Business.FileStorage;
+using Entegrasyon.Business.Marketplace.Content;
 using Entegrasyon.Entity;
 using Entegrasyon.Entity.Categories;
 using Entegrasyon.Entity.Matches;
@@ -32,6 +33,8 @@ public class TrendyolProductMapperTests : Entegrasyon.UnitTest.BaseTest
     private TrendyolProductMapper CreateSut() => new(
         mockContextFactory.Object,
         _fileStorageMock.Object,
+        new MarketplaceContentTransformer(),
+        new MarketplaceContentRuleProvider(),
         _loggerMock.Object);
 
     private Product CreateTestProduct(
@@ -407,5 +410,71 @@ public class TrendyolProductMapperTests : Entegrasyon.UnitTest.BaseTest
         // Assert
         result.Success.Should().BeTrue();
         result.Data.Items[0].ProductMainId.Should().Be(TestProductId.ToString());
+    }
+
+    // ── Test 13 (T110): HTML açıklama Trendyol için düz metne çevrilir ──
+
+    [Fact]
+    public async Task MapProductAsync_HtmlDescription_StrippedToPlainTextForTrendyol()
+    {
+        // Arrange — kullanıcının canlı denetimde girdiği örnek
+        var htmlDesc = "<b>Kalın metin</b> ve <i>italik</i><ul><li>Madde 1</li><li>Madde 2</li></ul>";
+        var variant = CreateTestVariant();
+        var product = CreateTestProduct(description: htmlDesc, variants: new List<ProductVariant> { variant });
+        SetupDbForMapping(product);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.MapProductAsync(TestProductId);
+
+        // Assert — ham HTML tag'leri payload'a sızmamalı, metin korunmalı
+        result.Success.Should().BeTrue();
+        var desc = result.Data!.Items[0].Description;
+        desc.Should().NotContain("<b>").And.NotContain("<li>").And.NotContain("<ul>");
+        desc.Should().Contain("Kalın metin");
+        desc.Should().Contain("Madde 1");
+    }
+
+    // ── Test 14 (T110): HTML başlık düz metne çevrilir ──
+
+    [Fact]
+    public async Task MapProductAsync_HtmlTitle_StrippedToPlainTextForTrendyol()
+    {
+        // Arrange
+        var variant = CreateTestVariant();
+        var product = CreateTestProduct(title: "<b>Bebek Tulumu</b>", variants: new List<ProductVariant> { variant });
+        SetupDbForMapping(product);
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.MapProductAsync(TestProductId);
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data!.Items[0].Title.Should().Be("Bebek Tulumu");
+    }
+
+    // ── Test 15 (T109): Stok kaynağı (depo) eşlenmemişse uyarı loglanır ──
+
+    [Fact]
+    public async Task MapProductAsync_NoWarehouseMapped_LogsWarningAboutZeroStock()
+    {
+        // Arrange — ne MarketPlaceWarehouse ne IsDefaultMarketPlaceStock depo var
+        var variant = CreateTestVariant(stock: 50);
+        var product = CreateTestProduct(variants: new List<ProductVariant> { variant });
+        SetupDbForMapping(product);
+        // Default depo eşlemesini kaldır → warehouseIds boş kalsın
+        mockIntegrationDbContext.Setup(x => x.BranchOffices)
+            .ReturnsDbSet(new List<BranchOffice> { new() { Id = 1, IsDefaultMarketPlaceStock = false } });
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.MapProductAsync(TestProductId);
+
+        // Assert — quantity 0 gider AMA sessiz değil, uyarı loglanır
+        result.Success.Should().BeTrue();
+        result.Data!.Items[0].Quantity.Should().Be(0);
+        _loggerMock.Invocations.Should().Contain(i =>
+            i.Arguments.Any(a => a != null && a.ToString()!.Contains("stok kaynağı")));
     }
 }

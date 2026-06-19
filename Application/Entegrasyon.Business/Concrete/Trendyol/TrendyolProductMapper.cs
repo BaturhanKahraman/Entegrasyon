@@ -1,5 +1,6 @@
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.FileStorage;
+using Entegrasyon.Business.Marketplace.Content;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Trendyol;
 using Entegrasyon.Entity.Results;
@@ -17,6 +18,8 @@ namespace Entegrasyon.Business.Concrete.Trendyol;
 public sealed class TrendyolProductMapper(
     IDbContextFactory<IntegrationDbContext> contextFactory,
     IMinioFileStorage fileStorage,
+    IMarketplaceContentTransformer contentTransformer,
+    IMarketplaceContentRuleProvider contentRuleProvider,
     ILogger<TrendyolProductMapper> logger) : ITrendyolProductMapper
 {
     public async Task<IDataResult<TrendyolCreateProductRequest>> MapProductAsync(Guid productId)
@@ -44,8 +47,17 @@ public sealed class TrendyolProductMapper(
             .FirstOrDefaultAsync(pm => pm.ProductId == productId
                 && pm.MarketPlaceId == TrendyolMarketPlaceId && !pm.IsDeleted);
 
-        var effectiveTitle = marketplace?.TitleOverride ?? product.Title;
-        var effectiveDescription = marketplace?.DescriptionOverride ?? product.Description;
+        var rawTitle = marketplace?.TitleOverride ?? product.Title;
+        var rawDescription = marketplace?.DescriptionOverride ?? product.Description;
+
+        // İçerik dönüşümü (T110): Trendyol düz metin ister — kaynak HTML ise strip edilir,
+        // başlık/açıklama limitleri merkezî kural profilinden uygulanır (magic-number yok).
+        var contentRules = contentRuleProvider.GetRules(TrendyolMarketPlaceId);
+        var transformed = contentTransformer.TransformForMarketplace(rawTitle, rawDescription, contentRules);
+        var effectiveTitle = transformed.Title;
+        var effectiveDescription = transformed.Description;
+        foreach (var warning in transformed.Warnings)
+            logger.LogWarning("Trendyol içerik dönüşümü ({ProductId}): {Warning}", productId, warning);
 
         // Marketplace eslestirmeleri -- brand, category
         var brandMatch = product.BrandId.HasValue
@@ -106,6 +118,13 @@ public sealed class TrendyolProductMapper(
                 .Select(b => b.Id)
                 .ToListAsync();
         }
+
+        // T109 guard: hiç stok kaynağı (depo) eşlenmemişse her varyant 0 stokla gider → ürün
+        // satılamaz listelenir. Sessiz kalmaması için uyar (preflight de StockSourceConfigured ile bunu raporlar).
+        if (warehouseIds.Count == 0)
+            logger.LogWarning(
+                "Product {ProductId}: Trendyol için stok kaynağı (depo) eşlenmemiş — tüm varyantlar quantity:0 ile gidecek.",
+                productId);
 
         var productMainId = product.Id.ToString();
         var items = new List<TrendyolProductItem>();
@@ -199,7 +218,7 @@ public sealed class TrendyolProductMapper(
 
             var item = new TrendyolProductItem(
                 Barcode: variant.Barcode!,
-                Title: effectiveTitle.Length > 100 ? effectiveTitle[..100] : effectiveTitle,
+                Title: effectiveTitle,
                 ProductMainId: productMainId,
                 BrandId: brandMatch.MarketPlaceBrandId,
                 CategoryId: categoryMatch.MarketPlaceCategoryId,
@@ -208,7 +227,7 @@ public sealed class TrendyolProductMapper(
                 VatRate: vatRate,
                 StockCode: variant.Barcode!,
                 DimensionalWeight: variant.DimensionalWeight,
-                Description: effectiveDescription!.Length > 30000 ? effectiveDescription[..30000] : effectiveDescription,
+                Description: effectiveDescription,
                 Quantity: quantity,
                 Images: images,
                 Attributes: attributes);

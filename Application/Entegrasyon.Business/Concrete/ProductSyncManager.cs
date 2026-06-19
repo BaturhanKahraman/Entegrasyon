@@ -407,7 +407,7 @@ public sealed class ProductSyncManager(
         var product = await dbContext.MainProducts
             .Include(p => p.Category)
             .Include(p => p.Brand)
-            .Include(p => p.ProductVariants)
+            .Include(p => p.ProductVariants).ThenInclude(v => v.Images)
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
@@ -450,7 +450,23 @@ public sealed class ProductSyncManager(
         var hasVariants = product.ProductVariants.Count > 0;
         var allVariantsHaveBarcodes = hasVariants && product.ProductVariants.All(v => !string.IsNullOrEmpty(v.Barcode));
 
-        var allPassed = categoryMatched && brandMatched && requiredAttributesMatched && hasVariants && allVariantsHaveBarcodes;
+        // 5. Görsel kontrol (T112): görselsiz varyant Trendyol'a gönderilemez — gönderim sessizce
+        //    "görsel eksik" ile patlıyordu. Her varyantın ≥1 görseli olmalı (bloklayıcı).
+        var variantsWithoutImages = product.ProductVariants
+            .Where(v => v.Images.Count(i => !string.IsNullOrEmpty(i.StorageKey)) == 0)
+            .Select(v => v.Barcode ?? v.Id.ToString())
+            .ToList();
+        var allVariantsHaveImages = hasVariants && variantsWithoutImages.Count == 0;
+
+        // 6. Stok kaynağı (depo) eşlemesi (T109): uyarı — bloklamaz ama 0-stok riskini bildirir.
+        var hasWarehouseMapping = await dbContext.MarketPlaceWarehouses
+            .AnyAsync(w => w.MarketPlaceId == marketPlaceId);
+        var hasDefaultStockBranch = await dbContext.BranchOffices
+            .AnyAsync(b => b.IsDefaultMarketPlaceStock);
+        var stockSourceConfigured = hasWarehouseMapping || hasDefaultStockBranch;
+
+        var allPassed = categoryMatched && brandMatched && requiredAttributesMatched
+            && hasVariants && allVariantsHaveBarcodes && allVariantsHaveImages;
 
         var preflight = new ProductSendPreflightDto(
             categoryMatched,
@@ -465,7 +481,10 @@ public sealed class ProductSyncManager(
             ProductCategoryId: product.CategoryId,
             ProductCategoryName: product.Category?.Name,
             ProductBrandId: product.BrandId,
-            ProductBrandName: product.Brand?.Name
+            ProductBrandName: product.Brand?.Name,
+            AllVariantsHaveImages: allVariantsHaveImages,
+            VariantsWithoutImages: variantsWithoutImages,
+            StockSourceConfigured: stockSourceConfigured
         );
 
         return new SuccessDataResult<ProductSendPreflightDto>(preflight);

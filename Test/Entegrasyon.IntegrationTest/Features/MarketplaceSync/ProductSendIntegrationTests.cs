@@ -37,7 +37,7 @@ public class ProductSendIntegrationTests : IntegrationTestBase
     {
         // Arrange
         var (categoryId, brandId) = await GetCategoryAndBrandIdsAsync();
-        var (productId, _) = await SeedProductWithStockAsync("SEND-001", stock: 10);
+        var (productId, variantId1) = await SeedProductWithStockAsync("SEND-001", stock: 10);
 
         // Setup matches
         await SeedCategoryMarketPlaceMatchAsync(categoryId, TrendyolMarketPlaceId, 1001);
@@ -45,8 +45,11 @@ public class ProductSendIntegrationTests : IntegrationTestBase
         var requiredAttrId = await SeedRequiredCategoryAttributeAsync(categoryId, "Renk");
         await SeedCategoryAttributeMarketPlaceMatchAsync(requiredAttrId, TrendyolMarketPlaceId, 5001);
         var variantId2 = await AddProductVariantAsync(productId, "SEND-001-V2", 50);
+        // Görsel (T112): gönderime hazır ürünün her varyantında görsel olmalı
+        await SeedVariantImageAsync(variantId1);
+        await SeedVariantImageAsync(variantId2);
 
-        var (syncManager, scope1) = GetScopedService<IProductSyncManager>();
+        var (syncManager, scope1) = GetTenantScopedService<IProductSyncManager>();
         var (overrideManager, scope2) = GetScopedService<IMarketplaceOverrideManager>();
         using var __ = scope1;
         using var ___ = scope2;
@@ -153,7 +156,7 @@ public class ProductSendIntegrationTests : IntegrationTestBase
         var (productId, _) = await SeedProductWithStockAsync("NO-MATCH-001", stock: 10);
         // Intentionally NOT setting up matches
 
-        var (syncManager, scope) = GetScopedService<IProductSyncManager>();
+        var (syncManager, scope) = GetTenantScopedService<IProductSyncManager>();
         using var _ = scope;
 
         // Act: Verify preflight would fail
@@ -190,7 +193,7 @@ public class ProductSendIntegrationTests : IntegrationTestBase
         // Map category exactly as the mapping wizard does (canonical CategoryMarketplaces table)
         await SeedCategoryMarketPlaceMatchAsync(categoryId, TrendyolMarketPlaceId, 1011);
 
-        var (syncManager, scope) = GetScopedService<IProductSyncManager>();
+        var (syncManager, scope) = GetTenantScopedService<IProductSyncManager>();
         using var _ = scope;
 
         // Act
@@ -222,7 +225,7 @@ public class ProductSendIntegrationTests : IntegrationTestBase
             await db.SaveChangesAsync();
         }
 
-        var (syncManager, scope) = GetScopedService<IProductSyncManager>();
+        var (syncManager, scope) = GetTenantScopedService<IProductSyncManager>();
         using var _ = scope;
 
         // Act
@@ -230,6 +233,54 @@ public class ProductSendIntegrationTests : IntegrationTestBase
 
         // Assert
         preflight.Data!.CategoryMatched.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// T112 regression: görseli olmayan varyant preflight'ı geçmemeli. Canlı denetimde 0 görselli
+    /// ürün tüm kontrolleri yeşil geçip "gönderime hazır" diyordu ama gönderim sessizce patlıyordu.
+    /// </summary>
+    [Fact]
+    public async Task GetSendPreflight_VariantWithoutImage_ShouldFailImageCheckAndBlockAllPassed()
+    {
+        // Arrange — tüm eşleşmeler tam AMA varyantta görsel YOK
+        var (categoryId, brandId) = await GetCategoryAndBrandIdsAsync();
+        var (productId, _) = await SeedProductWithStockAsync("NOIMG-001", stock: 10);
+        await SeedCategoryMarketPlaceMatchAsync(categoryId, TrendyolMarketPlaceId, 1001);
+        await SeedBrandMarketPlaceMatchAsync(brandId, TrendyolMarketPlaceId, 101);
+
+        var (syncManager, scope) = GetTenantScopedService<IProductSyncManager>();
+        using var _ = scope;
+
+        // Act
+        var preflight = await syncManager.GetSendPreflightAsync(productId, TrendyolMarketPlaceId);
+
+        // Assert — görsel kontrolü düşmeli ve AllPassed bloklanmalı
+        preflight.Success.Should().BeTrue();
+        preflight.Data!.AllVariantsHaveImages.Should().BeFalse();
+        preflight.Data.VariantsWithoutImages.Should().Contain("NOIMG-001");
+        preflight.Data.AllPassed.Should().BeFalse();
+    }
+
+    /// <summary>
+    /// T112: her varyantın görseli varsa görsel kontrolü geçmeli.
+    /// </summary>
+    [Fact]
+    public async Task GetSendPreflight_AllVariantsHaveImages_ShouldPassImageCheck()
+    {
+        // Arrange
+        var (categoryId, brandId) = await GetCategoryAndBrandIdsAsync();
+        var (productId, variantId) = await SeedProductWithStockAsync("HASIMG-001", stock: 10);
+        await SeedVariantImageAsync(variantId);
+
+        var (syncManager, scope) = GetTenantScopedService<IProductSyncManager>();
+        using var _ = scope;
+
+        // Act
+        var preflight = await syncManager.GetSendPreflightAsync(productId, TrendyolMarketPlaceId);
+
+        // Assert
+        preflight.Data!.AllVariantsHaveImages.Should().BeTrue();
+        preflight.Data.VariantsWithoutImages.Should().BeEmpty();
     }
 
     /// <summary>
@@ -246,7 +297,7 @@ public class ProductSendIntegrationTests : IntegrationTestBase
         await SeedCategoryMarketPlaceMatchAsync(categoryId, TrendyolMarketPlaceId, 1001);
         await SeedBrandMarketPlaceMatchAsync(brandId, TrendyolMarketPlaceId, 101);
 
-        var (syncManager, scope1) = GetScopedService<IProductSyncManager>();
+        var (syncManager, scope1) = GetTenantScopedService<IProductSyncManager>();
         var (overrideManager, scope2) = GetScopedService<IMarketplaceOverrideManager>();
         using var _ = scope1;
         using var __ = scope2;

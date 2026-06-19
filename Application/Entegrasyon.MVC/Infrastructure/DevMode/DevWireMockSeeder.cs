@@ -100,6 +100,31 @@ public static class DevWireMockSeeder
                 }
             }
 
+            // Stok kaynağı garantisi (T109): Trendyol'a stok gönderilebilmesi için en az bir depo
+            // eşlenmiş olmalı. Dev DB'de ne MarketPlaceWarehouse ne IsDefaultMarketPlaceStock depo
+            // varsa, ürünler quantity:0 ile gider (satılamaz). Bu durumda ilk depoyu varsayılan
+            // pazaryeri stok kaynağı işaretle ki dev'de gerçek stok gönderimi test edilebilsin.
+            var hasTrendyolWarehouse = await db.MarketPlaceWarehouses
+                .AnyAsync(w => w.MarketPlaceId == MarketPlaceConstants.TrendyolMarketPlaceId);
+            var hasDefaultStockBranch = await db.BranchOffices.AnyAsync(b => b.IsDefaultMarketPlaceStock);
+            if (!hasTrendyolWarehouse && !hasDefaultStockBranch)
+            {
+                var firstBranch = await db.BranchOffices.AsTracking()
+                    .OrderBy(b => b.Id).FirstOrDefaultAsync();
+                if (firstBranch is not null)
+                {
+                    firstBranch.IsDefaultMarketPlaceStock = true;
+                    await db.SaveChangesAsync();
+                    logger.LogInformation(
+                        "DevWireMockSeeder: Stok kaynağı yoktu — '{Branch}' (Id={Id}) varsayılan pazaryeri stok deposu işaretlendi.",
+                        firstBranch.Name, firstBranch.Id);
+                }
+                else
+                {
+                    logger.LogWarning("DevWireMockSeeder: Hiç depo yok — Trendyol gönderiminde quantity:0 riski sürüyor.");
+                }
+            }
+
             if (updatedIds.Count > 0)
             {
                 await db.SaveChangesAsync();
