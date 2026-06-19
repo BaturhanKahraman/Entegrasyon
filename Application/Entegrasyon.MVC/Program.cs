@@ -38,6 +38,11 @@ builder.Services.AddControllersWithViews(options =>
     options.Filters.Add<TenantActionFilter>();
     options.Filters.Add<AutoValidationFilter>();
 
+    // Para alanları için esnek decimal binder (T111): invariant + Türkçe biçimi tolere eder.
+    // Default decimal binder'dan önce çalışsın diye başa eklenir.
+    options.ModelBinderProviders.Insert(0,
+        new Entegrasyon.MVC.Infrastructure.ModelBinding.FlexibleDecimalModelBinderProvider());
+
     // Türkçe doğrulama mesajları (implicit required dahil)
     options.ModelMetadataDetailsProviders.Add(new TurkishValidationMetadataProvider());
 
