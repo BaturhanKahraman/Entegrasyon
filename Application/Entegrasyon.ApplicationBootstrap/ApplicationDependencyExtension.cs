@@ -119,6 +119,10 @@ namespace Entegrasyon.ApplicationBootstrap
 
             services.AddSingleton<IRandomGenerator, RandomGenerator>();
             services.AddSingleton<IPrintBatchProgressBroadcaster, Entegrasyon.Business.Concrete.Printing.PrintBatchProgressBroadcaster>();
+
+            // Pazaryeri içerik kural profili + transform servisi (stateless — singleton). E1/E2.
+            services.AddSingleton<Entegrasyon.Business.Marketplace.Content.IMarketplaceContentRuleProvider, Entegrasyon.Business.Marketplace.Content.MarketplaceContentRuleProvider>();
+            services.AddSingleton<Entegrasyon.Business.Marketplace.Content.IMarketplaceContentTransformer, Entegrasyon.Business.Marketplace.Content.MarketplaceContentTransformer>();
             //services.AddUserServices<ApplicationUser, RootLogin, RootRole, RootClaim, IntegrationDbContext>();
 
             // Mapperly mappers (singletons — stateless source-generated mappers)
