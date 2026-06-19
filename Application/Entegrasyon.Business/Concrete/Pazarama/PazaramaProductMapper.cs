@@ -177,7 +177,7 @@ public sealed class PazaramaProductMapper(
         }
 
         if (items.Count == 0)
-            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Hicbir varyant Pazarama'ya gonderilemedi (gorsel eksik olabilir).");
+            return new ErrorDataResult<PazaramaCreateProductRequest>(null!, "Hiçbir varyant Pazarama'ya gönderilemedi (görsel eksik olabilir).");
 
         logger.LogInformation("Product {ProductId} mapped to {ItemCount} PazaramaProductItems", productId, items.Count);
         return new SuccessDataResult<PazaramaCreateProductRequest>(new PazaramaCreateProductRequest(items));

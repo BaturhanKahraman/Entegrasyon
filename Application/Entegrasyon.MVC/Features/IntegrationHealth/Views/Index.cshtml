@@ -72,8 +72,8 @@
                                 @{
                                     var elapsed = DateTimeOffset.UtcNow - Model.LastSyncTime.Value;
                                     var elapsedText = elapsed.TotalHours >= 1
-                                        ? $"{(int)elapsed.TotalHours} saat once"
-                                        : $"{(int)elapsed.TotalMinutes} dakika once";
+                                        ? $"{(int)elapsed.TotalHours} saat önce"
+                                        : $"{(int)elapsed.TotalMinutes} dakika önce";
                                 }
                                 @elapsedText
                             </div>
@@ -153,7 +153,7 @@
                 </h3>
                 <div class="card-actions">
                     <a href="/logs?logType=@((int)LogType.Error)" class="btn btn-sm btn-outline-secondary">
-                        Tum Hatalari Gor
+                        Tüm Hataları Gör
                     </a>
                 </div>
             </div>
@@ -165,8 +165,8 @@
                         <thead>
                             <tr>
                                 <th>Tarih</th>
-                                <th>Islem</th>
-                                <th>Icerik</th>
+                                <th>İşlem</th>
+                                <th>İçerik</th>
                             </tr>
                         </thead>
                         <tbody>

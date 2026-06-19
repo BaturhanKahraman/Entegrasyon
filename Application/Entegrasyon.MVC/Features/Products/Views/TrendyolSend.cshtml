@@ -4,7 +4,7 @@
 <div class="d-flex justify-content-end mb-3">
     <a href="/products/@Model.ProductId/sync" class="btn btn-outline-secondary">
         <i class="ti ti-arrow-left icon"></i>
-        Geri Don
+        Geri Dön
     </a>
 </div>
 
@@ -107,21 +107,21 @@
                     @Html.AntiForgeryToken()
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Gonderim Ayarlari</h3>
+                            <h3 class="card-title">Gönderim Ayarları</h3>
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <label class="form-label">Baslik Override</label>
+                                <label class="form-label">Başlık Override</label>
                                 <input type="text" class="form-control" name="TitleOverride"
                                        value="@Model.TitleOverride"
-                                       placeholder="Bos birakilirsa ürün basligi kullanilir"
+                                       placeholder="Boş bırakılırsa ürün başlığı kullanılır"
                                        @(Model.PreflightPassed ? "" : "disabled")>
                                 <small class="form-hint">Trendyol'da görünecek başlık. Boş bırakırsanız ürünün mevcut başlığı gönderilir.</small>
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Açıklama Override</label>
                                 <textarea class="form-control" name="DescriptionOverride" rows="4"
-                                          placeholder="Bos birakilirsa ürün aciklamasi kullanilir"
+                                          placeholder="Boş bırakılırsa ürün açıklaması kullanılır"
                                           @(Model.PreflightPassed ? "" : "disabled")>@Model.DescriptionOverride</textarea>
                                 <small class="form-hint">Trendyol'da görünecek açıklama. Boş bırakırsanız ürünün mevcut açıklaması gönderilir.</small>
                             </div>
@@ -187,9 +187,9 @@
                         <div class="card-footer text-end">
                             <button type="submit" class="btn btn-primary"
                                     @(Model.PreflightPassed ? "" : "disabled")
-                                    onclick="return confirm('Bu urunu Trendyol\'a gondermek istediginize emin misiniz?')">
+                                    onclick="return confirm('Bu ürünü Trendyol\'a göndermek istediğinize emin misiniz?')">
                                 <i class="ti ti-send icon"></i>
-                                Trendyol'a Gonder
+                                Trendyol'a Gönder
                             </button>
                         </div>
                     </div>
@@ -202,7 +202,7 @@
                 <div class="col-12">
                     <div class="card">
                         <div class="card-header">
-                            <h3 class="card-title">Gonderim On Izleme</h3>
+                            <h3 class="card-title">Gönderim Ön İzleme</h3>
                         </div>
                         <div class="card-body">
                             <div class="row">

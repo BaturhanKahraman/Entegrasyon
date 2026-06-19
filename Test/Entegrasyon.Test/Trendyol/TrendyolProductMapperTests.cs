@@ -276,7 +276,7 @@ public class TrendyolProductMapperTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Message.Should().Contain("gorsel");
+        result.Message.Should().Contain("görsel");
     }
 
     // ── Test 7: SalePrice capped to ListPrice ──

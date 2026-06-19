@@ -217,7 +217,7 @@ public sealed class TrendyolProductMapper(
         }
 
         if (items.Count == 0)
-            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Hicbir varyant Trendyol'a gonderilemedi (gorsel eksik olabilir).");
+            return new ErrorDataResult<TrendyolCreateProductRequest>(null!, "Hiçbir varyant Trendyol'a gönderilemedi (görsel eksik olabilir).");
 
         logger.LogInformation("Product {ProductId} mapped to {ItemCount} TrendyolProductItems", productId, items.Count);
         return new SuccessDataResult<TrendyolCreateProductRequest>(new TrendyolCreateProductRequest(items));

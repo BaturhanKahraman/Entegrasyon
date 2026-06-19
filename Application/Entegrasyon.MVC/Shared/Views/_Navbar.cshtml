@@ -46,12 +46,12 @@
 
             @* ── Kullanici Dropdown ── *@
             <div class="nav-item dropdown">
-                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Kullanici Menusu">
+                <a href="#" class="nav-link d-flex lh-1 text-reset p-0" data-bs-toggle="dropdown" aria-label="Kullanıcı Menüsü">
                     <span class="avatar avatar-sm">
                         <i class="ti ti-user"></i>
                     </span>
                     <div class="d-none d-xl-block ps-2">
-                        <div>@(User.Identity?.Name ?? "Kullanici")</div>
+                        <div>@(User.Identity?.Name ?? "Kullanıcı")</div>
                     </div>
                 </a>
                 <div class="dropdown-menu dropdown-menu-end dropdown-menu-arrow">
@@ -61,7 +61,7 @@
                     <div class="dropdown-divider"></div>
                     <form asp-controller="Auth" asp-action="Logout" method="post">
                         <button type="submit" class="dropdown-item text-danger">
-                            <i class="ti ti-logout me-2"></i>Cikis Yap
+                            <i class="ti ti-logout me-2"></i>Çıkış Yap
                         </button>
                     </form>
                 </div>

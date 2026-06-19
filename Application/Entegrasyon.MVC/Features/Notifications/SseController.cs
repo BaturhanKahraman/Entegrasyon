@@ -52,8 +52,24 @@ public sealed class SseController(ISseConnectionRegistry registry, ILogger<SseCo
 
         try
         {
-            await foreach (var msg in channel.Reader.ReadAllAsync(ct))
+            // Client disconnect cancels `ct`; reading must end gracefully (break) instead of
+            // letting OperationCanceledException propagate out of the iterator — that surfaces
+            // as a logged HTTP 500 in SseFormatter on every normal disconnect (log pollution).
+            while (true)
             {
+                SseNotificationPayload msg;
+                try
+                {
+                    if (!await channel.Reader.WaitToReadAsync(ct))
+                        break;
+                    if (!channel.Reader.TryRead(out msg!))
+                        continue;
+                }
+                catch (OperationCanceledException)
+                {
+                    break;
+                }
+
                 yield return new SseItem<SseNotificationPayload>(msg, msg.EventType)
                 {
                     ReconnectionInterval = TimeSpan.FromSeconds(5)

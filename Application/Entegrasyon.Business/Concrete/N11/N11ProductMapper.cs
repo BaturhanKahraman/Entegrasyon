@@ -130,7 +130,7 @@ public sealed class N11ProductMapper(
         }
 
         if (stockItemElements.Count == 0)
-            return new ErrorDataResult<XElement>(null!, "Hicbir varyant N11'e gonderilemedi.");
+            return new ErrorDataResult<XElement>(null!, "Hiçbir varyant N11'e gönderilemedi.");
 
         // 10. Görseller
         var imageElements = productImages
