@@ -41,21 +41,21 @@
                                 @{ RenderCheck(Model.Preflight.CategoryMatched,
                                     "Kategori Eşleştirmesi",
                                     Model.Preflight.CategoryMatched
-                                        ? $"Eslesti: {Model.Preflight.MatchedCategoryName}"
-                                        : $"Trendyol kategori eslestirmesi bulunamadı ({Model.Preflight.ProductCategoryName})",
+                                        ? $"Eşleşti: {Model.Preflight.MatchedCategoryName}"
+                                        : $"Trendyol kategori eşleştirmesi bulunamadı ({Model.Preflight.ProductCategoryName})",
                                     Model.Preflight.CategoryMatched ? null : categoryFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.BrandMatched,
                                     "Marka Eşleştirmesi",
                                     Model.Preflight.BrandMatched
-                                        ? $"Eslesti: {Model.Preflight.MatchedBrandName}"
-                                        : $"Trendyol marka eslestirmesi bulunamadı ({Model.Preflight.ProductBrandName})",
+                                        ? $"Eşleşti: {Model.Preflight.MatchedBrandName}"
+                                        : $"Trendyol marka eşleştirmesi bulunamadı ({Model.Preflight.ProductBrandName})",
                                     Model.Preflight.BrandMatched ? null : brandFixUrl); }
 
                                 @{ RenderCheck(Model.Preflight.RequiredAttributesMatched,
                                     "Zorunlu Özellikler",
                                     Model.Preflight.RequiredAttributesMatched
-                                        ? "Tum zorunlu ozellikler eslesti"
+                                        ? "Tüm zorunlu özellikler eşleşti"
                                         : $"Eksik: {string.Join(", ", Model.Preflight.MissingAttributes)}",
                                     Model.Preflight.RequiredAttributesMatched ? null : attrFixUrl); }
 

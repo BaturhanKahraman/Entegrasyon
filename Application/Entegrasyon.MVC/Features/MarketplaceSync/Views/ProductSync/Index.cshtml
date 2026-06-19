@@ -66,14 +66,14 @@
                                 hx-swap="outerHTML"
                                 hx-include="[name='search']"
                                 hx-vals='{"mp": @Model.SelectedMarketPlaceId}'>
-                            <option value="">Tum Durumlar</option>
+                            <option value="">Tüm Durumlar</option>
                             <option value="Synced" selected="@(Model.StateFilter == "Synced")">Senkronize</option>
                             <option value="Waiting" selected="@(Model.StateFilter == "Waiting")">Bekleyen</option>
-                            <option value="Processing" selected="@(Model.StateFilter == "Processing")">Isleniyor</option>
-                            <option value="OutOfSync" selected="@(Model.StateFilter == "OutOfSync")">Guncellenmemis</option>
+                            <option value="Processing" selected="@(Model.StateFilter == "Processing")">İşleniyor</option>
+                            <option value="OutOfSync" selected="@(Model.StateFilter == "OutOfSync")">Güncellenmemiş</option>
                             <option value="Failed" selected="@(Model.StateFilter == "Failed")">Hatalı</option>
                             <option value="Rejected" selected="@(Model.StateFilter == "Rejected")">Reddedildi</option>
-                            <option value="NeverSynced" selected="@(Model.StateFilter == "NeverSynced")">Hic Senkronize Edilmemis</option>
+                            <option value="NeverSynced" selected="@(Model.StateFilter == "NeverSynced")">Hiç Senkronize Edilmemiş</option>
                         </select>
                     </div>
                 </div>
