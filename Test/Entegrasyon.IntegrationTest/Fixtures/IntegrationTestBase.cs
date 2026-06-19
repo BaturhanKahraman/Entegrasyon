@@ -262,7 +262,9 @@ public abstract class IntegrationTestBase : IAsyncLifetime
     protected async Task SeedMarketPlaceAsync(int id, string name, string? baseUrl = null)
     {
         using var dbContext = CreateDbContext();
-        if (!await dbContext.MarketPlaces.AnyAsync(mp => mp.Id == id))
+        // AsTracking ŞART (global no-tracking): mevcut satırın credential'larını güncelleyebilmek için.
+        var existing = await dbContext.MarketPlaces.AsTracking().FirstOrDefaultAsync(mp => mp.Id == id);
+        if (existing is null)
         {
             dbContext.MarketPlaces.Add(new MarketPlace
             {
@@ -277,8 +279,18 @@ public abstract class IntegrationTestBase : IAsyncLifetime
                 TokenUrl = "https://token.example.com",
                 CreatedAt = DateTimeOffset.UtcNow
             });
-            await dbContext.SaveChangesAsync();
         }
+        else
+        {
+            // Migration/seed'den gelen credential'sız satır olabilir — upsert et (aksi halde
+            // credential guard reddeder; ilk-test/izolasyon koşumunda flaky).
+            existing.BaseUrl = baseUrl ?? WireMock.BaseUrl;
+            existing.SellerId = "1";
+            existing.ApiKey = "test-api-key";
+            existing.ApiSecret = "test-api-secret";
+            existing.TokenUrl = "https://token.example.com";
+        }
+        await dbContext.SaveChangesAsync();
     }
 
     /// <summary>

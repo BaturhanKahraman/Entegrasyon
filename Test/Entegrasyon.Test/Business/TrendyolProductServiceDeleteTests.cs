@@ -34,6 +34,8 @@ public class TrendyolProductServiceDeleteTests : BaseTest
             _mockMapper.Object,
             _validator,
             _mockActivityLogger.Object,
+            new Entegrasyon.Business.Marketplace.Content.MarketplaceContentTransformer(),
+            new Entegrasyon.Business.Marketplace.Content.MarketplaceContentRuleProvider(),
             NullLogger<TrendyolProductService>.Instance);
 
         // Default: logger does nothing

@@ -51,6 +51,8 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
         _productMapperMock.Object,
         _validator,
         _activityLoggerMock.Object,
+        new Entegrasyon.Business.Marketplace.Content.MarketplaceContentTransformer(),
+        new Entegrasyon.Business.Marketplace.Content.MarketplaceContentRuleProvider(),
         _loggerMock.Object);
 
     private void SetupMarketPlace(string? sellerId = "12345")

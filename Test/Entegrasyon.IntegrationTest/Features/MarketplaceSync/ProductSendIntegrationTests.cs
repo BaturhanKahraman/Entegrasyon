@@ -284,6 +284,44 @@ public class ProductSendIntegrationTests : IntegrationTestBase
     }
 
     /// <summary>
+    /// T110/T109 önizleme tutarlılığı: GetSendPreviewAsync gerçekte gönderilecek içeriği yansıtmalı —
+    /// HTML açıklama düz metne çevrilmiş, stok gerçek (hardcoded 0 DEĞİL). Canlı denetimde önizleme
+    /// ham HTML + "STOK 0" gösteriyordu (gerçek mapper doğruyken).
+    /// </summary>
+    [Fact]
+    public async Task GetSendPreview_HtmlDescriptionAndStock_ReflectsActualSendContent()
+    {
+        // Arrange
+        var (categoryId, brandId) = await GetCategoryAndBrandIdsAsync();
+        var (productId, variantId) = await SeedProductWithStockAsync("PREVIEW-001", stock: 42);
+        await SeedCategoryMarketPlaceMatchAsync(categoryId, TrendyolMarketPlaceId, 1001);
+        await SeedBrandMarketPlaceMatchAsync(brandId, TrendyolMarketPlaceId, 101);
+        await SeedVariantImageAsync(variantId);
+        using (var db = CreateDbContext())
+        {
+            // AsTracking ŞART: xmin concurrency token'lı entity no-tracking + Update edilirse 0 row.
+            var p = await db.MainProducts.AsTracking().FirstAsync(x => x.Id == productId);
+            p.Description = "<b>Kalın</b> metin.<ul><li>Madde 1</li></ul>";
+            var branch = await db.BranchOffices.AsTracking().OrderBy(b => b.Id).FirstAsync();
+            branch.IsDefaultMarketPlaceStock = true;
+            await db.SaveChangesAsync();
+        }
+
+        var (service, scope) = GetScopedService<ITrendyolProductService>();
+        using var _ = scope;
+
+        // Act
+        var preview = await service.GetSendPreviewAsync(productId, overrides: null);
+
+        // Assert
+        preview.Success.Should().BeTrue(preview.Message);
+        preview.Data!.Description.Should().NotContain("<");
+        preview.Data.Description.Should().Contain("Kalın");
+        preview.Data.Variants.Should().NotBeEmpty();
+        preview.Data.Variants.First().Quantity.Should().Be(42); // hardcoded 0 değil
+    }
+
+    /// <summary>
     /// Product already synced once, user syncs again after modifying overrides.
     /// Expected: Product status reset to Pending, existing override replaced.
     /// </summary>
@@ -304,7 +342,7 @@ public class ProductSendIntegrationTests : IntegrationTestBase
 
         // Act 1: Initial sync
         var firstSync = await syncManager.SyncProductAsync(productId, TrendyolMarketPlaceId);
-        firstSync.Success.Should().BeTrue();
+        firstSync.Success.Should().BeTrue(firstSync.Message);
 
         // Simulate published state
         using (var dbContext = CreateDbContext())

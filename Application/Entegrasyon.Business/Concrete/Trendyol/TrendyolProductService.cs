@@ -21,6 +21,8 @@ public sealed class TrendyolProductService(
     ITrendyolProductMapper productMapper,
     TrendyolMappingValidator mappingValidator,
     IProductActivityLogger activityLogger,
+    Entegrasyon.Business.Marketplace.Content.IMarketplaceContentTransformer contentTransformer,
+    Entegrasyon.Business.Marketplace.Content.IMarketplaceContentRuleProvider contentRuleProvider,
     ILogger<TrendyolProductService> logger) : ITrendyolProductService
 {
     public async Task<IDataResult<string>> PublishProductAsync(Guid productId)
@@ -317,11 +319,20 @@ public sealed class TrendyolProductService(
         var product = await context.MainProducts
             .Include(p => p.Brand)
             .Include(p => p.Category)
-            .Include(p => p.ProductVariants)
+            .Include(p => p.ProductVariants).ThenInclude(v => v.BranchOfficeStocks)
             .FirstOrDefaultAsync(p => p.Id == productId);
 
         if (product is null)
             return new ErrorDataResult<TrendyolSendPreviewDto>(null!, "Ürün bulunamadı.");
+
+        // Stok kaynağı depolarını mapper ile aynı mantıkla çöz (önizleme = gerçekte gidecek stok).
+        var warehouseIds = await context.MarketPlaceWarehouses.AsNoTracking()
+            .Where(w => w.MarketPlaceId == TrendyolMarketPlaceId)
+            .Select(w => w.BranchOfficeId).ToListAsync();
+        if (warehouseIds.Count == 0)
+            warehouseIds = await context.BranchOffices.AsNoTracking()
+                .Where(b => b.IsDefaultMarketPlaceStock)
+                .Select(b => b.Id).ToListAsync();
 
         // 1. Kategori eşleştirmesini al
         var categoryMatch = await context.CategoryMarketplaces
@@ -353,8 +364,10 @@ public sealed class TrendyolProductService(
                 .FirstOrDefault(vo => vo.ProductVariantId == variant.Id)
                 ?.SalePriceOverride ?? variant.SalePrice;
 
-            // Stok basit olarak 0 (DB schema'da stock ayrı tablada)
-            var totalStock = 0;
+            // Stok: seçili depoların stok toplamı (mapper ile aynı — önizleme gerçeği yansıtsın).
+            var totalStock = variant.BranchOfficeStocks
+                .Where(s => warehouseIds.Contains(s.BranchOfficeId))
+                .Sum(s => s.CurrentStock);
 
             variants.Add(new TrendyolPreviewVariantDto(
                 variant.Barcode ?? "—",
@@ -365,9 +378,14 @@ public sealed class TrendyolProductService(
             ));
         }
 
-        // 5. Başlık ve açıklamayı al
-        var title = overrides?.TitleOverride ?? product.Title;
-        var description = overrides?.DescriptionOverride ?? product.Description;
+        // 5. Başlık ve açıklamayı al — Trendyol kurallarına göre dönüştür (HTML→düz metin, limit).
+        //    Önizleme gerçekte gönderilecek içeriği göstermeli (mapper ile aynı transform — T110).
+        var rawTitle = overrides?.TitleOverride ?? product.Title;
+        var rawDescription = overrides?.DescriptionOverride ?? product.Description;
+        var contentRules = contentRuleProvider.GetRules(TrendyolMarketPlaceId);
+        var transformed = contentTransformer.TransformForMarketplace(rawTitle, rawDescription, contentRules);
+        var title = transformed.Title;
+        var description = transformed.Description;
 
         var preview = new TrendyolSendPreviewDto(
             Title: title,
