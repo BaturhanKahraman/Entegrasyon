@@ -19,15 +19,16 @@
             </div>
         </div>
 
-        <!-- Chart Placeholder -->
+        <!-- Performans Grafiği: en çok gelir getiren ürünler -->
         <div class="card mb-3">
             <div class="card-header">
-                <h3 class="card-title">Performans Grafiği</h3>
+                <div>
+                    <h3 class="card-title">Performans Grafiği</h3>
+                    <p class="text-secondary m-0">En çok gelir getiren ürünler</p>
+                </div>
             </div>
             <div class="card-body">
-                <div id="performance-chart" style="height:300px; display:flex; align-items:center; justify-content:center;">
-                    <span class="text-secondary">Grafik alanı— chart kutuphanesi entegre edilecek</span>
-                </div>
+                <div id="performance-chart" data-apex-chart style="height:340px;"></div>
             </div>
         </div>
 
@@ -68,3 +69,59 @@
                 </table>
             </div>
         </div>
+
+@section Scripts {
+    @{
+        // Grafik için en çok gelir getiren ilk 10 ürün; yatay çubukta en büyük üstte
+        // görünsün diye artan sırada (Reverse) veriyoruz. Salt-okuma — ek sorgu yok,
+        // mevcut tablo verisinden türetilir.
+        var chartItems = Model
+            .OrderByDescending(p => p.TotalRevenue)
+            .Take(10)
+            .Reverse()
+            .ToList();
+        var jsEnc = System.Text.Encodings.Web.JavaScriptEncoder.Default;
+    }
+    <script>
+        (function () {
+            var el = document.querySelector('#performance-chart');
+            if (!el || typeof ApexCharts === 'undefined') return;
+
+            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            var textColor = isDark ? '#a0aec0' : '#666';
+            var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+
+            var options = {
+                chart: {
+                    id: 'performance-chart',
+                    type: 'bar',
+                    height: 340,
+                    toolbar: { show: false },
+                    fontFamily: 'inherit',
+                    background: 'transparent'
+                },
+                theme: { mode: isDark ? 'dark' : 'light' },
+                plotOptions: { bar: { horizontal: true, borderRadius: 4, barHeight: '70%' } },
+                series: [{
+                    name: 'Gelir',
+                    data: [@Html.Raw(string.Join(",", chartItems.Select(p => p.TotalRevenue.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))]
+                }],
+                xaxis: {
+                    categories: [@Html.Raw(string.Join(",", chartItems.Select(p => "'" + jsEnc.Encode(p.ProductName) + "'")))],
+                    labels: {
+                        style: { colors: textColor },
+                        formatter: function (val) { return Number(val).toLocaleString('tr-TR') + ' ₺'; }
+                    }
+                },
+                yaxis: { labels: { style: { colors: textColor } } },
+                colors: [getComputedStyle(document.documentElement).getPropertyValue('--tblr-primary').trim() || '#206bc4'],
+                grid: { borderColor: gridColor },
+                tooltip: { y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; } } },
+                dataLabels: { enabled: false },
+                noData: { text: 'Seçilen aralıkta ürün performans verisi yok' }
+            };
+
+            new ApexCharts(el, options).render();
+        })();
+    </script>
+}

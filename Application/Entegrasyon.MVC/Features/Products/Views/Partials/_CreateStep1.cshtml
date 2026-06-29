@@ -7,7 +7,7 @@
 }
 
 <div data-wizard-step="1">
-<form hx-post="/products/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
+<form id="step1-form" novalidate hx-post="/products/add/step1" hx-target="#wizard-content" hx-swap="innerHTML">
     @Html.AntiForgeryToken()
     <div class="card">
         <div class="card-header"><h3 class="card-title">Genel Bilgiler</h3></div>
@@ -37,6 +37,7 @@
                     {
                         <div class="invalid-feedback">@ViewData.ModelState["Title"]!.Errors.First().ErrorMessage</div>
                     }
+                    <div class="text-danger small mt-1 d-none" data-client-feedback="Title">Lütfen ürün adını girin.</div>
                 </div>
                 <div class="col-md-6 mb-3">
                     <label class="form-label">Stok Kodu</label>
@@ -66,6 +67,7 @@
                     {
                         <div class="text-danger small mt-1">@ViewData.ModelState["BrandId"]!.Errors.First().ErrorMessage</div>
                     }
+                    <div class="text-danger small mt-1 d-none" data-client-feedback="BrandId">Lütfen bir marka seçin.</div>
                 </div>
 
                 @* -- Category (Tom Select) -- *@
@@ -87,6 +89,7 @@
                     {
                         <div class="text-danger small mt-1">@ViewData.ModelState["CategoryId"]!.Errors.First().ErrorMessage</div>
                     }
+                    <div class="text-danger small mt-1 d-none" data-client-feedback="CategoryId">Lütfen bir kategori seçin.</div>
                 </div>
 
                 <div class="col-md-3 mb-3">
@@ -159,6 +162,66 @@ function initStep1() {
         allowEmptyOption: true,
         placeholder: 'Kategori seçin...'
     });
+
+    // -- Client-side zorunlu alan doğrulaması (TomSelect + Title) --
+    // Form novalidate; native İngilizce "Please select an item" tooltip yerine Tabler
+    // .is-invalid + Türkçe geri bildirim. Capture-fazında çalışır: geçersizse
+    // stopPropagation ile htmx submit'ini engeller (currency-input deseniyle aynı).
+    var step1Form = document.getElementById('step1-form');
+    var titleInput = step1Form.querySelector('[name="Title"]');
+
+    function feedbackEl(name) {
+        return step1Form.querySelector('[data-client-feedback="' + name + '"]');
+    }
+
+    function setInputInvalid(input, name, invalid) {
+        input.classList.toggle('is-invalid', invalid);
+        feedbackEl(name)?.classList.toggle('d-none', !invalid);
+    }
+
+    function setTsInvalid(ts, name, invalid) {
+        ts.wrapper.classList.toggle('is-invalid', invalid);
+        feedbackEl(name)?.classList.toggle('d-none', !invalid);
+    }
+
+    // Kullanıcı düzeltince hatayı temizle.
+    titleInput.addEventListener('input', function () {
+        if (titleInput.value.trim()) setInputInvalid(titleInput, 'Title', false);
+    });
+    brandTs.on('change', function (v) { if (v) setTsInvalid(brandTs, 'BrandId', false); });
+    catTs.on('change', function (v) { if (v) setTsInvalid(catTs, 'CategoryId', false); });
+
+    step1Form.addEventListener('submit', function (e) {
+        var ok = true;
+        var firstInvalid = null;
+
+        if (!titleInput.value.trim()) {
+            setInputInvalid(titleInput, 'Title', true);
+            ok = false; firstInvalid = firstInvalid || titleInput;
+        } else {
+            setInputInvalid(titleInput, 'Title', false);
+        }
+
+        if (!brandTs.getValue()) {
+            setTsInvalid(brandTs, 'BrandId', true);
+            ok = false; firstInvalid = firstInvalid || brandTs.control_input;
+        } else {
+            setTsInvalid(brandTs, 'BrandId', false);
+        }
+
+        if (!catTs.getValue()) {
+            setTsInvalid(catTs, 'CategoryId', true);
+            ok = false; firstInvalid = firstInvalid || catTs.control_input;
+        } else {
+            setTsInvalid(catTs, 'CategoryId', false);
+        }
+
+        if (!ok) {
+            e.preventDefault();
+            e.stopPropagation(); // htmx submit handler'ına ulaşmasın
+            if (firstInvalid && typeof firstInvalid.focus === 'function') firstInvalid.focus();
+        }
+    }, true); // capture: htmx'ten önce çalış
 
     // -- Brand quick-add: + button opens modal --
     var brandAddInput = document.getElementById('brand-add-input');

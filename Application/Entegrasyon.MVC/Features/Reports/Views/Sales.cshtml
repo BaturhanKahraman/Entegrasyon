@@ -55,15 +55,13 @@
             </div>
         </div>
 
-        <!-- Chart Placeholder -->
+        <!-- Günlük Satış Grafiği -->
         <div class="card mb-3">
             <div class="card-header">
                 <h3 class="card-title">Günlük Satış Grafiği</h3>
             </div>
             <div class="card-body">
-                <div id="sales-chart" style="height:300px; display:flex; align-items:center; justify-content:center;">
-                    <span class="text-secondary">Grafik alanı— chart kütüphanesi entegre edilecek</span>
-                </div>
+                <div id="sales-chart" data-apex-chart style="height:300px;"></div>
             </div>
         </div>
 
@@ -96,3 +94,51 @@
                 </table>
             </div>
         </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var el = document.querySelector('#sales-chart');
+            if (!el || typeof ApexCharts === 'undefined') return;
+
+            var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+            var textColor = isDark ? '#a0aec0' : '#666';
+            var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+
+            var options = {
+                chart: {
+                    id: 'sales-chart',
+                    type: 'area',
+                    height: 300,
+                    toolbar: { show: false },
+                    fontFamily: 'inherit',
+                    background: 'transparent'
+                },
+                theme: { mode: isDark ? 'dark' : 'light' },
+                series: [{
+                    name: 'Ciro',
+                    data: [@Html.Raw(string.Join(",", Model.DailySales.Select(d => d.Revenue.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))]
+                }],
+                xaxis: {
+                    categories: [@Html.Raw(string.Join(",", Model.DailySales.Select(d => "'" + d.Date.ToString("dd MMM", new System.Globalization.CultureInfo("tr-TR")) + "'")))],
+                    labels: { style: { colors: textColor } }
+                },
+                yaxis: {
+                    labels: {
+                        style: { colors: textColor },
+                        formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; }
+                    }
+                },
+                colors: [getComputedStyle(document.documentElement).getPropertyValue('--tblr-primary').trim() || '#206bc4'],
+                fill: { type: 'gradient', gradient: { opacityFrom: 0.4, opacityTo: 0.05 } },
+                stroke: { curve: 'smooth', width: 2 },
+                grid: { borderColor: gridColor },
+                tooltip: { y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; } } },
+                dataLabels: { enabled: false },
+                noData: { text: 'Seçilen aralıkta satış verisi yok' }
+            };
+
+            new ApexCharts(el, options).render();
+        })();
+    </script>
+}

@@ -129,48 +129,6 @@
         </div>
         <div class="card-body">
             <div id="marketplace-chart" data-apex-chart style="height: 320px;"></div>
-            <script>
-                (function () {
-                    var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
-                    var textColor = isDark ? '#a0aec0' : '#666';
-                    var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
-                    var css = getComputedStyle(document.documentElement);
-                    var revColor = css.getPropertyValue('--tblr-primary').trim() || '#206bc4';
-                    var comColor = css.getPropertyValue('--tblr-red').trim() || '#d63939';
-
-                    var options = {
-                        chart: {
-                            type: 'bar',
-                            height: 320,
-                            toolbar: { show: false },
-                            fontFamily: 'inherit',
-                            background: 'transparent'
-                        },
-                        theme: { mode: isDark ? 'dark' : 'light' },
-                        plotOptions: { bar: { columnWidth: '55%', borderRadius: 4 } },
-                        series: [
-                            { name: 'Gelir', data: [@Html.Raw(string.Join(",", rows.Select(r => r.TotalRevenue.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))] },
-                            { name: 'Komisyon', data: [@Html.Raw(string.Join(",", rows.Select(r => r.CommissionPaid.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))] }
-                        ],
-                        colors: [revColor, comColor],
-                        xaxis: {
-                            categories: [@Html.Raw(string.Join(",", rows.Select(r => "'" + System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(r.MarketplaceName) + "'")))],
-                            labels: { style: { colors: textColor } }
-                        },
-                        yaxis: {
-                            labels: {
-                                style: { colors: textColor },
-                                formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; }
-                            }
-                        },
-                        legend: { labels: { colors: textColor } },
-                        grid: { borderColor: gridColor },
-                        tooltip: { y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; } } },
-                        dataLabels: { enabled: false }
-                    };
-                    new ApexCharts(document.querySelector('#marketplace-chart'), options).render();
-                })();
-            </script>
         </div>
     </div>
 
@@ -272,4 +230,53 @@ else
                      }'/>
         </div>
     </div>
+}
+
+@section Scripts {
+    <script>
+        (function () {
+            var el = document.querySelector('#marketplace-chart');
+            if (!el || typeof ApexCharts === 'undefined') return;
+
+                var isDark = document.documentElement.getAttribute('data-bs-theme') === 'dark';
+                var textColor = isDark ? '#a0aec0' : '#666';
+                var gridColor = isDark ? '#2c3e56' : '#e0e0e0';
+                var css = getComputedStyle(document.documentElement);
+                var revColor = css.getPropertyValue('--tblr-primary').trim() || '#206bc4';
+                var comColor = css.getPropertyValue('--tblr-red').trim() || '#d63939';
+
+                var options = {
+                    chart: {
+                        id: 'marketplace-chart',
+                        type: 'bar',
+                        height: 320,
+                        toolbar: { show: false },
+                        fontFamily: 'inherit',
+                        background: 'transparent'
+                    },
+                    theme: { mode: isDark ? 'dark' : 'light' },
+                    plotOptions: { bar: { columnWidth: '55%', borderRadius: 4 } },
+                    series: [
+                        { name: 'Gelir', data: [@Html.Raw(string.Join(",", rows.Select(r => r.TotalRevenue.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))] },
+                        { name: 'Komisyon', data: [@Html.Raw(string.Join(",", rows.Select(r => r.CommissionPaid.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture))))] }
+                    ],
+                    colors: [revColor, comColor],
+                    xaxis: {
+                        categories: [@Html.Raw(string.Join(",", rows.Select(r => "'" + System.Text.Encodings.Web.JavaScriptEncoder.Default.Encode(r.MarketplaceName) + "'")))],
+                        labels: { style: { colors: textColor } }
+                    },
+                    yaxis: {
+                        labels: {
+                            style: { colors: textColor },
+                            formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; }
+                        }
+                    },
+                    legend: { labels: { colors: textColor } },
+                    grid: { borderColor: gridColor },
+                    tooltip: { y: { formatter: function (val) { return val.toLocaleString('tr-TR') + ' ₺'; } } },
+                    dataLabels: { enabled: false }
+                };
+                new ApexCharts(el, options).render();
+            })();
+        </script>
 }
