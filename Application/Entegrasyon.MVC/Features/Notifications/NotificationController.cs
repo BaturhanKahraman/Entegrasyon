@@ -72,7 +72,7 @@ public class NotificationController(
     [HttpGet("/admin/notifications")]
     public async Task<IActionResult> Admin()
     {
-        ViewData.SetPageTitle("Bildirim Yonetimi");
+        ViewData.SetPageTitle("Bildirim Yönetimi");
         ViewData.SetActiveNav("notifications");
 
         var recentNotifications = await notificationManager.GetAllNotificationsAsync(50);

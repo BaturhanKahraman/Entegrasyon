@@ -27,9 +27,9 @@ public class ReportController(
     [HttpGet("/reports/sales")]
     public async Task<IActionResult> Sales(DateOnly? startDate = null, DateOnly? endDate = null)
     {
-        ViewData.SetPageTitle("Satis Raporu");
+        ViewData.SetPageTitle("Satış Raporu");
         ViewData.SetActiveNav("reports");
-        ViewData.SetBreadcrumb(("Raporlar", null), ("Satis", null));
+        ViewData.SetBreadcrumb(("Raporlar", null), ("Satış", null));
 
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
         var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);
@@ -81,9 +81,9 @@ public class ReportController(
     public async Task<IActionResult> StockAlerts(
         int threshold = 10, int page = 1, int? branchOfficeId = null, StockAlertLevel? alertLevel = null)
     {
-        ViewData.SetPageTitle("Stok Uyarilari");
+        ViewData.SetPageTitle("Stok Uyarıları");
         ViewData.SetActiveNav("reports-stock-alerts");
-        ViewData.SetBreadcrumb(("Raporlar", null), ("Stok Uyarilari", null));
+        ViewData.SetBreadcrumb(("Raporlar", null), ("Stok Uyarıları", null));
 
         var data = await reportManager.GetStockAlertReportAsync(new StockAlertPaginatedRequest
         {
@@ -227,9 +227,9 @@ public class ReportController(
     [HttpGet("/reports/customers")]
     public async Task<IActionResult> Customers(string? segment = null, int page = 1)
     {
-        ViewData.SetPageTitle("Musteri Raporu");
+        ViewData.SetPageTitle("Müşteri Raporu");
         ViewData.SetActiveNav("reports-customers");
-        ViewData.SetBreadcrumb(("Raporlar", null), ("Musteriler", null));
+        ViewData.SetBreadcrumb(("Raporlar", null), ("Müşteriler", null));
 
         // RFM-zenginleştirilmiş sayfalı liste + segment filtresi (""/null=tümü, "vip"|"risk"|"yeni"|"dormant").
         var result = await customerReportManager.GetRfmPageableAsync(segment, page - 1, 50);
@@ -285,9 +285,9 @@ public class ReportController(
     [HttpGet("/reports/returns")]
     public async Task<IActionResult> Returns(DateOnly? startDate = null, DateOnly? endDate = null)
     {
-        ViewData.SetPageTitle("Iade Raporu");
+        ViewData.SetPageTitle("İade Raporu");
         ViewData.SetActiveNav("reports-returns");
-        ViewData.SetBreadcrumb(("Raporlar", null), ("Iade", null));
+        ViewData.SetBreadcrumb(("Raporlar", null), ("İade", null));
 
         // İade hacmi seyrek — varsayılan son 90 gün.
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-90));
@@ -352,9 +352,9 @@ public class ReportController(
     [HttpGet("/reports/category-sales")]
     public async Task<IActionResult> CategorySales(DateOnly? startDate = null, DateOnly? endDate = null)
     {
-        ViewData.SetPageTitle("Kategori Bazli Satis");
+        ViewData.SetPageTitle("Kategori Bazlı Satış");
         ViewData.SetActiveNav("reports-category-sales");
-        ViewData.SetBreadcrumb(("Raporlar", null), ("Kategori Satis", null));
+        ViewData.SetBreadcrumb(("Raporlar", null), ("Kategori Satış", null));
 
         var start = startDate ?? DateOnly.FromDateTime(DateTime.Today.AddDays(-30));
         var end = endDate ?? DateOnly.FromDateTime(DateTime.Today);

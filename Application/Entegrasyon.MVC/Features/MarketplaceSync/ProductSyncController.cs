@@ -22,11 +22,11 @@ public class ProductSyncController(
         string? search = null,
         int page = 1)
     {
-        ViewData.SetPageTitle("Urun Senkronizasyon");
+        ViewData.SetPageTitle("Ürün Senkronizasyon");
         ViewData.SetActiveNav("marketplace-matching");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyon", "/marketplace/sync"),
-            ("Urun Senkronizasyon", null));
+            ("Ürün Senkronizasyon", null));
 
         var stateFilter = ParseSyncState(state);
         var pageIndex = Math.Max(0, page - 1);
@@ -84,7 +84,7 @@ public class ProductSyncController(
         ViewData.SetActiveNav("marketplace-matching");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyon", "/marketplace/sync"),
-            ("Urun Senkronizasyon", "/marketplace/matching"),
+            ("Ürün Senkronizasyon", "/marketplace/matching"),
             (result.Data.Title, null));
 
         var vm = new ProductSyncDetailVm
@@ -190,11 +190,11 @@ public class ProductSyncController(
     [HttpGet("/marketplace/sync/products")]
     public async Task<IActionResult> BulkSync(int mp = 1)
     {
-        ViewData.SetPageTitle("Toplu Urun Senkronizasyon");
+        ViewData.SetPageTitle("Toplu Ürün Senkronizasyon");
         ViewData.SetActiveNav("marketplace-sync");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyon", "/marketplace/sync"),
-            ("Toplu Urun Senkronizasyon", null));
+            ("Toplu Ürün Senkronizasyon", null));
 
         var marketPlacesResult = await marketPlaceManager.GetAllAsync();
         var marketPlaces = marketPlacesResult.Success ? marketPlacesResult.Data : [];

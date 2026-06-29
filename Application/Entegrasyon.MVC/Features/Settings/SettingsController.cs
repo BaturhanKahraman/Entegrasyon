@@ -60,7 +60,7 @@ public class SettingsController(
     [HttpGet("/settings/integrations")]
     public async Task<IActionResult> Integrations()
     {
-        ViewData.SetPageTitle("Entegrasyon Ayarlari");
+        ViewData.SetPageTitle("Entegrasyon Ayarları");
         ViewData.SetActiveNav("settings-integrations");
 
         var marketplaces = await settingManager.GetMarketplacesAsync();
@@ -90,7 +90,7 @@ public class SettingsController(
     [HttpGet("/settings/notifications")]
     public async Task<IActionResult> Notifications()
     {
-        ViewData.SetPageTitle("Bildirim Ayarlari");
+        ViewData.SetPageTitle("Bildirim Ayarları");
         ViewData.SetActiveNav("settings-notifications");
 
         var settings = await settingManager.GetSettingsByGroupAsync("Notification");
@@ -119,7 +119,7 @@ public class SettingsController(
     [HttpGet("/settings/printing")]
     public async Task<IActionResult> Printing()
     {
-        ViewData.SetPageTitle("Yazici Ayarlari");
+        ViewData.SetPageTitle("Yazıcı Ayarları");
         ViewData.SetActiveNav("settings-printing");
 
         var settings = await settingManager.GetSettingsByGroupAsync("Printer");
@@ -216,7 +216,7 @@ public class SettingsController(
     [HttpGet("/settings/tax")]
     public async Task<IActionResult> Tax()
     {
-        ViewData.SetPageTitle("Vergi Ayarlari");
+        ViewData.SetPageTitle("Vergi Ayarları");
         ViewData.SetActiveNav("settings-tax");
         var rates = await vatRateManager.GetAllAsync();
         return View(rates);
@@ -269,7 +269,7 @@ public class SettingsController(
     [HttpGet("/settings/shipping")]
     public async Task<IActionResult> ShippingSettings()
     {
-        ViewData.SetPageTitle("Kargo Ayarlari");
+        ViewData.SetPageTitle("Kargo Ayarları");
         ViewData.SetActiveNav("settings-shipping");
         var settings = await settingManager.GetSettingsByGroupAsync("Shipping");
         var companies = await cargoCompaniesManager.GetCargoCompanies();
@@ -331,7 +331,7 @@ public class SettingsController(
     [HttpGet("/settings/webhooks")]
     public async Task<IActionResult> Webhooks()
     {
-        ViewData.SetPageTitle("Webhook Yonetimi");
+        ViewData.SetPageTitle("Webhook Yönetimi");
         ViewData.SetActiveNav("settings-webhooks");
         var webhooks = await webhookManager.GetAllAsync(TenantId);
         return View(webhooks);
@@ -383,7 +383,7 @@ public class SettingsController(
     [HttpGet("/settings/api-keys")]
     public async Task<IActionResult> ApiKeys()
     {
-        ViewData.SetPageTitle("API Anahtar Yonetimi");
+        ViewData.SetPageTitle("API Anahtar Yönetimi");
         ViewData.SetActiveNav("settings-api-keys");
         var keys = await apiKeyManager.GetAllAsync(TenantId);
         return View(keys);

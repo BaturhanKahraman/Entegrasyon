@@ -17,11 +17,11 @@ public class CommissionRatesController(
     [HttpGet("/marketplace/commission-rates")]
     public async Task<IActionResult> Index(int mp = 1)
     {
-        ViewData.SetPageTitle("Komisyon Oranlari");
+        ViewData.SetPageTitle("Komisyon Oranları");
         ViewData.SetActiveNav("commission-rates");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyonu", "/marketplace/sync"),
-            ("Komisyon Oranlari", null));
+            ("Komisyon Oranları", null));
 
         var marketPlaces = await marketPlaceManager.GetAllAsync();
         var ratesResult = await commissionCalculator.GetCommissionRatesAsync(mp);

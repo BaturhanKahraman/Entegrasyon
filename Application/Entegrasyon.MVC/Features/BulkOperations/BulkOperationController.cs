@@ -14,7 +14,7 @@ public class BulkOperationController(IBulkOperationManager bulkOperationManager)
     [HttpGet("/bulk-operations")]
     public async Task<IActionResult> Index()
     {
-        ViewData.SetPageTitle("Toplu Islemler");
+        ViewData.SetPageTitle("Toplu İşlemler");
         ViewData.SetActiveNav("bulk-operations");
 
         var recentOps = await bulkOperationManager.GetRecentOperationsAsync(20);

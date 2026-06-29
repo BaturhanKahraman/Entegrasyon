@@ -29,9 +29,9 @@ public class UserController(
     [HttpGet("/users/create")]
     public async Task<IActionResult> Create()
     {
-        ViewData.SetPageTitle("Yeni Kullanici");
+        ViewData.SetPageTitle("Yeni Kullanıcı");
         ViewData.SetActiveNav("users");
-        ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Yeni Kullanici", null));
+        ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Yeni Kullanıcı", null));
 
         var roles = await roleService.GetRolesSelectList();
         ViewBag.Roles = roles;
@@ -43,9 +43,9 @@ public class UserController(
     {
         if (!ModelState.IsValid)
         {
-            ViewData.SetPageTitle("Yeni Kullanici");
+            ViewData.SetPageTitle("Yeni Kullanıcı");
             ViewData.SetActiveNav("users");
-            ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Yeni Kullanici", null));
+            ViewData.SetBreadcrumb(("Kullanıcılar", "/users"), ("Yeni Kullanıcı", null));
 
             var roles = await roleService.GetRolesSelectList();
             ViewBag.Roles = roles;

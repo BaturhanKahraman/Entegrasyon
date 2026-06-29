@@ -19,7 +19,7 @@ public class CategorySyncController(
     [HttpGet("/marketplace/sync/categories")]
     public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null)
     {
-        ViewData.SetPageTitle("Kategori Eslemesi");
+        ViewData.SetPageTitle("Kategori Eşlemesi");
         ViewData.SetActiveNav("marketplace-sync");
 
         var marketPlaces = await marketPlaceManager.GetAllAsync();

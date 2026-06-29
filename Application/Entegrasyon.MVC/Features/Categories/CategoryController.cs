@@ -386,7 +386,7 @@ public class CategoryController(
     [HttpGet("/categories/import")]
     public IActionResult Import()
     {
-        ViewData.SetPageTitle("Kategori Aktarimi");
+        ViewData.SetPageTitle("Kategori Aktarımı");
         ViewData.SetActiveNav("categories");
         ViewData.SetBreadcrumb(("Kategoriler", "/categories"), ("Aktarim", null));
         return View();

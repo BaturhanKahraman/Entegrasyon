@@ -47,7 +47,7 @@ public sealed class POSSessionManager(
         await dbContext.SaveChangesAsync();
 
         await applicationLogManager.AddLog(
-            $"POS oturumu acildi. Sube: {dto.BranchOfficeId}, Terminal: {dto.TerminalId ?? "yok"}",
+            $"POS oturumu açıldı. Şube: {dto.BranchOfficeId}, Terminal: {dto.TerminalId ?? "yok"}",
             LogType.Sale, LogAction.Add, dto);
         logger.LogInformation("POS session opened for BranchOffice {BranchOfficeId}, Terminal {TerminalId}",
             dto.BranchOfficeId, dto.TerminalId);

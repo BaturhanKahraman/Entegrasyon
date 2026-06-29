@@ -18,9 +18,9 @@ public class PricingController(
     [HttpGet("/pricing")]
     public async Task<IActionResult> Index(string? search = null, int page = 1)
     {
-        ViewData.SetPageTitle("Fiyat Yonetimi");
+        ViewData.SetPageTitle("Fiyat Yönetimi");
         ViewData.SetActiveNav("pricing");
-        ViewData.SetBreadcrumb(("Fiyat Yonetimi", null));
+        ViewData.SetBreadcrumb(("Fiyat Yönetimi", null));
 
         var result = await productService.GetProductsDetailsPageable(
             new SearchablePageDto(search ?? "", page - 1, 30));
@@ -34,7 +34,7 @@ public class PricingController(
     {
         ViewData.SetPageTitle("Fiyatlandirma Kurallari");
         ViewData.SetActiveNav("pricing-rules");
-        ViewData.SetBreadcrumb(("Fiyat Yonetimi", "/pricing"), ("Kurallar", null));
+        ViewData.SetBreadcrumb(("Fiyat Yönetimi", "/pricing"), ("Kurallar", null));
 
         var rules = await pricingRuleManager.GetAllRulesAsync();
         return View(rules);

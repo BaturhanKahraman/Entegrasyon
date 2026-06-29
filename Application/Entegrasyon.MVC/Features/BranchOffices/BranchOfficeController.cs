@@ -130,9 +130,9 @@ public class BranchOfficeController(
         // Address'i ayrı çek — GetBranchDetailById DTO'su Address içermiyor
         var entity = await branchOfficeManager.GetBranchById(id);
 
-        ViewData.SetPageTitle($"{result.Data!.Name} - Duzenle");
+        ViewData.SetPageTitle($"{result.Data!.Name} - Düzenle");
         ViewData.SetActiveNav("branch-offices");
-        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (result.Data.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+        ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (result.Data.Name, $"/branch-offices/{id}"), ("Düzenle", null));
 
         var vm = new BranchOfficeEditVm
         {
@@ -150,8 +150,8 @@ public class BranchOfficeController(
 
         if (!ModelState.IsValid)
         {
-            ViewData.SetPageTitle($"{model.Name} - Duzenle");
-            ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+            ViewData.SetPageTitle($"{model.Name} - Düzenle");
+            ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Düzenle", null));
             model.Id = id;
             return View(model);
         }
@@ -161,8 +161,8 @@ public class BranchOfficeController(
         if (!result.Success)
         {
             TempData.SetError(result.Message ?? "Depo guncellenemedi.");
-            ViewData.SetPageTitle($"{model.Name} - Duzenle");
-            ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Duzenle", null));
+            ViewData.SetPageTitle($"{model.Name} - Düzenle");
+            ViewData.SetBreadcrumb(("Depolar", "/branch-offices"), (model.Name, $"/branch-offices/{id}"), ("Düzenle", null));
             model.Id = id;
             return View(model);
         }

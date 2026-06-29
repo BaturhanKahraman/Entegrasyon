@@ -19,11 +19,11 @@ public class BulkMatchController(
     [HttpGet("/marketplace/sync/categories/bulk")]
     public async Task<IActionResult> Index(int mp = 1)
     {
-        ViewData.SetPageTitle("Toplu Kategori Esleme");
+        ViewData.SetPageTitle("Toplu Kategori Eşleme");
         ViewData.SetActiveNav("marketplace-sync");
         ViewData.SetBreadcrumb(
             ("Pazaryeri Senkronizasyonu", "/marketplace/sync"),
-            ("Kategori Eslemesi", "/marketplace/sync/categories"),
+            ("Kategori Eşlemesi", "/marketplace/sync/categories"),
             ("Toplu Esleme", null));
 
         var marketPlaces = await marketPlaceManager.GetAllAsync();

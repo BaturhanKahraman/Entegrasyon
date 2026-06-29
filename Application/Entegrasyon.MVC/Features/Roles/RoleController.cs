@@ -53,9 +53,9 @@ public class RoleController(IRoleService roleService) : Controller
     [HttpGet("/roles/{id:int}/edit")]
     public async Task<IActionResult> Edit(int id)
     {
-        ViewData.SetPageTitle("Rol Duzenle");
+        ViewData.SetPageTitle("Rol Düzenle");
         ViewData.SetActiveNav("roles");
-        ViewData.SetBreadcrumb(("Roller", "/roles"), ("Duzenle", null));
+        ViewData.SetBreadcrumb(("Roller", "/roles"), ("Düzenle", null));
 
         var roles = await roleService.GetRolesWithClaimsAsync();
         var role = roles.FirstOrDefault(r => r.Id == id);

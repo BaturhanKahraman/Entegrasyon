@@ -17,7 +17,7 @@ public class LogController(IApplicationLogManager applicationLogManager) : Contr
         string? entityId = null,
         int page = 1)
     {
-        ViewData.SetPageTitle("Sistem Loglari");
+        ViewData.SetPageTitle("Sistem Logları");
         ViewData.SetActiveNav("logs");
 
         ViewBag.LogType = logType;

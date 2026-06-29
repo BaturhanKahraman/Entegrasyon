@@ -43,7 +43,7 @@ public class StorefrontController(
     [HttpGet("/settings/storefront")]
     public async Task<IActionResult> Settings()
     {
-        ViewData.SetPageTitle("Mağaza Ayarlari");
+        ViewData.SetPageTitle("Mağaza Ayarları");
         ViewData.SetActiveNav("storefront");
         ViewData.SetBreadcrumb(("Mağaza", null), ("Ayarlar", null));
 
@@ -80,7 +80,7 @@ public class StorefrontController(
     [HttpGet("/settings/storefront/banners")]
     public async Task<IActionResult> Banners()
     {
-        ViewData.SetPageTitle("Banner Yonetimi");
+        ViewData.SetPageTitle("Banner Yönetimi");
         ViewData.SetActiveNav("storefront");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Bannerlar", null));
 
@@ -132,9 +132,9 @@ public class StorefrontController(
     [HttpGet("/settings/storefront/payment")]
     public async Task<IActionResult> Payment()
     {
-        ViewData.SetPageTitle("Odeme Ayarlari");
+        ViewData.SetPageTitle("Ödeme Ayarları");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Odeme Ayarlari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Ödeme Ayarları", null));
 
         var result = await settingsManager.GetByTenantIdAsync(TenantId);
         return View(result.Data);
@@ -219,9 +219,9 @@ public class StorefrontController(
     [HttpGet("/storefront/returns")]
     public async Task<IActionResult> Returns()
     {
-        ViewData.SetPageTitle("Iadeler");
+        ViewData.SetPageTitle("İadeler");
         ViewData.SetActiveNav("storefront-returns");
-        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Iadeler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("İadeler", null));
 
         var result = await returnManager.GetAllReturnsAsync(TenantId);
         return View(result.Data ?? []);
@@ -387,9 +387,9 @@ public class StorefrontController(
     [HttpGet("/storefront/newsletter")]
     public async Task<IActionResult> Newsletter()
     {
-        ViewData.SetPageTitle("Bulten Yonetimi");
+        ViewData.SetPageTitle("Bülten Yönetimi");
         ViewData.SetActiveNav("storefront");
-        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Bulten", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Bülten", null));
 
         var result = await newsletterManager.GetSubscribersAsync(TenantId);
         var vm = new NewsletterVm { Subscribers = result.Data ?? [] };
@@ -425,9 +425,9 @@ public class StorefrontController(
     [HttpGet("/storefront/payouts")]
     public async Task<IActionResult> Payouts()
     {
-        ViewData.SetPageTitle("Odemeler");
+        ViewData.SetPageTitle("Ödemeler");
         ViewData.SetActiveNav("storefront-payouts");
-        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Odemeler", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Ödemeler", null));
 
         var result = await payoutManager.GetAllPendingPayoutsAsync(TenantId);
         var vm = new PayoutsVm { PendingPayouts = result.Data ?? [] };
@@ -572,9 +572,9 @@ public class StorefrontController(
     [HttpGet("/storefront/wallets")]
     public IActionResult Wallets()
     {
-        ViewData.SetPageTitle("Musteri Cuzdanlari");
+        ViewData.SetPageTitle("Müşteri Cüzdanları");
         ViewData.SetActiveNav("storefront-wallets");
-        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Musteri Cuzdanlari", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Müşteri Cüzdanları", null));
 
         var vm = new WalletsVm();
         return HtmxView(vm);
@@ -583,9 +583,9 @@ public class StorefrontController(
     [HttpGet("/storefront/wallets/{id:int}")]
     public async Task<IActionResult> WalletDetail(int id)
     {
-        ViewData.SetPageTitle($"Cuzdan Detayi - #{id}");
+        ViewData.SetPageTitle($"Cüzdan Detayı - #{id}");
         ViewData.SetActiveNav("storefront-wallets");
-        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Musteri Cuzdanlari", "/storefront/wallets"), ($"#{id}", null));
+        ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Müşteri Cüzdanları", "/storefront/wallets"), ($"#{id}", null));
 
         var walletResult = await walletManager.GetOrCreateWalletAsync(TenantId, id);
         var txResult = await walletManager.GetTransactionsAsync(TenantId, id);
@@ -633,7 +633,7 @@ public class StorefrontController(
     [HttpGet("/storefront/loyalty/{id:int}")]
     public async Task<IActionResult> LoyaltyCustomer(int id)
     {
-        ViewData.SetPageTitle($"Sadakat Detayi - #{id}");
+        ViewData.SetPageTitle($"Sadakat Detayı - #{id}");
         ViewData.SetActiveNav("storefront-loyalty");
         ViewData.SetBreadcrumb(("Mağaza", "/settings/storefront"), ("Sadakat Programi", "/storefront/loyalty"), ($"#{id}", null));
 

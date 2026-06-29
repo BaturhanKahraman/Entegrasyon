@@ -18,7 +18,7 @@ public class BrandMappingController(
     [HttpGet("/marketplace/sync/brands")]
     public async Task<IActionResult> Index(int mp = 1, string? search = null, string? returnUrl = null)
     {
-        ViewData.SetPageTitle("Marka Eslemesi");
+        ViewData.SetPageTitle("Marka Eşlemesi");
         ViewData.SetActiveNav("marketplace-sync");
 
         var marketPlaces = await marketPlaceManager.GetAllAsync();
