@@ -39,6 +39,7 @@ public class AmazonFeedStatusPollingService(
 
         // BatchRequestId'de feed ID saklanan pending kayıtlar
         var pendingRecords = await dbContext.ProductMarketplaces
+            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın
             .Where(pm => pm.MarketPlaceId == AmazonMpId &&
                          pm.Status == MarketplaceProductStatus.Pending &&
                          pm.BatchRequestId != null &&

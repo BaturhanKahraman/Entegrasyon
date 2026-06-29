@@ -38,6 +38,7 @@ public class AmazonListingStatusPollingService(
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
         var pendingRecords = await dbContext.ProductMarketplaces
+            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın
             .Where(pm => pm.MarketPlaceId == AmazonMpId &&
                          pm.Status == MarketplaceProductStatus.Pending &&
                          pm.ExternalProductId != null &&

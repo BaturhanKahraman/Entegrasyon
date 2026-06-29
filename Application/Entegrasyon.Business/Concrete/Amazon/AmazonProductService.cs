@@ -38,6 +38,7 @@ public sealed class AmazonProductService(
         // 2. Mapping
         await using var dbContext = await contextFactory.CreateDbContextAsync(ct);
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == AmazonMpId, ct);
 
         var marketplace = await dbContext.MarketPlaces.AsNoTracking()

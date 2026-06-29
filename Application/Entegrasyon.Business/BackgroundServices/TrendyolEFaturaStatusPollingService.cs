@@ -92,6 +92,7 @@ public class TrendyolEFaturaStatusPollingService(
                         // Track olarak guncelle
                         var trackContext = await contextFactory.CreateDbContextAsync(ct);
                         var trackRecord = await trackContext.EFaturaRecords
+                            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın
                             .FirstOrDefaultAsync(r => r.Id == record.Id, ct);
                         if (trackRecord is not null)
                         {

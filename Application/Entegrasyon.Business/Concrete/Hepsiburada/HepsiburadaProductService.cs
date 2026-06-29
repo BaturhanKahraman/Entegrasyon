@@ -114,6 +114,7 @@ public sealed class HepsiburadaProductService(
             // Update ProductMarketplace
             await using var dbContext = await contextFactory.CreateDbContextAsync();
             var pm = await dbContext.ProductMarketplaces
+                .AsTracking()
                 .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == HbMarketPlaceId);
 
             if (pm != null)

@@ -82,6 +82,7 @@ public sealed class N11RestProductService(
             return new ErrorDataResult<long>(0, "Ürün bulunamadı.");
 
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .Include(x => x.VariantOverrides)
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
@@ -210,6 +211,7 @@ public sealed class N11RestProductService(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
         if (pm?.ExternalProductId is null)
@@ -272,6 +274,7 @@ public sealed class N11RestProductService(
             return new ErrorResult("Ürün bulunamadı.");
 
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
         if (pm is null)
@@ -339,6 +342,7 @@ public sealed class N11RestProductService(
             return new ErrorResult("Ürün bulunamadı.");
 
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
         if (pm is null)

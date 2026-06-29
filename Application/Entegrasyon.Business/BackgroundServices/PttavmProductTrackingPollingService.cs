@@ -36,6 +36,7 @@ public class PttavmProductTrackingPollingService(
         var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
         var pendingRecords = await dbContext.ProductMarketplaces
+            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın
             .Where(pm => pm.MarketPlaceId == PttavmMarketPlaceId &&
                          pm.Status == MarketplaceProductStatus.Pending &&
                          pm.BatchRequestId != null)

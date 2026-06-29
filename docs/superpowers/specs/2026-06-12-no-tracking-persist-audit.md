@@ -11,16 +11,17 @@
 - 🟠 `CartManager.ApplyCouponAsync` / `RemoveCouponAsync` (storefront kupon). [2d387d5e]
 - Regression guard: `Test/Entegrasyon.IntegrationTest/Business/NoTrackingPersistRegressionTests.cs` (temsilci: credentials + order-status, RED→GREEN 2/2).
 
-## 🔴 KALAN — FİX GEREK (solo/ayrı oturum; SABAH İLK İŞ)
+## ✅ FİX EDİLDİ (15 mutasyon-site, 6 servis — 2026-06-29)
 
-### Marketplace sync servisleri — `ProductMarketplace` Status/ExternalProductId/LastSyncedAt persist etmiyor → her sync "hiç gönderilmemiş" gibi davranır (CORE entegrasyon bug'ı). API-coupled → WireMock-başarı-senaryosu persist testi gerek.
-- `N11RestProductService` (~214 Delete `pm.Status=Pending`, ~86, ~276)
-- `N11ProductService` (~111,152,212,283,331)
-- `TrendyolProductService` (~122,256,276)
-- `AmazonProductService` (~41,121)
-- `HepsiburadaProductService` (~117)
-- `N11RestStockPriceService` (~38,99)
-(Fix yine tek-satır `.AsTracking()`; her metodun mutated-mı doğrulanmalı.)
+### Marketplace sync servisleri — `ProductMarketplace` Status/ExternalProductId/BatchRequestId/LastSyncedAt artık persist EDİYOR. Fix: mutate edilen her `ProductMarketplace` LINQ-load'una `.AsTracking()` eklendi (read-only load'lara DOKUNULMADI).
+- `TrendyolProductService` — PublishProductAsync (BatchRequestId/StatusMessage), DeleteProductAsync (Status=Failed). `UpdateApprovedContentAsync` read-only (`AsNoTracking`) → dokunulmadı.
+- `N11RestProductService` — SaveProductAsync (`.Include(VariantOverrides)`'lı), DeleteProductAsync, UpdateProductBasicAsync, SetSellingStatusAsync (Start/Stop).
+- `N11ProductService` (SOAP) — SaveProductAsync, DeleteProductAsync, UpdateProductBasicAsync, StartSellingAsync, StopSellingAsync.
+- `AmazonProductService` — PublishProductAsync (ExternalProductId/BatchRequestId/Status). `DeleteProductAsync` read-only → dokunulmadı.
+- `HepsiburadaProductService` — PublishProductAsync (BatchRequestId).
+- `N11RestStockPriceService` — UpdatePriceAsync, UpdateStockAsync (BatchRequestId).
+
+**RED→GREEN guard:** `Test/Entegrasyon.IntegrationTest/Business/MarketplaceSyncPersistRegressionTests.cs` — 6 servis için temsilci persist testi (gerçek no-tracking `IDbContextFactory` + mock'lu dış API). Fix öncesi 6/6 FAIL (sessiz no-op kanıtı), fix sonrası 6/6 PASS. Unit baseline 1825/1825, ilgili integration 11/11 (NoTrackingPersist + ProductSend) korundu.
 
 ## ✅ TEMİZ (doğrulandı, dokunma)
 ProductManager (#75'te AsTracking ile düzeltildi), PricingRuleManager, ReturnReasonManager, ProductSyncManager (`FindAsync`), LabelTemplateManager (`Entry().State=Modified`), AttributeMatch/BrandMatch + import'lar (Add-only/read).

@@ -35,6 +35,7 @@ public sealed class N11RestStockPriceService(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
         if (pm is null)
@@ -96,6 +97,7 @@ public sealed class N11RestStockPriceService(
         await using var dbContext = await contextFactory.CreateDbContextAsync();
 
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == N11MarketPlaceId);
 
         if (pm is null)

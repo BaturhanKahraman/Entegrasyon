@@ -39,6 +39,7 @@ public class TrendyolProductStatusSyncService(
 
         // Trendyol'da published durumunda olan ürünleri al
         var trackedProducts = await dbContext.ProductMarketplaces
+            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın
             .Include(pm => pm.Product).ThenInclude(p => p.ProductVariants)
             .Where(pm => pm.MarketPlaceId == TrendyolMarketPlaceId
                 && (pm.Status == MarketplaceProductStatus.Published

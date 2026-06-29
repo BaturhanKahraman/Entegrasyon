@@ -39,6 +39,7 @@ public class HepsiburadaStatusPollingService(
         await using var dbContext = await dbContextFactory.CreateDbContextAsync(ct);
 
         var pendingRecords = await dbContext.ProductMarketplaces
+            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın
             .Where(pm => pm.MarketPlaceId == HbMarketPlaceId &&
                          pm.Status == MarketplaceProductStatus.Pending &&
                          pm.BatchRequestId != null)

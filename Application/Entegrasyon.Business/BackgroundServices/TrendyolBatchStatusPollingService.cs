@@ -35,6 +35,7 @@ public class TrendyolBatchStatusPollingService(
         var activityLogger = services.GetRequiredService<IProductActivityLogger>();
 
         var pendingRecords = await dbContext.ProductMarketplaces
+            .AsTracking() // mutasyon: global no-tracking → SaveChanges sessiz no-op olmasın (T120)
             .Where(pm => pm.Status == MarketplaceProductStatus.Pending &&
                          pm.BatchRequestId != null)
             .ToListAsync(ct);

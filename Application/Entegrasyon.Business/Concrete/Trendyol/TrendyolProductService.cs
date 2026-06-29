@@ -121,6 +121,7 @@ public sealed class TrendyolProductService(
             activity?.SetTag("trendyol.variant_count", mappedData.Items.Count);
 
             var pm = await dbContext.ProductMarketplaces
+                .AsTracking()
                 .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == TrendyolMarketPlaceId);
 
             if (pm is not null)
@@ -255,6 +256,7 @@ public sealed class TrendyolProductService(
 
         // Marketplace kaydını Failed olarak işaretle (arşivlenmiş/silinmiş)
         var pm = await dbContext.ProductMarketplaces
+            .AsTracking()
             .FirstOrDefaultAsync(x => x.ProductId == productId && x.MarketPlaceId == TrendyolMarketPlaceId);
         if (pm is not null)
         {
