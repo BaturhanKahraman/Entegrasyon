@@ -39,13 +39,11 @@ Bunları **projeye uyarlayarak** kullan: çıktı her zaman Tabler bileşenleri 
 2. Backend'e/iş mantığına dokunma — o SWE'nin işi. Sen **feature view `.cshtml` + partial + Tabler + view-CSS + vanilla JS etkileşim** üretirsin (Razor'da tasarım = markup; bu senin). **AMA paylaşılan altyapı / C# kodu SENİN DEĞİL** — gri bölge tuzağı: `ViewDataExtensions` (C# helper), `_Layout`/`_Sidebar` mekanizması (yeni section/slot/ViewData ekleme), controller, ViewModel, servis, DI. Tasarımın yeni "tesisat" gerektiriyorsa (yeni ViewBag/VM alanı, layout section'ı, helper) → **sözleşmeyi yaz (hangi ViewBag/section/alan lazım), SWE'ye devret; sen yazma.** View-only cila (veri/altyapı zaten var) → tek başına ilerle. Şüphede TL'ye sor.
 3. Çıktıyı Team Leader'a ver; gerçek tarayıcı görseliyle (screenshot) destekle.
 
-## ECC cephanesi (skill)
+## Tamamlayıcı skill'ler
 
 Mevcut `frontend-design`/`impeccable`/`ui-ux-pro-max`'e ek olarak:
 
-- **`ecc:design-system`** — token/komponent tutarlılığı (Tabler + Zekids dili).
-- **`ecc:frontend-a11y`** / **`ecc:accessibility`** — WCAG, kontrast, klavye, ARIA denetimi.
-- **`ecc:make-interfaces-feel-better`** — etkileşim/mikro-iyileştirme cilası.
+- **`a11y-debugging`** (chrome-devtools-mcp) — WCAG, kontrast, klavye, ARIA denetimi.
 - **`tabler-ui` skill'i (ZORUNLU — birincil referans):** Herhangi bir Tabler bileşeni/class'ı kullanmadan önce bu projeye özel `tabler-ui` skill'ini aç; class isimlerini ASLA tahmin etme/halüsinasyon görme — skill'deki doğrulanmış kombinasyonları kullan.
 
 ## Kırmızı çizgiler
@@ -61,7 +59,7 @@ Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (promp
 
 - **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
 - **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
-- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Başka agent/skill-agent çağırma.** Reviewer/agent çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
 - **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
 - **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
 - **Screenshot kanıtı headless'ta zorunlu değil.** Dev ortamı (8085) deploy edilmiş develop'ı servis eder — kendi değişikliğini orada GÖREMEZSİN; görsel doğrulama deploy sonrası QA'dadır. Statik doğruluk yeterli: Tabler class kombinasyonları doküman-teyitli, Razor derlenir (`dotnet build`). Altyapı (controller/ViewModel/ViewBag) ihtiyacında `DEVİR: swe` + veri sözleşmesi yaz.

@@ -1,0 +1,230 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entegrasyon" [level=1] [ref=e5]:
+          - link "Entegrasyon" [ref=e6] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link " Dashboard" [ref=e10] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e12]: 
+                - generic [ref=e13]: Dashboard
+            - listitem [ref=e14]:
+              - button " Yönetim " [ref=e15] [cursor=pointer]:
+                - generic [ref=e17]: 
+                - text: Yönetim
+                - generic [ref=e18]: 
+              - text:            ﰟ  
+            - listitem [ref=e19]:
+              - button " Pazaryeri " [ref=e20] [cursor=pointer]:
+                - generic [ref=e22]: 
+                - text: Pazaryeri
+                - generic [ref=e23]: 
+              - text:     
+            - listitem [ref=e24]:
+              - button " Müşteriler " [ref=e25] [cursor=pointer]:
+                - generic [ref=e27]: 
+                - text: Müşteriler
+                - generic [ref=e28]: 
+              - text:  
+            - listitem [ref=e29]:
+              - button " Raporlar " [ref=e30] [cursor=pointer]:
+                - generic [ref=e32]: 
+                - text: Raporlar
+                - generic [ref=e33]: 
+              - text:       﨡    
+            - listitem [ref=e34]:
+              - button " Mağaza " [ref=e35] [cursor=pointer]:
+                - generic [ref=e37]: 
+                - text: Mağaza
+                - generic [ref=e38]: 
+              - text:     﨡           
+            - listitem [ref=e39]:
+              - button " Ayarlar " [expanded] [ref=e40] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - text: Ayarlar
+                - generic [ref=e43]: 
+              - list [ref=e45]:
+                - listitem [ref=e46]:
+                  - link " Genel Ayarlar" [ref=e47] [cursor=pointer]:
+                    - /url: /settings/general
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Genel Ayarlar
+                - listitem [ref=e51]:
+                  - link " Entegrasyonlar" [ref=e52] [cursor=pointer]:
+                    - /url: /settings/integrations
+                    - generic [ref=e54]: 
+                    - generic [ref=e55]: Entegrasyonlar
+                - listitem [ref=e56]:
+                  - link " Bildirim Ayarları" [ref=e57] [cursor=pointer]:
+                    - /url: /settings/notifications
+                    - generic [ref=e59]: 
+                    - generic [ref=e60]: Bildirim Ayarları
+                - listitem [ref=e61]:
+                  - link " Yazıcı & Barkod" [ref=e62] [cursor=pointer]:
+                    - /url: /settings/printing
+                    - generic [ref=e64]: 
+                    - generic [ref=e65]: Yazıcı & Barkod
+                - listitem [ref=e66]:
+                  - link " Vergi Ayarları" [ref=e67] [cursor=pointer]:
+                    - /url: /settings/tax
+                    - generic [ref=e69]: 
+                    - generic [ref=e70]: Vergi Ayarları
+                - listitem [ref=e71]:
+                  - link " Kargo Ayarları" [ref=e72] [cursor=pointer]:
+                    - /url: /settings/shipping
+                    - generic [ref=e74]: 
+                    - generic [ref=e75]: Kargo Ayarları
+                - listitem [ref=e76]:
+                  - link " Webhooklar" [ref=e77] [cursor=pointer]:
+                    - /url: /settings/webhooks
+                    - generic [ref=e79]: 
+                    - generic [ref=e80]: Webhooklar
+                - listitem [ref=e81]:
+                  - link " API Anahtarları" [ref=e82] [cursor=pointer]:
+                    - /url: /settings/api-keys
+                    - generic [ref=e84]: 
+                    - generic [ref=e85]: API Anahtarları
+                - listitem [ref=e86]:
+                  - link " Kullanıcılar" [ref=e87] [cursor=pointer]:
+                    - /url: /users
+                    - generic [ref=e89]: 
+                    - generic [ref=e90]: Kullanıcılar
+                - listitem [ref=e91]:
+                  - link " Roller" [ref=e92] [cursor=pointer]:
+                    - /url: /roles
+                    - generic [ref=e94]: 
+                    - generic [ref=e95]: Roller
+                - listitem [ref=e96]:
+                  - link " Aktivite Logu" [ref=e97] [cursor=pointer]:
+                    - /url: /logs
+                    - generic [ref=e99]: 
+                    - generic [ref=e100]: Aktivite Logu
+          - list [ref=e101]:
+            - listitem [ref=e102]:
+              - link " Sohbetler" [ref=e103] [cursor=pointer]:
+                - /url: /chat
+                - generic [ref=e105]: 
+                - generic [ref=e106]: Sohbetler
+            - listitem [ref=e107]:
+              - link "欄 Yardım" [ref=e108] [cursor=pointer]:
+                - /url: /help/new
+                - generic [ref=e110]: 欄
+                - generic [ref=e111]: Yardım
+    - generic [ref=e112]:
+      - banner [ref=e113]:
+        - generic [ref=e114]:
+          - link "" [ref=e116] [cursor=pointer]:
+            - /url: "#"
+            - generic:
+              - generic: 
+            - textbox "Global Arama":
+              - /placeholder: Ara...  Ctrl+K
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - link "Hızlı İşlemler" [ref=e119] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e120]: 
+              - text:   
+            - button "Tema Değiştir" [ref=e122] [cursor=pointer]:
+              - generic [ref=e123]: 
+            - button "Bildirimler" [ref=e126] [cursor=pointer]:
+              - generic [ref=e127]: 
+            - generic [ref=e128]:
+              - link "Kullanıcı Menüsü" [ref=e129] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e131]: 
+                - generic [ref=e133]: Admin
+              - text:  
+      - generic [ref=e135]:
+        - heading "Entegrasyon Ayarlari" [level=2] [ref=e139]
+        - generic [ref=e140]:
+          - generic [ref=e143]:
+            - link " Genel" [ref=e144] [cursor=pointer]:
+              - /url: /settings/general
+              - generic [ref=e145]: 
+              - text: Genel
+            - link " Entegrasyonlar" [ref=e146] [cursor=pointer]:
+              - /url: /settings/integrations
+              - generic [ref=e147]: 
+              - text: Entegrasyonlar
+            - link " Bildirimler" [ref=e148] [cursor=pointer]:
+              - /url: /settings/notifications
+              - generic [ref=e149]: 
+              - text: Bildirimler
+            - link " Yazıcı" [ref=e150] [cursor=pointer]:
+              - /url: /settings/printing
+              - generic [ref=e151]: 
+              - text: Yazıcı
+            - link " Vergi Ayarlari" [ref=e152] [cursor=pointer]:
+              - /url: /settings/tax
+              - generic [ref=e153]: 
+              - text: Vergi Ayarlari
+            - link " Kargo Ayarlari" [ref=e154] [cursor=pointer]:
+              - /url: /settings/shipping
+              - generic [ref=e155]: 
+              - text: Kargo Ayarlari
+            - link " Webhooklar" [ref=e156] [cursor=pointer]:
+              - /url: /settings/webhooks
+              - generic [ref=e157]: 
+              - text: Webhooklar
+            - link " API Anahtarlari" [ref=e158] [cursor=pointer]:
+              - /url: /settings/api-keys
+              - generic [ref=e159]: 
+              - text: API Anahtarlari
+            - link " Ödeme Yöntemleri" [ref=e160] [cursor=pointer]:
+              - /url: /settings/payment-methods
+              - generic [ref=e161]: 
+              - text: Ödeme Yöntemleri
+            - link " Masaustu" [ref=e162] [cursor=pointer]:
+              - /url: /settings/desktop
+              - generic [ref=e163]: 
+              - text: Masaustu
+          - generic [ref=e164]:
+            - tablist [ref=e165]:
+              - tab "Trendyol Aktif" [selected] [ref=e166] [cursor=pointer]:
+                - text: Trendyol
+                - generic [ref=e167]: Aktif
+              - tab "N11 Yapilandirilmamis" [ref=e168] [cursor=pointer]:
+                - text: N11
+                - generic [ref=e169]: Yapilandirilmamis
+              - tab "Hepsiburada Yapilandirilmamis" [ref=e170] [cursor=pointer]:
+                - text: Hepsiburada
+                - generic [ref=e171]: Yapilandirilmamis
+              - tab "Pazarama Yapilandirilmamis" [ref=e172] [cursor=pointer]:
+                - text: Pazarama
+                - generic [ref=e173]: Yapilandirilmamis
+              - tab "Amazon Yapilandirilmamis" [ref=e174] [cursor=pointer]:
+                - text: Amazon
+                - generic [ref=e175]: Yapilandirilmamis
+              - tab "Çiçeksepeti Yapilandirilmamis" [ref=e176] [cursor=pointer]:
+                - text: Çiçeksepeti
+                - generic [ref=e177]: Yapilandirilmamis
+            - generic [ref=e178]:
+              - tabpanel [ref=e179]:
+                - generic [ref=e181]:
+                  - heading "Trendyol Entegrasyon Ayarlari" [level=3] [ref=e183]
+                  - generic [ref=e184]:
+                    - generic [ref=e185]:
+                      - generic [ref=e186]:
+                        - generic [ref=e187]: API Key
+                        - textbox "API anahtarinizi girin" [ref=e188]: dev-wiremock-key
+                      - generic [ref=e189]:
+                        - generic [ref=e190]: API Secret
+                        - textbox "API Şifrenizi girin" [ref=e191]: dev-wiremock-secret
+                    - generic [ref=e192]:
+                      - generic [ref=e193]:
+                        - generic [ref=e194]: Satıcı ID (Seller ID)
+                        - textbox "Trendyol satici ID" [ref=e195]: "123456"
+                      - generic [ref=e196]:
+                        - generic [ref=e197]: Base URL
+                        - textbox "https://apigw.trendyol.com/integration/" [ref=e198]: http://wiremock:8080
+                        - generic [ref=e199]: "Stage: stageapigw.trendyol.com, Prod: apigw.trendyol.com"
+                  - button " Kaydet" [ref=e201] [cursor=pointer]:
+                    - generic [ref=e202]: 
+                    - text: Kaydet
+              - text:     
+  - text:  

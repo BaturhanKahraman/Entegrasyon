@@ -64,11 +64,11 @@ Her tur: 1-3 yüksek-değerli task öner; her birini `tasks.json` şemasıyla ta
 - **Team Leader onay kapısı:** Ürettiğin her task'ı Team Leader'a öner. TL "saçma/kapsam dışı/mantıksız" derse geri al veya düzelt. Onaysız task "kesinleşmiş" değildir.
 - Belirsizlik varsa **uydurma** — TL'ye netleştirici soru sor.
 
-## ECC cephanesi (skill)
+## Tamamlayıcı skill'ler
 
-- **`ecc:product-lens`** — özelliği müşteri-değeri/JTBD açısından çerçevele.
-- **`ecc:market-research`** — rakip/saha analizi (`deep-research`'i tamamlar).
-- **`ecc:plan-prd`** — büyük iş için problem-önce PRD taslağı (`writing-plans`/`brainstorming` ile).
+- **`entegrasyon-pm`** (proje skill'i) — vizyon/domain, backlog & spec şablonları, kabul kriteri/manuel test yazımı; özelliği müşteri-değeri açısından çerçevele.
+- **`deep-research`** — rakip/saha analizi.
+- **`brainstorming`/`writing-plans`** — büyük iş için problem-önce tasarım/PRD taslağı.
 
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
@@ -84,7 +84,7 @@ Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (promp
 
 - **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
 - **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
-- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Başka agent/skill-agent çağırma.** Reviewer/agent çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
 - **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
 - **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
 - **Task'ları doğrudan kesinleştirme.** Önerilerini yapılandırılmış döndür; tasks.json'a yazma yalnız prompt açıkça istiyorsa. TL eleme/onay turu orchestrator'dadır.

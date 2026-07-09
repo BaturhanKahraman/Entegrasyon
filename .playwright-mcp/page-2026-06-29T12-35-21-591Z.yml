@@ -1,0 +1,215 @@
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entegrasyon" [level=1] [ref=e5]:
+          - link "Entegrasyon" [ref=e6] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link " Dashboard" [ref=e10] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e12]: 
+                - generic [ref=e13]: Dashboard
+            - listitem [ref=e14]:
+              - button " Yönetim " [expanded] [ref=e15] [cursor=pointer]:
+                - generic [ref=e17]: 
+                - text: Yönetim
+                - generic [ref=e18]: 
+              - list [ref=e20]:
+                - listitem [ref=e21]:
+                  - link " Ürünler" [ref=e22] [cursor=pointer]:
+                    - /url: /products
+                    - generic [ref=e24]: 
+                    - generic [ref=e25]: Ürünler
+                - listitem [ref=e26]:
+                  - link " Kategoriler" [ref=e27] [cursor=pointer]:
+                    - /url: /categories
+                    - generic [ref=e29]: 
+                    - generic [ref=e30]: Kategoriler
+                - listitem [ref=e31]:
+                  - link " Özellikler" [ref=e32] [cursor=pointer]:
+                    - /url: /attributes
+                    - generic [ref=e34]: 
+                    - generic [ref=e35]: Özellikler
+                - listitem [ref=e36]:
+                  - link " Markalar" [ref=e37] [cursor=pointer]:
+                    - /url: /brands
+                    - generic [ref=e39]: 
+                    - generic [ref=e40]: Markalar
+                - listitem [ref=e41]:
+                  - link " POS Terminal" [ref=e42] [cursor=pointer]:
+                    - /url: /pos
+                    - generic [ref=e44]: 
+                    - generic [ref=e45]: POS Terminal
+                - listitem [ref=e46]:
+                  - link " Satışlar" [ref=e47] [cursor=pointer]:
+                    - /url: /sales
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Satışlar
+                - listitem [ref=e51]:
+                  - link " İade Yönetimi" [ref=e52] [cursor=pointer]:
+                    - /url: /returns
+                    - generic [ref=e54]: 
+                    - generic [ref=e55]: İade Yönetimi
+                - listitem [ref=e56]:
+                  - link " Sipariş Hazırlama" [ref=e57] [cursor=pointer]:
+                    - /url: /picking
+                    - generic [ref=e59]: 
+                    - generic [ref=e60]: Sipariş Hazırlama
+                - listitem [ref=e61]:
+                  - link " Kargo Takip" [ref=e62] [cursor=pointer]:
+                    - /url: /shipping
+                    - generic [ref=e64]: 
+                    - generic [ref=e65]: Kargo Takip
+                - listitem [ref=e66]:
+                  - link " Toplu İşlem" [ref=e67] [cursor=pointer]:
+                    - /url: /bulk-operations
+                    - generic [ref=e69]: 
+                    - generic [ref=e70]: Toplu İşlem
+                - listitem [ref=e71]:
+                  - link " Depolar" [ref=e72] [cursor=pointer]:
+                    - /url: /branch-offices
+                    - generic [ref=e74]: 
+                    - generic [ref=e75]: Depolar
+                - listitem [ref=e76]:
+                  - link "ﰟ Stok Hareketleri" [ref=e77] [cursor=pointer]:
+                    - /url: /stock/movements
+                    - generic [ref=e79]: ﰟ
+                    - generic [ref=e80]: Stok Hareketleri
+                - listitem [ref=e81]:
+                  - link " Kuponlar" [ref=e82] [cursor=pointer]:
+                    - /url: /discounts
+                    - generic [ref=e84]: 
+                    - generic [ref=e85]: Kuponlar
+                - listitem [ref=e86]:
+                  - link " Fiyat Yönetimi" [ref=e87] [cursor=pointer]:
+                    - /url: /pricing
+                    - generic [ref=e89]: 
+                    - generic [ref=e90]: Fiyat Yönetimi
+            - listitem [ref=e91]:
+              - button " Pazaryeri " [ref=e92] [cursor=pointer]:
+                - generic [ref=e94]: 
+                - text: Pazaryeri
+                - generic [ref=e95]: 
+              - text:     
+            - listitem [ref=e96]:
+              - button " Müşteriler " [ref=e97] [cursor=pointer]:
+                - generic [ref=e99]: 
+                - text: Müşteriler
+                - generic [ref=e100]: 
+              - text:  
+            - listitem [ref=e101]:
+              - button " Raporlar " [ref=e102] [cursor=pointer]:
+                - generic [ref=e104]: 
+                - text: Raporlar
+                - generic [ref=e105]: 
+              - text:       﨡    
+            - listitem [ref=e106]:
+              - button " Mağaza " [ref=e107] [cursor=pointer]:
+                - generic [ref=e109]: 
+                - text: Mağaza
+                - generic [ref=e110]: 
+              - text:     﨡           
+            - listitem [ref=e111]:
+              - button " Ayarlar " [ref=e112] [cursor=pointer]:
+                - generic [ref=e114]: 
+                - text: Ayarlar
+                - generic [ref=e115]: 
+              - text:           
+          - list [ref=e116]:
+            - listitem [ref=e117]:
+              - link " Sohbetler" [ref=e118] [cursor=pointer]:
+                - /url: /chat
+                - generic [ref=e120]: 
+                - generic [ref=e121]: Sohbetler
+            - listitem [ref=e122]:
+              - link "欄 Yardım" [ref=e123] [cursor=pointer]:
+                - /url: /help/new
+                - generic [ref=e125]: 欄
+                - generic [ref=e126]: Yardım
+    - generic [ref=e127]:
+      - banner [ref=e128]:
+        - generic [ref=e129]:
+          - link "" [ref=e131] [cursor=pointer]:
+            - /url: "#"
+            - generic:
+              - generic: 
+            - textbox "Global Arama":
+              - /placeholder: Ara...  Ctrl+K
+          - generic [ref=e132]:
+            - generic [ref=e133]:
+              - link "Hızlı İşlemler" [ref=e134] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e135]: 
+              - text:   
+            - button "Tema Değiştir" [ref=e137] [cursor=pointer]:
+              - generic [ref=e138]: 
+            - button "Bildirimler" [ref=e141] [cursor=pointer]:
+              - generic [ref=e142]: 
+            - generic [ref=e143]:
+              - link "Kullanıcı Menüsü" [ref=e144] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e146]: 
+                - generic [ref=e148]: Admin
+              - text:  
+      - generic [ref=e150]:
+        - heading "POS Terminali" [level=2] [ref=e154]
+        - alert [ref=e155]:
+          - generic [ref=e157]: 
+          - generic [ref=e159]: Kasa başarıyla açıldı.
+          - generic "Kapat" [ref=e160] [cursor=pointer]
+        - generic [ref=e161]:
+          - generic [ref=e162]: Admin Admin
+          - generic [ref=e163]: 15:34
+          - link " X Raporu" [ref=e164] [cursor=pointer]:
+            - /url: /pos/x-report
+            - generic [ref=e165]: 
+            - text: X Raporu
+          - button "Kasayı Kapat" [ref=e166] [cursor=pointer]
+        - generic [ref=e167]:
+          - generic [ref=e168]:
+            - textbox "Barkod okutun veya ürün adı yazın..." [active] [ref=e172]: test
+            - generic [ref=e174]:
+              - generic [ref=e175]:
+                - heading "Sepet" [level=3] [ref=e176]
+                - button "Sepeti Temizle" [ref=e179] [cursor=pointer]
+              - generic [ref=e182]:
+                - paragraph [ref=e183]: Sepet bos
+                - paragraph [ref=e184]: Ürün eklemek için barkod okutun veya arama yapin.
+          - generic [ref=e185]:
+            - generic [ref=e186]:
+              - heading "Müşteri" [level=3] [ref=e188]
+              - generic [ref=e189]:
+                - generic [ref=e191]: Müşteri seçilmedi (opsiyonel)
+                - generic [ref=e193]:
+                  - textbox "Müşteri ara..." [ref=e194]
+                  - button "" [ref=e195] [cursor=pointer]:
+                    - generic [ref=e196]: 
+            - generic [ref=e198]:
+              - heading "Oturum Özeti" [level=3] [ref=e200]
+              - generic [ref=e202]:
+                - generic [ref=e203]:
+                  - generic [ref=e204]: Açılış Kasası
+                  - generic [ref=e205]: ₺0,00
+                - generic [ref=e206]:
+                  - generic [ref=e207]: Toplam Satış
+                  - generic [ref=e208]: ₺0,00
+                - generic [ref=e209]:
+                  - generic [ref=e210]: Nakit
+                  - generic [ref=e211]: ₺0,00
+                - generic [ref=e212]:
+                  - generic [ref=e213]: Kart
+                  - generic [ref=e214]: ₺0,00
+                - generic [ref=e215]:
+                  - generic [ref=e216]: İşlem Sayısı
+                  - generic [ref=e217]: "0"
+                - generic [ref=e218]:
+                  - generic [ref=e219]: Beklenen Kasa
+                  - generic [ref=e220]: ₺0,00
+            - generic [ref=e222]:
+              - button " Satışı Tamamla" [disabled]:
+                - generic: 
+                - text: Satışı Tamamla
+  - text:  

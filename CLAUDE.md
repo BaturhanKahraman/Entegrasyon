@@ -70,7 +70,7 @@ Klasik katmanlı mimari — Entity → DataAccess → Business → MVC:
 
 **Tabler Component Kullanımı (Strict Rule):** Herhangi bir Tabler bileşeni (badge, card, alert, ribbon, status, button vb.) kullanılmadan ÖNCE o bileşenin resmi dokümantasyonuna (https://tabler.io/docs/ui/<component>) bakılmalıdır. Class isimleri tahmin edilmemeli; doğru kombinasyon doğrulanmalı. Örn. `badge bg-green` tek başına kullanılmaz — Tabler solid renkli badge için `badge bg-green text-green-fg` ya da light varyant için `badge bg-green-lt` ister. CSS'te global override eklemek yerine Tabler'ın önerdiği class kombinasyonunu kullan.
 
-MVC-specific pattern'ler için bkz: `~/.claude/skills/aspnet-mvc-htmx/` skill dosyaları.
+MVC-specific pattern'ler için bkz: `.claude/skills/aspnet-mvc-htmx/` skill dosyaları.
 
 **Temel MVC pattern'leri:**
 - **PRG:** POST → TempData.SetSuccess → RedirectToAction → GET (geri tuşu güvenli)
@@ -169,9 +169,9 @@ Ana oturumda (agent pipeline'sız, kullanıcı yönlendirmeli) bir MVC sayfası/
 
 1. **Keşif (research-first):** Koda dokunmadan önce ilgili feature'ı bul/oku.
    - `graphify query "<soru>"` (ham grep/büyük-dosya okuma yerine — bağlam tasarrufu).
-   - Bilinmeyen API/sürüm davranışı → `microsoft-docs` (microsoft-learn MCP, sürüme-özel) veya `context7`. Tahmin etme, doğrula.
+   - Bilinmeyen API/sürüm davranışı → `microsoft-docs` (microsoft-learn MCP, sürüme-özel). Tahmin etme, doğrula.
 2. **Tasarım (Razor + Tabler + HTMX):**
-   - `aspnet-mvc-htmx` skill (`~/.claude/skills/aspnet-mvc-htmx/`) — PRG, `Request.IsHtmx()`, filter, tag-helper, feature-folder desenleri.
+   - `aspnet-mvc-htmx` skill (`.claude/skills/aspnet-mvc-htmx/`) — PRG, `Request.IsHtmx()`, filter, tag-helper, feature-folder desenleri.
    - **Tabler Strict Rule:** bileşen kullanmadan ÖNCE `https://tabler.io/docs/ui/<component>` — class tahmin yok.
    - **Referans sayfalar (kopyala-uyarla):** `Features/Reports/Views/{StockAlerts,Inventory,Marketplace}.cshtml` + `Partials/_StockAlertTable.cshtml` — "Ürünler" tasarım dili: KPI kartları, tablo partial, filtre barı, empty state, ApexCharts grafik, doğru Türkçe diakritikler. Yeni rapor sayfası bunları örnek alır.
    - Görsel doğrulama gerekiyorsa Chrome DevTools / Playwright MCP ile dev'i (`192.168.1.78:8085`) aç (develop'i servis eder; lokal değişiklik yansımaz).
@@ -179,9 +179,8 @@ Ana oturumda (agent pipeline'sız, kullanıcı yönlendirmeli) bir MVC sayfası/
    - Manager/Interface + FluentValidation + LogicRunner pipeline + çift loglama (salt-okuma raporlarda read-path log istisnası; **mutasyon** aksiyonlarında tam pipeline + PRG + yetki).
    - DB tarafı (aggregate/index/GroupBy/migration) → "Data-Access İş Bölümü" tetikleyicileri geçerli.
    - **EF Mutasyon Persist** + **Migration** strict-rule'larına uy (bkz. Key Patterns).
-4. **Bağımsız review gate (atlanmaz):** İş bittiğinde ilgili reviewer skill'ini çağır —
-   `ecc:csharp-reviewer` (her C# değişikliği), `ecc:database-reviewer` (sorgu/şema/migration), `ecc:security-reviewer` (kullanıcı girdisi/yetki/mutasyon).
-5. **Token yönlendirme:** Mekanik/tekrarlı işi (boilerplate, bulk pattern) yerel Ollama `entegrasyon-coder`'a offload; Opus düşünmeyi mimari/şema kararına ayır.
+4. **Bağımsız review gate (atlanmaz):** İş bittiğinde ilgili review'ı çalıştır —
+   `/code-review` (her C# değişikliği), `db-entegrasyon` agent review (sorgu/şema/migration — "Data-Access İş Bölümü" tetikleyicileri), `/security-review` (kullanıcı girdisi/yetki/mutasyon).
 
 **Not (2026-06-12):** Çok-agent pipeline (designer→db→swe→qa→devops) rapor sayfaları için denendi —
 deploy-güvenli ama salt-okuma sayfasında sayfa-başı Testcontainers integration test + QA fix-loop
@@ -199,47 +198,15 @@ unit test + migration yeterli; tam QA/integration yalnız **mutasyonlu** işlerd
   - **Configuration:** Tenant-specific config'ler DB'den okunmalı, appsettings.json'a hardcode edilmemeli.
   - **Tek tenant için çalışıyor ≠ multi-tenant'ta çalışacak.** Tasarımda her zaman "bu N tenant ile çalışır mı?" sorusunu sor.
 
-## Local Ollama API (Sub-Agent)
+## Delegasyon & Bağlam Disiplini (Strict Rule)
 
-Makinede Ollama çalışıyor (`http://localhost:11434`). GPU: RTX 4080 Laptop 12 GB VRAM.
-
-**Kullanılabilir model:** `entegrasyon-coder` — proje-özel system prompt gömülü, `qwen2.5-coder:14b` tabanlı. MCP tool olarak `mcp__ollama__ollama_chat` ile erişilebilir.
-
-**Uygun görevler:** Bulk pattern-based fix, boilerplate üretimi, basit kod analizi, çok sayıda dosyada aynı değişiklik.
-
-**Uygun OLMAYAN görevler:** Mimari kararlar, karmaşık reasoning, büyük context gerektiren işler, production-critical kod.
-
-**Strateji — Üret + Kontrol Et:**
-1. Ollama'ya mekanik görevi ver (örn: "bu dosyadaki null'ları null! yap")
-2. Çıktıyı kabataslak kontrol et (build, grep, basit doğrulama)
-3. Sorun varsa düzelt, yoksa uygula
-
-Bu sayede Claude token'ı tekrarlı işlere harcanmaz, sadece karar verme ve doğrulamaya gider.
-
-**Team agent / sub-agent olarak kullanım:** Ollama, iş yükünü hafifletmek için team agent veya sub-agent olarak kullanılabilir. Özellikle paralel görevlerde mekanik kısımları Ollama'ya offload edip Claude sadece doğrulama ve karar verme rolünde kalabilir.
-
-**Token Tasarrufu Politikası (Strict Rule):** Eğer bir görev tekrarlı/mekanik ise ve Ollama ile çözülebilecekse, Claude token'ı harcamak yerine Ollama'ya offload et. Örnekler:
-- 3+ dosyada aynı pattern'i uygulama (null!, default!, ?? "" gibi)
-- Boilerplate kod üretimi (yeni manager, yeni test sınıfı iskeleti)
-- Basit kod dönüşümleri (rename, type change, import ekleme)
-- Dosya içeriğini analiz edip fix önerisi çıkarma
-
-Claude sadece karar verme, doğrulama ve karmaşık reasoning için kullanılmalı.
-
-```bash
-# Kullanım
-curl -s http://localhost:11434/api/generate -d '{"model":"entegrasyon-coder","prompt":"...","stream":false}'
-```
-
-## ECC Skill Kullanımı — Verimli Delegasyon (Strict Rule)
-
-ECC skill/agent'ları (`ecc:*`) projenin kendi kurallarını EZMEZ, zenginleştirir. Tüm proje agent'ları (swe/db/qa/designer/devops/pa) bu ilkeyi izler:
+Tüm proje agent'ları (swe/db/qa/designer/devops/pa) bu ilkeyi izler:
 
 - **Açık + dar delegasyon:** Skill'ler otomatik aktive OLMAZ. İhtiyaç anında, kapsamlı işe **ilgili skill'i açıkça çağır** — hepsini birden yükleme. "Doğru skill, doğru anda" (gereksiz skill yükü = bağlam erozyonu).
-- **Önce araştır (research-first):** Bilinmeyen API/desende koda başlamadan `search-first` / `documentation-lookup` / `microsoft-docs` (sürüme-özel) ile doğrula — halüsinasyonu kaynağında engelle.
-- **Sıra (plan→test→kod→gate):** `ecc:plan` (gerekirse) → `tdd-workflow` (RED→GREEN) → implementasyon → bağımsız review gate (`ecc:csharp-reviewer` / `ecc:database-reviewer` / `ecc:security-reviewer`). Review'u atlamak yok.
-- **Token yönlendirme:** Opus-düzeyi derin düşünmeyi yalnız **mimari/şema kararı** için harca; mekanik/tekrarlı işi yerel Ollama'ya (`entegrasyon-coder`) offload et; uzun oturumda **mantıksal kırılımda** (araştırma sonrası, implementasyondan önce) compact.
-- **Bağlamı koru:** Aynı anda <10 MCP / <80 tool aktif; ham `grep`/büyük dosya okuma yerine `graphify query`. Doğru ECC kurulumu plugin **veya** manuel — ikisini üst üste bindirme.
+- **Önce araştır (research-first):** Bilinmeyen API/desende koda başlamadan `microsoft-docs` (sürüme-özel) ile doğrula — halüsinasyonu kaynağında engelle.
+- **Sıra (plan→test→kod→gate):** plan (gerekirse) → TDD RED→GREEN (`superpowers:test-driven-development`) → implementasyon → bağımsız review gate (`/code-review` / `db-entegrasyon` agent review / `/security-review`). Review'u atlamak yok.
+- **Token yönlendirme:** Derin düşünmeyi yalnız **mimari/şema kararı** için harca; mekanik/tekrarlı toplu işi subagent'a (Explore / cavecrew / general-purpose) delege et; uzun oturumda **mantıksal kırılımda** (araştırma sonrası, implementasyondan önce) compact.
+- **Bağlamı koru:** Aynı anda <10 MCP / <80 tool aktif; ham `grep`/büyük dosya okuma yerine `graphify query`.
 
 ## Data-Access İş Bölümü (Strict Rule)
 

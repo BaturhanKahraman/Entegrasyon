@@ -1,0 +1,262 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entegrasyon" [level=1] [ref=e5]:
+          - link "Entegrasyon" [ref=e6] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link " Dashboard" [ref=e10] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e12]: 
+                - generic [ref=e13]: Dashboard
+            - listitem [ref=e14]:
+              - button " Yönetim " [ref=e15] [cursor=pointer]:
+                - generic [ref=e17]: 
+                - text: Yönetim
+                - generic [ref=e18]: 
+              - text:            ﰟ  
+            - listitem [ref=e19]:
+              - button " Pazaryeri " [expanded] [ref=e20] [cursor=pointer]:
+                - generic [ref=e22]: 
+                - text: Pazaryeri
+                - generic [ref=e23]: 
+              - list [ref=e25]:
+                - listitem [ref=e26]:
+                  - link " Hazır Şablonlar" [ref=e27] [cursor=pointer]:
+                    - /url: /matched-entities
+                    - generic [ref=e29]: 
+                    - generic [ref=e30]: Hazır Şablonlar
+                - listitem [ref=e31]:
+                  - link " Senkronizasyon" [ref=e32] [cursor=pointer]:
+                    - /url: /marketplace/sync
+                    - generic [ref=e34]: 
+                    - generic [ref=e35]: Senkronizasyon
+                - listitem [ref=e36]:
+                  - link " Ürün Eşleştirme" [ref=e37] [cursor=pointer]:
+                    - /url: /marketplace/matching
+                    - generic [ref=e39]: 
+                    - generic [ref=e40]: Ürün Eşleştirme
+                - listitem [ref=e41]:
+                  - link " Komisyon Oranları" [ref=e42] [cursor=pointer]:
+                    - /url: /marketplace/commission-rates
+                    - generic [ref=e44]: 
+                    - generic [ref=e45]: Komisyon Oranları
+                - listitem [ref=e46]:
+                  - link " Entegrasyon Durumu" [ref=e47] [cursor=pointer]:
+                    - /url: /integrations/health
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Entegrasyon Durumu
+            - listitem [ref=e51]:
+              - button " Müşteriler " [ref=e52] [cursor=pointer]:
+                - generic [ref=e54]: 
+                - text: Müşteriler
+                - generic [ref=e55]: 
+              - text:  
+            - listitem [ref=e56]:
+              - button " Raporlar " [ref=e57] [cursor=pointer]:
+                - generic [ref=e59]: 
+                - text: Raporlar
+                - generic [ref=e60]: 
+              - text:       﨡    
+            - listitem [ref=e61]:
+              - button " Mağaza " [ref=e62] [cursor=pointer]:
+                - generic [ref=e64]: 
+                - text: Mağaza
+                - generic [ref=e65]: 
+              - text:     﨡           
+            - listitem [ref=e66]:
+              - button " Ayarlar " [ref=e67] [cursor=pointer]:
+                - generic [ref=e69]: 
+                - text: Ayarlar
+                - generic [ref=e70]: 
+              - text:           
+          - list [ref=e71]:
+            - listitem [ref=e72]:
+              - link " Sohbetler" [ref=e73] [cursor=pointer]:
+                - /url: /chat
+                - generic [ref=e75]: 
+                - generic [ref=e76]: Sohbetler
+            - listitem [ref=e77]:
+              - link "欄 Yardım" [ref=e78] [cursor=pointer]:
+                - /url: /help/new
+                - generic [ref=e80]: 欄
+                - generic [ref=e81]: Yardım
+    - generic [ref=e82]:
+      - banner [ref=e83]:
+        - generic [ref=e84]:
+          - link "" [ref=e86] [cursor=pointer]:
+            - /url: "#"
+            - generic:
+              - generic: 
+            - textbox "Global Arama":
+              - /placeholder: Ara...  Ctrl+K
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - link "Hızlı İşlemler" [ref=e89] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e90]: 
+              - text:   
+            - button "Tema Değiştir" [ref=e92] [cursor=pointer]:
+              - generic [ref=e93]: 
+            - button "Bildirimler" [ref=e96] [cursor=pointer]:
+              - generic [ref=e97]: 
+            - generic [ref=e98]:
+              - link "Kullanıcı Menüsü" [ref=e99] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e101]: 
+                - generic [ref=e103]: Admin
+              - text:  
+      - generic [ref=e105]:
+        - generic [ref=e108]:
+          - list "breadcrumbs" [ref=e109]:
+            - listitem [ref=e110]: Pazaryeri Senkronizasyon
+          - heading "Pazaryeri Senkronizasyon" [level=2] [ref=e111]
+        - generic [ref=e112]:
+          - generic [ref=e115]:
+            - generic [ref=e117]: Toplam Kategori Eşleşmesi
+            - generic [ref=e118]: 0 / 0
+          - generic [ref=e121]:
+            - generic [ref=e123]: Toplam Marka Eşleşmesi
+            - generic [ref=e124]: 0 / 0
+          - generic [ref=e127]:
+            - generic [ref=e129]: Eşleşmemiş Kategoriler
+            - generic [ref=e130]: "0"
+          - generic [ref=e133]:
+            - generic [ref=e135]: Eşleşmemiş Markalar
+            - generic [ref=e136]: "0"
+        - generic [ref=e137]:
+          - generic [ref=e139]:
+            - generic [ref=e140]:
+              - heading "Trendyol" [level=3] [ref=e141]
+              - generic [ref=e143]: Aktif
+            - generic [ref=e144]:
+              - generic [ref=e145]:
+                - generic [ref=e146]:
+                  - generic [ref=e147]: Toplam Ürün
+                  - strong [ref=e148]: "0"
+                - generic [ref=e149]:
+                  - generic [ref=e150]: Senkronize
+                  - generic [ref=e151]: "0"
+                - generic [ref=e152]:
+                  - generic [ref=e153]: Bekleyen
+                  - generic [ref=e154]: "0"
+                - generic [ref=e155]:
+                  - generic [ref=e156]: Hatalı
+                  - generic [ref=e157]: "0"
+                - generic [ref=e158]:
+                  - generic [ref=e159]: Hiç Senkronize Edilmemiş
+                  - generic [ref=e160]: "0"
+              - generic [ref=e162]:
+                - generic [ref=e163]: Kategori Eşleşmesi
+                - generic [ref=e164]: 0 / 0
+            - generic [ref=e166]:
+              - link "Ürünleri Gör" [ref=e167] [cursor=pointer]:
+                - /url: /marketplace/matching?mp=1
+              - link "Kategori Eşleştir" [ref=e168] [cursor=pointer]:
+                - /url: /marketplace/sync/categories?mp=1
+              - link "Marka Eşleştir" [ref=e169] [cursor=pointer]:
+                - /url: /marketplace/sync/brands?mp=1
+          - generic [ref=e171]:
+            - generic [ref=e172]:
+              - heading "N11" [level=3] [ref=e173]
+              - button " Yapılandırılmamış" [ref=e175] [cursor=pointer]:
+                - generic [ref=e176]: 
+                - text: Yapılandırılmamış
+            - generic [ref=e178]:
+              - generic [ref=e180]: 
+              - paragraph [ref=e181]: Bu pazaryeri için API anahtarları yapılandırılmamış. Senkronizasyon başlatmak için kurulumu tamamlayın.
+              - link " Entegrasyonlar'a Git" [ref=e182] [cursor=pointer]:
+                - /url: /settings/integrations
+                - generic [ref=e183]: 
+                - text: Entegrasyonlar'a Git
+            - generic [ref=e185]:
+              - generic [ref=e186]:
+                - generic: Ürünleri Gör
+              - generic [ref=e187]:
+                - generic: Kategori Eşleştir
+              - generic [ref=e188]:
+                - generic: Marka Eşleştir
+          - generic [ref=e190]:
+            - generic [ref=e191]:
+              - heading "Hepsiburada" [level=3] [ref=e192]
+              - button " Yapılandırılmamış" [ref=e194] [cursor=pointer]:
+                - generic [ref=e195]: 
+                - text: Yapılandırılmamış
+            - generic [ref=e197]:
+              - generic [ref=e199]: 
+              - paragraph [ref=e200]: Bu pazaryeri için API anahtarları yapılandırılmamış. Senkronizasyon başlatmak için kurulumu tamamlayın.
+              - link " Entegrasyonlar'a Git" [ref=e201] [cursor=pointer]:
+                - /url: /settings/integrations
+                - generic [ref=e202]: 
+                - text: Entegrasyonlar'a Git
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - generic: Ürünleri Gör
+              - generic [ref=e206]:
+                - generic: Kategori Eşleştir
+              - generic [ref=e207]:
+                - generic: Marka Eşleştir
+          - generic [ref=e209]:
+            - generic [ref=e210]:
+              - heading "Pazarama" [level=3] [ref=e211]
+              - button " Yapılandırılmamış" [ref=e213] [cursor=pointer]:
+                - generic [ref=e214]: 
+                - text: Yapılandırılmamış
+            - generic [ref=e216]:
+              - generic [ref=e218]: 
+              - paragraph [ref=e219]: Bu pazaryeri için API anahtarları yapılandırılmamış. Senkronizasyon başlatmak için kurulumu tamamlayın.
+              - link " Entegrasyonlar'a Git" [ref=e220] [cursor=pointer]:
+                - /url: /settings/integrations
+                - generic [ref=e221]: 
+                - text: Entegrasyonlar'a Git
+            - generic [ref=e223]:
+              - generic [ref=e224]:
+                - generic: Ürünleri Gör
+              - generic [ref=e225]:
+                - generic: Kategori Eşleştir
+              - generic [ref=e226]:
+                - generic: Marka Eşleştir
+          - generic [ref=e228]:
+            - generic [ref=e229]:
+              - heading "Amazon" [level=3] [ref=e230]
+              - button " Yapılandırılmamış" [ref=e232] [cursor=pointer]:
+                - generic [ref=e233]: 
+                - text: Yapılandırılmamış
+            - generic [ref=e235]:
+              - generic [ref=e237]: 
+              - paragraph [ref=e238]: Bu pazaryeri için API anahtarları yapılandırılmamış. Senkronizasyon başlatmak için kurulumu tamamlayın.
+              - link " Entegrasyonlar'a Git" [ref=e239] [cursor=pointer]:
+                - /url: /settings/integrations
+                - generic [ref=e240]: 
+                - text: Entegrasyonlar'a Git
+            - generic [ref=e242]:
+              - generic [ref=e243]:
+                - generic: Ürünleri Gör
+              - generic [ref=e244]:
+                - generic: Kategori Eşleştir
+              - generic [ref=e245]:
+                - generic: Marka Eşleştir
+          - generic [ref=e247]:
+            - generic [ref=e248]:
+              - heading "Çiçeksepeti" [level=3] [ref=e249]
+              - button " Yapılandırılmamış" [ref=e251] [cursor=pointer]:
+                - generic [ref=e252]: 
+                - text: Yapılandırılmamış
+            - generic [ref=e254]:
+              - generic [ref=e256]: 
+              - paragraph [ref=e257]: Bu pazaryeri için API anahtarları yapılandırılmamış. Senkronizasyon başlatmak için kurulumu tamamlayın.
+              - link " Entegrasyonlar'a Git" [ref=e258] [cursor=pointer]:
+                - /url: /settings/integrations
+                - generic [ref=e259]: 
+                - text: Entegrasyonlar'a Git
+            - generic [ref=e261]:
+              - generic [ref=e262]:
+                - generic: Ürünleri Gör
+              - generic [ref=e263]:
+                - generic: Kategori Eşleştir
+              - generic [ref=e264]:
+                - generic: Marka Eşleştir
+  - text:  

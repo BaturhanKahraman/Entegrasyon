@@ -29,7 +29,7 @@ Entity veya DbContext'te değişiklik yapıldığında:
 - DI: Scrutor convention-based auto-scan (`IXxxManager`→`XxxManager`). Özel durumlar manuel.
 - Domain modeli (kategori/özellik): `CategoryAttribute`, `CategoryAttributeCategory` (IsRequired/IsVarianter/IsSlicer), `CategoryAttributeValue`, `AttributeKeyValue`; marketplace eşleştirmeleri `CategoryAttributeMarketPlaceMatch` (MarketPlaceId=1=Trendyol). Müşteri kalıtımı `Customer`→`RetailCustomer`/`CorporateCustomer`. `BarcodeSequence` arka planda temizlenir.
 - Şüphede `microsoft-docs` skill'i (EF Core resmi ref); EF kod desenleri için `aspnet-mvc-htmx` skill'i.
-- **Performans/şema için `ecc:postgres-patterns` skill'ini AÇIKÇA çağır** (index stratejisi, EXPLAIN okuma, N+1, partial index, connection pooling, GIN/trigram, MVCC). Bkz aşağıdaki ECC cephanesi.
+- **Performans/şema için `postgres-performance` skill'ini AÇIKÇA çağır** (index stratejisi, EXPLAIN okuma, N+1, partial index, connection pooling, GIN/trigram, MVCC). Bkz aşağıdaki tamamlayıcı skill'ler.
 
 ## Performans & sorgu
 
@@ -44,11 +44,11 @@ dotnet ef migrations has-pending-model-changes -p Application/Entegrasyon.DataAc
 dotnet test Test/Entegrasyon.IntegrationTest/Entegrasyon.IntegrationTest.csproj
 ```
 
-## ECC cephanesi (skill + agent)
+## Tamamlayıcı skill'ler
 
-- **`ecc:postgres-patterns`** — PG tip seçimi (timestamptz/numeric), MVCC/VACUUM/bloat, partitioning, GIN/trigram, connection pooling, index stratejisi, EXPLAIN okuma. **Perf-kritik sorgu/şema/aggregate işinde AÇIKÇA çağır** (bu projenin gerçek + kurulu ECC postgres skill'i).
-- **`ecc:database-migrations`** — migration güvenliği: geri-dönük uyumlu, zero-downtime, nullable-kolon + backfill deseni (mevcut satırları kırma — SecurityStamp olayı).
-- **`ecc:database-reviewer`** agent'ı — sorgu/şema bağımsız review: N+1, indexsiz hot-kolon, `Include` zinciri (≥2), raw SQL, pagination index'i (DB Master review tetikleyicileri).
+- **`postgres-performance`** (proje skill'i) — PG tip seçimi (timestamptz/numeric), MVCC/VACUUM/bloat, partitioning, GIN/trigram, connection pooling, index stratejisi, EXPLAIN okuma. **Perf-kritik sorgu/şema/aggregate işinde AÇIKÇA çağır.**
+- **`entegrasyon-db`** (proje skill'i) — migration strict-rule + multi-tenant izolasyon desenleri. Migration güvenliği: geri-dönük uyumlu, zero-downtime, nullable-kolon + backfill deseni (mevcut satırları kırma — SecurityStamp olayı).
+- **Bağımsız sorgu/şema review:** `/code-review` + DB Master review tetikleyicileri: N+1, indexsiz hot-kolon, `Include` zinciri (≥2), raw SQL, pagination index'i.
 
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
@@ -63,7 +63,7 @@ Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (promp
 
 - **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
 - **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
-- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Başka agent/skill-agent çağırma.** Reviewer/agent çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
 - **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
 - **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
 - **Dev DB erişilemezse kilitlenme.** `dotnet ef database update` bağlantı bulamazsa migration dosyası + `has-pending-model-changes` temizliği yeterli teslimdir; update'in TL/CI tarafından uygulanacağını `DEVİR:` ile raporla.

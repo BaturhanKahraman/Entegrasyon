@@ -1,0 +1,14 @@
+- generic [ref=e4]:
+  - generic [ref=e6]: 
+  - generic [ref=e7]: Hata 404
+  - heading "Bu sayfayı bulamadık" [level=1] [ref=e8]
+  - paragraph [ref=e9]: Aradığınız sayfa taşınmış, adı değişmiş ya da hiç var olmamış olabilir.
+  - paragraph [ref=e10]: Adresi yanlış yazmadığınızdan emin olun ya da ana sayfadan devam edin.
+  - generic [ref=e12]:
+    - link "Ana sayfaya dön" [ref=e13] [cursor=pointer]:
+      - /url: /
+      - generic [ref=e14]: 
+      - text: Ana sayfaya dön
+    - button "Geri dön" [ref=e15] [cursor=pointer]:
+      - generic [ref=e16]: 
+      - text: Geri dön

@@ -1,0 +1,19 @@
+- generic [ref=e3]:
+  - generic [ref=e4]:
+    - heading "Entegrasyon" [level=2] [ref=e5]
+    - paragraph [ref=e6]: Hesabınıza giriş yapın
+  - generic [ref=e9]:
+    - generic [ref=e10]:
+      - generic [ref=e11]: Kullanıcı Adı
+      - textbox "Kullanıcı Adı" [active] [ref=e12]:
+        - /placeholder: Kullanıcı adınızı girin
+    - generic [ref=e13]:
+      - generic [ref=e14]: Şifre
+      - textbox "Şifre" [ref=e15]:
+        - /placeholder: Şifrenizi girin
+    - generic [ref=e17]:
+      - checkbox "Beni hatırla" [ref=e18]
+      - generic [ref=e19]: Beni hatırla
+    - button "Giriş Yap" [ref=e21] [cursor=pointer]
+  - link "Şifremi unuttum" [ref=e23] [cursor=pointer]:
+    - /url: /auth/reset-password

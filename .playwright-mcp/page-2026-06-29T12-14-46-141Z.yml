@@ -1,0 +1,204 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entegrasyon" [level=1] [ref=e5]:
+          - link "Entegrasyon" [ref=e6] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link " Dashboard" [ref=e10] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e12]: 
+                - generic [ref=e13]: Dashboard
+            - listitem [ref=e14]:
+              - button " Yönetim " [ref=e15] [cursor=pointer]:
+                - generic [ref=e17]: 
+                - text: Yönetim
+                - generic [ref=e18]: 
+              - text:            ﰟ  
+            - listitem [ref=e19]:
+              - button " Pazaryeri " [ref=e20] [cursor=pointer]:
+                - generic [ref=e22]: 
+                - text: Pazaryeri
+                - generic [ref=e23]: 
+              - text:     
+            - listitem [ref=e24]:
+              - button " Müşteriler " [ref=e25] [cursor=pointer]:
+                - generic [ref=e27]: 
+                - text: Müşteriler
+                - generic [ref=e28]: 
+              - text:  
+            - listitem [ref=e29]:
+              - button " Raporlar " [expanded] [ref=e30] [cursor=pointer]:
+                - generic [ref=e32]: 
+                - text: Raporlar
+                - generic [ref=e33]: 
+              - list [ref=e35]:
+                - listitem [ref=e36]:
+                  - link " Satış Raporları" [ref=e37] [cursor=pointer]:
+                    - /url: /reports/sales
+                    - generic [ref=e39]: 
+                    - generic [ref=e40]: Satış Raporları
+                - listitem [ref=e41]:
+                  - link " Kar/Zarar Raporu" [ref=e42] [cursor=pointer]:
+                    - /url: /reports/profit-loss
+                    - generic [ref=e44]: 
+                    - generic [ref=e45]: Kar/Zarar Raporu
+                - listitem [ref=e46]:
+                  - link " Ürün Performansı" [ref=e47] [cursor=pointer]:
+                    - /url: /reports/product-performance
+                    - generic [ref=e49]: 
+                    - generic [ref=e50]: Ürün Performansı
+                - listitem [ref=e51]:
+                  - link " Stok Uyarıları" [ref=e52] [cursor=pointer]:
+                    - /url: /reports/stock-alerts
+                    - generic [ref=e54]: 
+                    - generic [ref=e55]: Stok Uyarıları
+                - listitem [ref=e56]:
+                  - link " Stok Raporları" [ref=e57] [cursor=pointer]:
+                    - /url: /reports/inventory
+                    - generic [ref=e59]: 
+                    - generic [ref=e60]: Stok Raporları
+                - listitem [ref=e61]:
+                  - link " Pazaryeri Raporları" [ref=e62] [cursor=pointer]:
+                    - /url: /reports/marketplace
+                    - generic [ref=e64]: 
+                    - generic [ref=e65]: Pazaryeri Raporları
+                - listitem [ref=e66]:
+                  - link "﨡 Müşteri Raporu" [ref=e67] [cursor=pointer]:
+                    - /url: /reports/customers
+                    - generic [ref=e69]: 﨡
+                    - generic [ref=e70]: Müşteri Raporu
+                - listitem [ref=e71]:
+                  - link " İade Raporu" [ref=e72] [cursor=pointer]:
+                    - /url: /reports/returns
+                    - generic [ref=e74]: 
+                    - generic [ref=e75]: İade Raporu
+                - listitem [ref=e76]:
+                  - link " Vergi Raporu" [ref=e77] [cursor=pointer]:
+                    - /url: /reports/tax
+                    - generic [ref=e79]: 
+                    - generic [ref=e80]: Vergi Raporu
+                - listitem [ref=e81]:
+                  - link " Kategori Satışları" [ref=e82] [cursor=pointer]:
+                    - /url: /reports/category-sales
+                    - generic [ref=e84]: 
+                    - generic [ref=e85]: Kategori Satışları
+                - listitem [ref=e86]:
+                  - link " Kargo Raporu" [ref=e87] [cursor=pointer]:
+                    - /url: /reports/shipping
+                    - generic [ref=e89]: 
+                    - generic [ref=e90]: Kargo Raporu
+            - listitem [ref=e91]:
+              - button " Mağaza " [ref=e92] [cursor=pointer]:
+                - generic [ref=e94]: 
+                - text: Mağaza
+                - generic [ref=e95]: 
+              - text:     﨡           
+            - listitem [ref=e96]:
+              - button " Ayarlar " [ref=e97] [cursor=pointer]:
+                - generic [ref=e99]: 
+                - text: Ayarlar
+                - generic [ref=e100]: 
+              - text:           
+          - list [ref=e101]:
+            - listitem [ref=e102]:
+              - link " Sohbetler" [ref=e103] [cursor=pointer]:
+                - /url: /chat
+                - generic [ref=e105]: 
+                - generic [ref=e106]: Sohbetler
+            - listitem [ref=e107]:
+              - link "欄 Yardım" [ref=e108] [cursor=pointer]:
+                - /url: /help/new
+                - generic [ref=e110]: 欄
+                - generic [ref=e111]: Yardım
+    - generic [ref=e112]:
+      - banner [ref=e113]:
+        - generic [ref=e114]:
+          - link "" [ref=e116] [cursor=pointer]:
+            - /url: "#"
+            - generic:
+              - generic: 
+            - textbox "Global Arama":
+              - /placeholder: Ara...  Ctrl+K
+          - generic [ref=e117]:
+            - generic [ref=e118]:
+              - link "Hızlı İşlemler" [ref=e119] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e120]: 
+              - text:   
+            - button "Tema Değiştir" [ref=e122] [cursor=pointer]:
+              - generic [ref=e123]: 
+            - button "Bildirimler" [ref=e126] [cursor=pointer]:
+              - generic [ref=e127]: 
+            - generic [ref=e128]:
+              - link "Kullanıcı Menüsü" [ref=e129] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e131]: 
+                - generic [ref=e133]: Admin
+              - text:  
+      - generic [ref=e135]:
+        - generic [ref=e138]:
+          - list "breadcrumbs" [ref=e139]:
+            - listitem [ref=e140]: Raporlar
+            - listitem [ref=e141]: › Envanter
+          - heading "Envanter Raporu" [level=2] [ref=e142]
+        - generic [ref=e143]:
+          - generic [ref=e147]:
+            - generic [ref=e150]: 
+            - generic [ref=e151]:
+              - generic [ref=e152]: Toplam Ürün
+              - generic [ref=e153]: Varyant kalemi
+            - generic [ref=e154]: "0"
+          - generic [ref=e158]:
+            - generic [ref=e161]: 
+            - generic [ref=e162]:
+              - generic [ref=e163]: Toplam Stok
+              - generic [ref=e164]: Tüm şubeler
+            - generic [ref=e165]: "0"
+          - generic [ref=e169]:
+            - generic [ref=e172]: 
+            - generic [ref=e173]:
+              - generic [ref=e174]: Stok Değeri
+              - generic [ref=e175]: Maliyet × adet
+            - generic [ref=e176]: 0,00 ₺
+          - generic [ref=e180]:
+            - generic [ref=e183]: 
+            - generic [ref=e184]:
+              - generic [ref=e185]: Stok Sorunu
+              - generic [ref=e186]: Düşük 0 · Tükendi 0
+            - generic [ref=e187]: "0"
+        - generic [ref=e190]:
+          - generic [ref=e191]:
+            - generic [ref=e192]: Şube
+            - combobox "Şube" [ref=e193]:
+              - option "Tüm şubeler" [selected]
+              - option "Merkez Ofis"
+          - generic [ref=e194]:
+            - generic [ref=e195]: Stok durumu
+            - combobox "Stok durumu" [ref=e196]:
+              - option "Tümü" [selected]
+              - option "Düşük stok"
+              - option "Tükenen"
+          - generic [ref=e197]:
+            - generic [ref=e198]: Dönem başlangıç
+            - textbox "Dönem başlangıç" [ref=e199]
+          - generic [ref=e200]:
+            - generic [ref=e201]: Dönem bitiş
+            - textbox "Dönem bitiş" [ref=e202]
+          - generic [ref=e204]:
+            - checkbox "Dönemde satılmayan stok" [ref=e205]
+            - generic [ref=e206]: Dönemde satılmayan stok
+          - button " Filtrele" [ref=e208] [cursor=pointer]:
+            - generic [ref=e209]: 
+            - text: Filtrele
+        - generic [ref=e210]:
+          - generic [ref=e212]:
+            - heading "Envanter Listesi" [level=3] [ref=e213]
+            - paragraph [ref=e214]: Varyant bazında mevcut stok, değer ve hareketsizlik
+          - generic [ref=e216]:
+            - paragraph [ref=e217]: Envanter verisi yok
+            - paragraph [ref=e218]: Seçilen filtrelere uyan stok kaydı bulunmuyor.
+  - text:  

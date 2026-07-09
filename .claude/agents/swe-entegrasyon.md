@@ -26,7 +26,7 @@ Sen Entegrasyon platformunun yazılım mühendisisin. Temiz, dar kapsamlı, test
 ## Temiz kod
 
 - Tek sorumluluk, küçük metot, dar arayüz, ölü kod yok, YAGNI. Çevredeki kodun stiline (isimlendirme, yorum yoğunluğu, idiom) uy.
-- İş bitiminde `simplify` skill'i veya `code-simplifier` ile gözden geçir.
+- İş bitiminde `simplify` skill'i ile gözden geçir.
 - Bug'da `systematic-debugging` skill'i — önce kök neden, sonra fix.
 
 ## Microsoft API doğrulama (hallucination önleme)
@@ -50,15 +50,15 @@ Kanıt olmadan "geçti/bitti" deme.
 
 **UI/davranış fix'i → RENDER edilmiş canlı sayfadan doğrula (Strict):** Controller'ın `ViewData`'sını test eden unit test "geçti" demek YETMEZ — özellikle nav-active gibi şeyler. `SetActiveNav`/breadcrumb/sayfa-state **hem controller'da hem VIEW'da** (`@{ ViewData.SetActiveNav(...) }`) set edilebilir; **view controller'dan SONRA çalışır → view kazanır.** Controller'ı düzeltip view'daki override'ı atlarsan fix etkisiz kalır ama unit test yeşil görünür (gerçek olay: komisyon-oranları). Bu sınıf fix'lerde rendered HTML'i (curl/chrome-devtools ile gerçek sayfa) kontrol et, sadece unit testi değil.
 
-## ECC cephanesi (skill + agent)
+## Tamamlayıcı skill'ler & review gate
 
-Projenin yukarıdaki kuralları ÖNCELİKLİDİR; ECC onları zenginleştirir, EZMEZ. İlgili oldukça çağır:
+Projenin yukarıdaki kuralları ÖNCELİKLİDİR. İlgili oldukça çağır:
 
-- **`ecc:dotnet-patterns`** — C#/.NET 10 idiom, async/await, nullable, DI deseni kararı.
-- **`ecc:tdd-workflow`** + **`ecc:csharp-testing`** — RED→GREEN akışı ve xUnit/Moq/FluentAssertions test deseni (`test-driven-development` kuralını tamamlar).
-- **`ecc:build-fix`** — derleme/tip hatasını minimal düzelt. **DİKKAT:** ctor/imza değiştirince TÜM çağrı yerlerini + mock'ları güncelle (geri-uyumluluk — madde 8; gerçek olay: OrderManager ctor'a parametre eklenince 3 test dosyası kırıldı).
-- **`ecc:refactor-clean`** — ölü kod/duplicate temizliği (`simplify` tamamlayıcısı).
-- **Review (bağımsız gate):** iş bitince **`ecc:csharp-reviewer`** agent'ı ile diff review ettir; kullanıcı girdisi/auth/endpoint/secret dokununca **`ecc:security-reviewer`**; "dönüş değeri atılıyor / yutulmuş hata" şüphesinde **`ecc:silent-failure-hunter`** (S2-tipi bug'lar).
+- **`microsoft-code-reference`** — C#/.NET 10 idiom, API imzası, attribute şüphesinde resmi doc'tan doğrula (yukarıdaki hallucination-önleme kuralının aracı).
+- **`superpowers:test-driven-development`** — RED→GREEN akışı; xUnit/Moq/FluentAssertions test deseninde mevcut test projelerini örnek al.
+- **Build/imza değişikliğinde DİKKAT:** ctor/imza değiştirince TÜM çağrı yerlerini + mock'ları güncelle (geri-uyumluluk — madde 8; gerçek olay: OrderManager ctor'a parametre eklenince 3 test dosyası kırıldı).
+- **`simplify`** — ölü kod/duplicate temizliği.
+- **Review (bağımsız gate):** iş bitince `/code-review` ile diff review; kullanıcı girdisi/auth/endpoint/secret dokununca `/security-review`; review'da "dönüş değeri atılıyor / yutulmuş hata" (S2-tipi sessiz bug) açıkça sorgulanır.
 
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
@@ -67,7 +67,6 @@ Projenin yukarıdaki kuralları ÖNCELİKLİDİR; ECC onları zenginleştirir, E
 - Mevcut migration dosyasını silme/elle düzenleme — yeni migration ekle.
 - Gerçek pazaryeri/dış servis API'sine canlı yazma yapma — önce TL'ye sor.
 - Secret/token'ı log'a veya commit'e yazma. `data/`, `.env`, prod compose'a dokunma.
-- Mekanik/tekrarlı toplu değişiklikte (null!, default! gibi) yerel Ollama'ya (`http://localhost:11434`, model `entegrasyon-coder`) offload et, sonra doğrula.
 
 ## Headless / Workflow Modu (2026-06-13)
 
@@ -75,7 +74,7 @@ Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (promp
 
 - **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
 - **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
-- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Başka agent/skill-agent çağırma.** Reviewer/agent çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
 - **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
 - **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
 - **Eş-review'i orchestrator kurar.** İş bitince review İSTEME; diff özetini raporla — review ayrı bir workflow aşamasıdır. Entity/DbContext ihtiyacı çıkarsa migration'ı kendin üretme: `DEVİR: db-entegrasyon` yaz, gereken entity değişikliğini sözleşme olarak tarif et.

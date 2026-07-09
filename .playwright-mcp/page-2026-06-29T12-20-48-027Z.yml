@@ -1,0 +1,119 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entegrasyon" [level=1] [ref=e5]:
+          - link "Entegrasyon" [ref=e6] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link " Dashboard" [ref=e10] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e12]: 
+                - generic [ref=e13]: Dashboard
+            - listitem [ref=e14]:
+              - button " Yönetim " [ref=e15] [cursor=pointer]:
+                - generic [ref=e17]: 
+                - text: Yönetim
+                - generic [ref=e18]: 
+              - text:            ﰟ  
+            - listitem [ref=e19]:
+              - button " Pazaryeri " [ref=e20] [cursor=pointer]:
+                - generic [ref=e22]: 
+                - text: Pazaryeri
+                - generic [ref=e23]: 
+              - text:     
+            - listitem [ref=e24]:
+              - button " Müşteriler " [ref=e25] [cursor=pointer]:
+                - generic [ref=e27]: 
+                - text: Müşteriler
+                - generic [ref=e28]: 
+              - text:  
+            - listitem [ref=e29]:
+              - button " Raporlar " [ref=e30] [cursor=pointer]:
+                - generic [ref=e32]: 
+                - text: Raporlar
+                - generic [ref=e33]: 
+              - text:       﨡    
+            - listitem [ref=e34]:
+              - button " Mağaza " [ref=e35] [cursor=pointer]:
+                - generic [ref=e37]: 
+                - text: Mağaza
+                - generic [ref=e38]: 
+              - text:     﨡           
+            - listitem [ref=e39]:
+              - button " Ayarlar " [ref=e40] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - text: Ayarlar
+                - generic [ref=e43]: 
+              - text:           
+          - list [ref=e44]:
+            - listitem [ref=e45]:
+              - link " Sohbetler" [ref=e46] [cursor=pointer]:
+                - /url: /chat
+                - generic [ref=e48]: 
+                - generic [ref=e49]: Sohbetler
+            - listitem [ref=e50]:
+              - link "欄 Yardım" [ref=e51] [cursor=pointer]:
+                - /url: /help/new
+                - generic [ref=e53]: 欄
+                - generic [ref=e54]: Yardım
+    - generic [ref=e55]:
+      - banner [ref=e56]:
+        - generic [ref=e57]:
+          - link "" [ref=e59] [cursor=pointer]:
+            - /url: "#"
+            - generic:
+              - generic: 
+            - textbox "Global Arama":
+              - /placeholder: Ara...  Ctrl+K
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - link "Hızlı İşlemler" [ref=e62] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e63]: 
+              - text:   
+            - button "Tema Değiştir" [ref=e65] [cursor=pointer]:
+              - generic [ref=e66]: 
+            - button "Bildirimler" [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: 
+            - generic [ref=e71]:
+              - link "Kullanıcı Menüsü" [ref=e72] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e74]: 
+                - generic [ref=e76]: Admin
+              - text:  
+      - generic [ref=e78]:
+        - heading "Dashboard" [level=2] [ref=e82]
+        - generic [ref=e84]:
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - generic [ref=e91]: 
+              - generic [ref=e92]:
+                - generic [ref=e93]: TOPLAM ÜRÜN
+                - generic [ref=e94]: "0"
+            - generic [ref=e95]: 0 varyant
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e102]: 
+              - generic [ref=e103]:
+                - generic [ref=e104]: BUGÜNKÜ SATIŞ
+                - generic [ref=e105]: "0"
+            - generic [ref=e106]: ₺0,00
+          - generic [ref=e110]:
+            - generic [ref=e113]: 
+            - generic [ref=e114]:
+              - generic [ref=e115]: BEKLEYEN SİPARİŞ
+              - generic [ref=e116]: "0"
+          - generic [ref=e120]:
+            - generic [ref=e123]: 
+            - generic [ref=e124]:
+              - generic [ref=e125]: DÜŞÜK STOK
+              - generic [ref=e126]: "0"
+        - generic [ref=e162]:
+          - heading "Son Aktiviteler" [level=3] [ref=e164]
+          - generic [ref=e166]:
+            - generic [ref=e168]: 
+            - paragraph [ref=e169]: Henüz aktivite yok
+  - text:  

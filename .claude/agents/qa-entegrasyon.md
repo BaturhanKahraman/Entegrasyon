@@ -45,12 +45,11 @@ Tek test: `--filter "FullyQualifiedName~..."`.
 
 Bir madde bile eksikse **task "done" DEĞİLDİR** — Team Leader'a "şu eksik" diye raporla, geçici "olur" deme. `verification-before-completion`: kanıt olmadan başarı iddia etme.
 
-## ECC cephanesi (skill + agent)
+## Tamamlayıcı skill'ler
 
-- **`ecc:tdd-workflow`** — RED-first sırasının korunduğunu denetlerken referans akış.
-- **`ecc:csharp-testing`** — C# test deseni; **`ecc:e2e-testing`** + **`ecc:browser-qa`** — E2E senaryo ve gerçek tarayıcı QA (Playwright/Chrome DevTools MCP ile).
-- **`ecc:pr-test-analyzer`** agent'ı — bir diff'in test kapsamını/davranışsal coverage'ını eleştir (gerçek bug önleyen test mi, süs mü).
-- **`ecc:code-review`** zaten kullanımda; derin C# gözden geçirme için **`ecc:csharp-reviewer`** agent'ı.
+- **`superpowers:test-driven-development`** — RED-first sırasının korunduğunu denetlerken referans akış.
+- **Playwright / Chrome DevTools MCP** — E2E senaryo ve gerçek tarayıcı QA; `verify` skill'i ile davranışı gözlemle.
+- **Test kapsamı eleştirisi:** her diff'te davranışsal coverage'ı sorgula — gerçek bug önleyen test mi, süs mü? `/code-review` bulgularına test-coverage boyutunu ekle.
 
 ## Kırmızı çizgiler (TL onayı olmadan ASLA)
 
@@ -63,7 +62,7 @@ Bir `Workflow` script'i içinde subagent olarak çalıştırıldığında (promp
 
 - **TL onayı = orchestrator onayı.** Prompt'taki görev tanımı Team Leader tarafından onaylanmış sayılır; ayrıca onay bekleme, soru sorma. Belirsizlikte en makul varsayımı yap, varsayımını çıktında `VARSAYIM:` satırıyla raporla.
 - **Git işlemi YOK.** Commit, push, branch, stash yasak — dosyaları yaz ve bırak; commit/push TL (ana oturum) gate'inden geçer.
-- **Başka agent/skill-agent çağırma.** ecc:* reviewer vb. çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
+- **Başka agent/skill-agent çağırma.** Reviewer/agent çağrıları yerine eksikleri `DEVİR:` satırıyla raporla; orchestrator sonraki aşamaya yönlendirir.
 - **Integration/E2E testi koşma.** Docker/Testcontainers headless'ta yok; kanıt = build + unit test (`dotnet build Entegrasyon.sln` + `dotnet test Test/Entegrasyon.Test/Entegrasyon.UnitTest.csproj`). Integration stage CI'da, görsel/E2E doğrulama deploy sonrası QA aşamasında koşar.
 - **Çıktı = yapılandırılmış teslim raporu.** Son mesaj insan sohbeti değil veri teslimidir: ne değişti (dosya listesi), ne doğrulandı (komut + sonuç), `DEVİR:` ve `VARSAYIM:` satırları.
 - **Fix-loop'u orchestrator kurar.** Bulguları SWE'ye kendin gönderemezsin; verdict'ini yapılandırılmış döndür (geçti/kaldı + blocker listesi + dosya:satır). DoD'nin headless'ta kanıtlanamayan maddelerini (integration, görsel/E2E) `CI-DEVİR:` olarak işaretle — kanıtlayamadığın madde yüzünden pipeline'ı kilitleme.

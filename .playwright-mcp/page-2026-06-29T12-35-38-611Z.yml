@@ -1,0 +1,273 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - complementary [ref=e3]:
+      - generic [ref=e4]:
+        - heading "Entegrasyon" [level=1] [ref=e5]:
+          - link "Entegrasyon" [ref=e6] [cursor=pointer]:
+            - /url: /
+        - generic [ref=e7]:
+          - list [ref=e8]:
+            - listitem [ref=e9]:
+              - link " Dashboard" [ref=e10] [cursor=pointer]:
+                - /url: /
+                - generic [ref=e12]: 
+                - generic [ref=e13]: Dashboard
+            - listitem [ref=e14]:
+              - button " Yönetim " [ref=e15] [cursor=pointer]:
+                - generic [ref=e17]: 
+                - text: Yönetim
+                - generic [ref=e18]: 
+              - text:            ﰟ  
+            - listitem [ref=e19]:
+              - button " Pazaryeri " [ref=e20] [cursor=pointer]:
+                - generic [ref=e22]: 
+                - text: Pazaryeri
+                - generic [ref=e23]: 
+              - text:     
+            - listitem [ref=e24]:
+              - button " Müşteriler " [ref=e25] [cursor=pointer]:
+                - generic [ref=e27]: 
+                - text: Müşteriler
+                - generic [ref=e28]: 
+              - text:  
+            - listitem [ref=e29]:
+              - button " Raporlar " [ref=e30] [cursor=pointer]:
+                - generic [ref=e32]: 
+                - text: Raporlar
+                - generic [ref=e33]: 
+              - text:       﨡    
+            - listitem [ref=e34]:
+              - button " Mağaza " [ref=e35] [cursor=pointer]:
+                - generic [ref=e37]: 
+                - text: Mağaza
+                - generic [ref=e38]: 
+              - text:     﨡           
+            - listitem [ref=e39]:
+              - button " Ayarlar " [ref=e40] [cursor=pointer]:
+                - generic [ref=e42]: 
+                - text: Ayarlar
+                - generic [ref=e43]: 
+              - text:           
+          - list [ref=e44]:
+            - listitem [ref=e45]:
+              - link " Sohbetler" [ref=e46] [cursor=pointer]:
+                - /url: /chat
+                - generic [ref=e48]: 
+                - generic [ref=e49]: Sohbetler
+            - listitem [ref=e50]:
+              - link "欄 Yardım" [ref=e51] [cursor=pointer]:
+                - /url: /help/new
+                - generic [ref=e53]: 欄
+                - generic [ref=e54]: Yardım
+    - generic [ref=e55]:
+      - banner [ref=e56]:
+        - generic [ref=e57]:
+          - link "" [ref=e59] [cursor=pointer]:
+            - /url: "#"
+            - generic:
+              - generic: 
+            - textbox "Global Arama":
+              - /placeholder: Ara...  Ctrl+K
+          - generic [ref=e60]:
+            - generic [ref=e61]:
+              - link "Hızlı İşlemler" [ref=e62] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e63]: 
+              - text:   
+            - button "Tema Değiştir" [ref=e65] [cursor=pointer]:
+              - generic [ref=e66]: 
+            - button "Bildirimler" [ref=e69] [cursor=pointer]:
+              - generic [ref=e70]: 
+            - generic [ref=e71]:
+              - link "Kullanıcı Menüsü" [ref=e72] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e74]: 
+                - generic [ref=e76]: Admin
+              - text:  
+      - generic [ref=e78]:
+        - heading "Dashboard" [level=2] [ref=e82]
+        - generic [ref=e84]:
+          - generic [ref=e87]:
+            - generic [ref=e88]:
+              - generic [ref=e91]: 
+              - generic [ref=e92]:
+                - generic [ref=e93]: TOPLAM ÜRÜN
+                - generic [ref=e94]: "0"
+            - generic [ref=e95]: 0 varyant
+          - generic [ref=e98]:
+            - generic [ref=e99]:
+              - generic [ref=e102]: 
+              - generic [ref=e103]:
+                - generic [ref=e104]: BUGÜNKÜ SATIŞ
+                - generic [ref=e105]: "0"
+            - generic [ref=e106]: ₺0,00
+          - generic [ref=e110]:
+            - generic [ref=e113]: 
+            - generic [ref=e114]:
+              - generic [ref=e115]: BEKLEYEN SİPARİŞ
+              - generic [ref=e116]: "0"
+          - generic [ref=e120]:
+            - generic [ref=e123]: 
+            - generic [ref=e124]:
+              - generic [ref=e125]: DÜŞÜK STOK
+              - generic [ref=e126]: "0"
+        - generic [ref=e127]:
+          - generic [ref=e130]:
+            - heading "Haftalık Satış" [level=3] [ref=e132]
+            - generic [ref=e135]:
+              - img [ref=e136]:
+                - generic [ref=e139]:
+                  - generic "2 TL" [ref=e140]
+                  - generic "1,5 TL" [ref=e141]
+                  - generic "1 TL" [ref=e142]
+                  - generic "0,5 TL" [ref=e143]
+                  - generic "0 TL" [ref=e144]
+                - generic [ref=e152]:
+                  - generic "23 Jun" [ref=e153]
+                  - generic "24 Jun" [ref=e154]
+                  - generic "25 Jun" [ref=e155]
+                  - generic "26 Jun" [ref=e156]
+                  - generic "27 Jun" [ref=e157]
+                  - generic "28 Jun" [ref=e158]
+                  - generic "29 Jun" [ref=e159]
+              - generic: ●
+          - generic [ref=e162]:
+            - heading "Pazaryeri Durumu" [level=3] [ref=e164]
+            - table [ref=e166]:
+              - rowgroup [ref=e167]:
+                - row "PAZARYERİ SENKRON BEKLEYEN HATA" [ref=e168]:
+                  - columnheader "PAZARYERİ" [ref=e169]
+                  - columnheader "SENKRON" [ref=e170]
+                  - columnheader "BEKLEYEN" [ref=e171]
+                  - columnheader "HATA" [ref=e172]
+              - rowgroup [ref=e173]:
+                - row "Hepsiburada 0 0 0" [ref=e174]:
+                  - cell "Hepsiburada" [ref=e175]
+                  - cell "0" [ref=e176]:
+                    - generic [ref=e177]: "0"
+                  - cell "0" [ref=e178]
+                  - cell "0" [ref=e179]
+                - row "Trendyol 0 0 0" [ref=e180]:
+                  - cell "Trendyol" [ref=e181]
+                  - cell "0" [ref=e182]:
+                    - generic [ref=e183]: "0"
+                  - cell "0" [ref=e184]
+                  - cell "0" [ref=e185]
+                - row "Pazarama 0 0 0" [ref=e186]:
+                  - cell "Pazarama" [ref=e187]
+                  - cell "0" [ref=e188]:
+                    - generic [ref=e189]: "0"
+                  - cell "0" [ref=e190]
+                  - cell "0" [ref=e191]
+                - row "N11 0 0 0" [ref=e192]:
+                  - cell "N11" [ref=e193]
+                  - cell "0" [ref=e194]:
+                    - generic [ref=e195]: "0"
+                  - cell "0" [ref=e196]
+                  - cell "0" [ref=e197]
+                - row "Amazon 0 0 0" [ref=e198]:
+                  - cell "Amazon" [ref=e199]
+                  - cell "0" [ref=e200]:
+                    - generic [ref=e201]: "0"
+                  - cell "0" [ref=e202]
+                  - cell "0" [ref=e203]
+                - row "Çiçeksepeti 0 0 0" [ref=e204]:
+                  - cell "Çiçeksepeti" [ref=e205]
+                  - cell "0" [ref=e206]:
+                    - generic [ref=e207]: "0"
+                  - cell "0" [ref=e208]
+                  - cell "0" [ref=e209]
+        - generic [ref=e210]:
+          - generic [ref=e213]:
+            - heading "Son 30 Gun — Ciro Trendi" [level=3] [ref=e215]
+            - generic [ref=e216]:
+              - generic [ref=e217]:
+                - generic [ref=e218]:
+                  - generic [ref=e219]: Toplam Ciro
+                  - generic [ref=e220]: 0.00 TL
+                - generic [ref=e221]:
+                  - generic [ref=e222]: Toplam Satış
+                  - generic [ref=e223]: "0"
+                - generic [ref=e224]:
+                  - generic [ref=e225]: Ortalama Sipariş
+                  - generic [ref=e226]: 0.00 TL
+              - generic [ref=e228]:
+                - img [ref=e229]:
+                  - generic [ref=e232]:
+                    - generic "2" [ref=e233]
+                    - generic "1,5" [ref=e234]
+                    - generic "1" [ref=e235]
+                    - generic "0,5" [ref=e236]
+                    - generic "0" [ref=e237]
+                  - generic [ref=e243]:
+                    - generic "30.05" [ref=e244]
+                    - generic "31.05" [ref=e245]
+                    - generic "01.06" [ref=e246]
+                    - generic "02.06" [ref=e247]
+                    - generic "03.06" [ref=e248]
+                    - generic "04.06" [ref=e249]
+                    - generic "05.06" [ref=e250]
+                    - generic "06.06" [ref=e251]
+                    - generic "07.06" [ref=e252]
+                    - generic "08.06" [ref=e253]
+                    - generic "09.06" [ref=e254]
+                    - generic "10.06" [ref=e255]
+                    - generic "11.06" [ref=e256]
+                    - generic "12.06" [ref=e257]
+                    - generic "13.06" [ref=e258]
+                    - generic "14.06" [ref=e259]
+                    - generic "15.06" [ref=e260]
+                    - generic "16.06" [ref=e261]
+                    - generic "17.06" [ref=e262]
+                    - generic "18.06" [ref=e263]
+                    - generic "19.06" [ref=e264]
+                    - generic "20.06" [ref=e265]
+                    - generic "21.06" [ref=e266]
+                    - generic "22.06" [ref=e267]
+                    - generic "23.06" [ref=e268]
+                    - generic "24.06" [ref=e269]
+                    - generic "25.06" [ref=e270]
+                    - generic "26.06" [ref=e271]
+                    - generic "27.06" [ref=e272]
+                    - generic "28.06" [ref=e273]
+                    - generic "29.06" [ref=e274]
+                - generic: ●
+          - generic [ref=e277]:
+            - heading "Hızlı İşlemler" [level=3] [ref=e279]
+            - generic [ref=e281]:
+              - link " Ürün Ekle" [ref=e283] [cursor=pointer]:
+                - /url: /products/add
+                - generic [ref=e284]: 
+                - text: Ürün Ekle
+              - link " Satış Yap" [ref=e286] [cursor=pointer]:
+                - /url: /pos
+                - generic [ref=e287]: 
+                - text: Satış Yap
+              - link " Siparişler" [ref=e289] [cursor=pointer]:
+                - /url: /orders
+                - generic [ref=e290]: 
+                - text: Siparişler
+              - link " Senkronizasyon" [ref=e292] [cursor=pointer]:
+                - /url: /marketplace/sync
+                - generic [ref=e293]: 
+                - text: Senkronizasyon
+              - link " Raporlar" [ref=e295] [cursor=pointer]:
+                - /url: /reports/sales
+                - generic [ref=e296]: 
+                - text: Raporlar
+              - link " Ayarlar" [ref=e298] [cursor=pointer]:
+                - /url: /settings/general
+                - generic [ref=e299]: 
+                - text: Ayarlar
+        - generic [ref=e303]:
+          - heading "Son Aktiviteler" [level=3] [ref=e305]
+          - table [ref=e307]:
+            - rowgroup [ref=e308]:
+              - row "İŞLEM TARİH" [ref=e309]:
+                - columnheader "İŞLEM" [ref=e310]
+                - columnheader "TARİH" [ref=e311]
+            - rowgroup [ref=e312]:
+              - 'row "POS oturumu acildi. Sube: 1, Terminal: yok 29.06.2026 12:34" [ref=e313]':
+                - 'cell "POS oturumu acildi. Sube: 1, Terminal: yok" [ref=e314]'
+                - cell "29.06.2026 12:34" [ref=e315]
+  - text:  
