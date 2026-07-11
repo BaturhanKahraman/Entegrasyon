@@ -47,14 +47,18 @@ public sealed class TrendyolOrderService(
         return new SuccessDataResult<List<TrendyolShipmentPackage>>(orderList?.Content ?? []);
     }
 
-    public async Task<IResult> MarkUnsuppliedAsync(long shipmentPackageId, List<long> lineIds)
+    public async Task<IResult> MarkUnsuppliedAsync(long shipmentPackageId, List<long> lineIds, int reasonId)
     {
         var sellerId = await GetSellerIdAsync();
         if (sellerId is null)
             return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
-        var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}/unsupplied";
-        var body = new { Lines = lineIds.Select(id => new { LineId = id, Quantity = 0 }).ToList() };
+        var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}/items/unsupplied";
+        var body = new
+        {
+            Lines = lineIds.Select(id => new { LineId = id, Quantity = 0 }).ToList(),
+            ReasonId = reasonId
+        };
         var response = await apiClient.PutAsync(url, body);
 
         if (!response.IsSuccessStatusCode)
@@ -74,7 +78,7 @@ public sealed class TrendyolOrderService(
         if (sellerId is null)
             return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
-        var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}";
+        var url = $"integration/order/sellers/{sellerId}/shipment-packages/{shipmentPackageId}/update-tracking-number";
         var body = new { TrackingNumber = trackingNumber };
         var response = await apiClient.PutAsync(url, body);
 

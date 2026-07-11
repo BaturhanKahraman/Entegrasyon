@@ -60,13 +60,21 @@
         </a>
         @if (Model.MarketPlaceId == 1 && Model.MarketplaceOrderStatus == "Created")
         {
-            <button class="btn btn-outline-danger"
-                    hx-post="/orders/@Model.Id/mark-unsupplied"
-                    hx-confirm="Bu Siparişi tedarik edilemez olarak işaretlemek istediğinize emin misiniz?"
-                    hx-swap="none">
-                <i class="ti ti-package-off icon"></i>
-                Tedarik Edilemez
-            </button>
+            <form hx-post="/sales/order/@Model.Id/mark-unsupplied"
+                  hx-swap="none"
+                  hx-confirm="Bu Siparişi tedarik edilemez olarak işaretlemek istediğinize emin misiniz?"
+                  class="d-flex gap-2 align-items-center">
+                <select name="reasonId" class="form-select" aria-label="Tedarik edilemedi sebebi" style="width: auto;">
+                    @foreach (var reason in Entegrasyon.Business.Concrete.Trendyol.TrendyolUnsuppliedReasons.All)
+                    {
+                        <option value="@reason.Id">@reason.Label</option>
+                    }
+                </select>
+                <button type="submit" class="btn btn-outline-danger">
+                    <i class="ti ti-package-off icon"></i>
+                    Tedarik Edilemez
+                </button>
+            </form>
         }
         <a href="/orders" class="btn btn-outline-secondary">
             <i class="ti ti-arrow-left icon"></i>

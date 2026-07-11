@@ -1,0 +1,12 @@
+{
+  "priority": 5,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/products/approved$"
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "jsonBody": { "totalElements": 0, "totalPages": 0, "page": 0, "size": 0, "content": [] }
+  }
+}

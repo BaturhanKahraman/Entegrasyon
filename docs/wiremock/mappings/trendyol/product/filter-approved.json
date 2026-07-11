@@ -1,0 +1,15 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/products/approved$",
+    "queryParameters": {
+      "barcode": { "equalTo": "DEV-APPROVED-0001" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/product/approved-filter-response.json"
+  }
+}

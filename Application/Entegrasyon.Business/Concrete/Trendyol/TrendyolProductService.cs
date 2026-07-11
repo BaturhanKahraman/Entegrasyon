@@ -197,7 +197,7 @@ public sealed class TrendyolProductService(
             return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/product/sellers/{marketplace.SellerId}/v2/products/unapproved-bulk-update";
-        var response = await apiClient.PutAsync(url, mapResult.Data);
+        var response = await apiClient.PostAsync(url, mapResult.Data);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -293,7 +293,7 @@ public sealed class TrendyolProductService(
             return new ErrorResult("Trendyol SellerId ayarlanmamis.");
 
         var url = $"integration/product/sellers/{marketplace.SellerId}/v2/products/content-bulk-update";
-        var response = await apiClient.PutAsync(url, mapResult.Data);
+        var response = await apiClient.PostAsync(url, mapResult.Data);
 
         if (!response.IsSuccessStatusCode)
         {

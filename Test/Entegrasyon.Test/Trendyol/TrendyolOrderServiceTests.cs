@@ -160,22 +160,31 @@ public class TrendyolOrderServiceTests : Entegrasyon.UnitTest.BaseTest
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
-    public async Task MarkUnsuppliedAsync_HappyPath_ReturnsSuccess()
+    public async Task MarkUnsuppliedAsync_HappyPath_UsesItemsUnsuppliedUrlWithReasonId()
     {
         // Arrange
         SetupMarketPlace("12345");
 
+        string? capturedUrl = null;
+        object? capturedBody = null;
         _apiClientMock
             .Setup(c => c.PutAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .Callback<string, object>((u, b) => { capturedUrl = u; capturedBody = b; })
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
         var sut = CreateSut();
 
         // Act
-        var result = await sut.MarkUnsuppliedAsync(1001, [1, 2, 3]);
+        var result = await sut.MarkUnsuppliedAsync(1001, [1, 2, 3], reasonId: 500);
 
-        // Assert
+        // Assert — Trendyol cancelorderpackageitem: .../items/unsupplied + reasonId zorunlu.
         result.Success.Should().BeTrue();
+        capturedUrl.Should().Contain("/shipment-packages/1001/items/unsupplied");
+
+        var bodyJson = System.Text.Json.JsonSerializer.Serialize(
+            capturedBody, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+        bodyJson.Should().Contain("\"reasonId\":500");
+        bodyJson.Should().Contain("lines");
     }
 
     [Fact]
@@ -186,7 +195,7 @@ public class TrendyolOrderServiceTests : Entegrasyon.UnitTest.BaseTest
         var sut = CreateSut();
 
         // Act
-        var result = await sut.MarkUnsuppliedAsync(1001, [1]);
+        var result = await sut.MarkUnsuppliedAsync(1001, [1], reasonId: 500);
 
         // Assert
         result.Success.Should().BeFalse();
@@ -209,7 +218,7 @@ public class TrendyolOrderServiceTests : Entegrasyon.UnitTest.BaseTest
         var sut = CreateSut();
 
         // Act
-        var result = await sut.MarkUnsuppliedAsync(1001, [1]);
+        var result = await sut.MarkUnsuppliedAsync(1001, [1], reasonId: 500);
 
         // Assert
         result.Success.Should().BeFalse();
@@ -220,13 +229,15 @@ public class TrendyolOrderServiceTests : Entegrasyon.UnitTest.BaseTest
     // ═══════════════════════════════════════════════════════════════════════
 
     [Fact]
-    public async Task UpdateTrackingNumberAsync_HappyPath_ReturnsSuccess()
+    public async Task UpdateTrackingNumberAsync_HappyPath_UsesUpdateTrackingNumberUrl()
     {
         // Arrange
         SetupMarketPlace("12345");
 
+        string? capturedUrl = null;
         _apiClientMock
             .Setup(c => c.PutAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .Callback<string, object>((u, _) => capturedUrl = u)
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
         var sut = CreateSut();
@@ -234,9 +245,10 @@ public class TrendyolOrderServiceTests : Entegrasyon.UnitTest.BaseTest
         // Act
         var result = await sut.UpdateTrackingNumberAsync(1001, "TRACK-12345");
 
-        // Assert
+        // Assert — "Update Shipping Code" endpoint'i .../update-tracking-number (Notify Packages değil).
         result.Success.Should().BeTrue();
         result.Message.Should().Contain("takip");
+        capturedUrl.Should().Contain("/shipment-packages/1001/update-tracking-number");
     }
 
     [Fact]

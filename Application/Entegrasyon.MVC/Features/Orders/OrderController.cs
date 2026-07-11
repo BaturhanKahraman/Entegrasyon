@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Entegrasyon.Business.Abstract;
+using Entegrasyon.Business.Concrete.Trendyol;
 using Entegrasyon.MVC.Infrastructure.Extensions;
 
 namespace Entegrasyon.MVC.Features.Orders;
@@ -89,36 +90,16 @@ public class OrderController(
     }
 
     [HttpPost("/sales/order/{id:guid}/mark-unsupplied")]
-    public async Task<IActionResult> MarkUnsupplied(Guid id)
+    public async Task<IActionResult> MarkUnsupplied(Guid id, [FromForm] int reasonId)
     {
         var orderResult = await orderManager.GetOrderByIdAsync(id);
         if (!orderResult.Success || orderResult.Data is null)
-        {
-            if (Request.IsHtmx())
-            {
-                Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sipariş bulunamadı.", type = "danger" });
-                return StatusCode(404);
-            }
-
-            TempData.SetError("Sipariş bulunamadı.");
-            return Redirect("/sales");
-        }
+            return ToastError("Sipariş bulunamadı.", 404, "/sales");
 
         var order = orderResult.Data;
 
         if (order.MarketPlaceId != 1 || order.ShipmentPackageId is null)
-        {
-            if (Request.IsHtmx())
-            {
-                Response.HtmxTriggerWithData("showToast",
-                    new { message = "Bu işlem sadece Trendyol siparişleri için geçerlidir.", type = "danger" });
-                return StatusCode(422);
-            }
-
-            TempData.SetError("Bu işlem sadece Trendyol siparişleri için geçerlidir.");
-            return Redirect($"/sales/order/{id}");
-        }
+            return ToastError("Bu işlem sadece Trendyol siparişleri için geçerlidir.", 422, $"/sales/order/{id}");
 
         var lineIds = order.OrderItems
             .Where(i => i.LineId.HasValue)
@@ -126,20 +107,13 @@ public class OrderController(
             .ToList();
 
         if (lineIds.Count == 0)
-        {
-            if (Request.IsHtmx())
-            {
-                Response.HtmxTriggerWithData("showToast",
-                    new { message = "Sipariş kalemlerinde satır ID bulunamadı.", type = "danger" });
-                return StatusCode(422);
-            }
+            return ToastError("Sipariş kalemlerinde satır ID bulunamadı.", 422, $"/sales/order/{id}");
 
-            TempData.SetError("Sipariş kalemlerinde satır ID bulunamadı.");
-            return Redirect($"/sales/order/{id}");
-        }
+        if (!TrendyolUnsuppliedReasons.IsValid(reasonId))
+            return ToastError("Geçerli bir tedarik edilemedi sebebi seçin.", 422, $"/sales/order/{id}");
 
         var result = await trendyolOrderService.MarkUnsuppliedAsync(
-            order.ShipmentPackageId.Value, lineIds);
+            order.ShipmentPackageId.Value, lineIds, reasonId);
 
         if (Request.IsHtmx())
         {
@@ -162,5 +136,18 @@ public class OrderController(
             TempData.SetError(result.Message ?? "Sipariş tedarik edilemez olarak işaretlenemedi.");
 
         return Redirect($"/sales/order/{id}");
+    }
+
+    /// <summary>HTMX toast (danger) + statusCode, ya da PRG TempData.SetError + redirect.</summary>
+    private IActionResult ToastError(string message, int statusCode, string redirectUrl)
+    {
+        if (Request.IsHtmx())
+        {
+            Response.HtmxTriggerWithData("showToast", new { message, type = "danger" });
+            return StatusCode(statusCode);
+        }
+
+        TempData.SetError(message);
+        return Redirect(redirectUrl);
     }
 }

@@ -1,7 +1,7 @@
 {
   "priority": 5,
   "request": {
-    "method": "PUT",
+    "method": "POST",
     "urlPathPattern": "/integration/product/sellers/[0-9]+/v2/products/unapproved-bulk-update$"
   },
   "response": {

@@ -333,7 +333,7 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
     // ── Test 9: UpdateUnapprovedProductAsync — happy path ──
 
     [Fact]
-    public async Task UpdateUnapprovedProductAsync_HappyPath_ReturnsSuccess()
+    public async Task UpdateUnapprovedProductAsync_HappyPath_UsesPostToUnapprovedBulkUpdate()
     {
         // Arrange
         _productMapperMock
@@ -342,8 +342,10 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
 
         SetupMarketPlace("12345");
 
+        string? capturedUrl = null;
         _apiClientMock
-            .Setup(c => c.PutAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .Setup(c => c.PostAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .Callback<string, object>((u, _) => capturedUrl = u)
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
         var sut = CreateSut();
@@ -351,8 +353,12 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
         // Act
         var result = await sut.UpdateUnapprovedProductAsync(TestProductId);
 
-        // Assert
+        // Assert — Trendyol resmi dokümanı unapproved-bulk-update için POST ister (PUT değil).
         result.Success.Should().BeTrue();
+        capturedUrl.Should().Contain("unapproved-bulk-update");
+        _apiClientMock.Verify(c => c.PostAsync(
+            It.Is<string>(u => u.Contains("unapproved-bulk-update")), It.IsAny<object>()), Times.Once);
+        _apiClientMock.Verify(c => c.PutAsync(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
     }
 
     // ── Test 10: UpdateUnapprovedProductAsync — mapper fails ──
@@ -377,7 +383,7 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
     // ── Test 11: UpdateApprovedContentAsync — happy path ──
 
     [Fact]
-    public async Task UpdateApprovedContentAsync_HappyPath_ReturnsSuccess()
+    public async Task UpdateApprovedContentAsync_HappyPath_UsesPostToContentBulkUpdate()
     {
         // Arrange
         SetupMarketPlace("12345");
@@ -395,8 +401,10 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
             .Setup(m => m.MapProductAsync(TestProductId))
             .ReturnsAsync(new SuccessDataResult<TrendyolCreateProductRequest>(CreateDummyRequest()));
 
+        string? capturedUrl = null;
         _apiClientMock
-            .Setup(c => c.PutAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .Setup(c => c.PostAsync(It.IsAny<string>(), It.IsAny<object>()))
+            .Callback<string, object>((u, _) => capturedUrl = u)
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.OK));
 
         var sut = CreateSut();
@@ -404,8 +412,12 @@ public class TrendyolProductServiceTests : Entegrasyon.UnitTest.BaseTest
         // Act
         var result = await sut.UpdateApprovedContentAsync(TestProductId);
 
-        // Assert
+        // Assert — Trendyol resmi dokümanı content-bulk-update için POST ister (PUT değil).
         result.Success.Should().BeTrue();
+        capturedUrl.Should().Contain("content-bulk-update");
+        _apiClientMock.Verify(c => c.PostAsync(
+            It.Is<string>(u => u.Contains("content-bulk-update")), It.IsAny<object>()), Times.Once);
+        _apiClientMock.Verify(c => c.PutAsync(It.IsAny<string>(), It.IsAny<object>()), Times.Never);
     }
 
     // ── Test 12: UpdateApprovedContentAsync — ContentId missing ──

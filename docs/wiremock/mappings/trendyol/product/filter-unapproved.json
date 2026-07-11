@@ -1,0 +1,15 @@
+{
+  "priority": 3,
+  "request": {
+    "method": "GET",
+    "urlPathPattern": "/integration/product/sellers/[0-9]+/products/unapproved$",
+    "queryParameters": {
+      "barcode": { "equalTo": "DEV-UNAPPROVED-0002" }
+    }
+  },
+  "response": {
+    "status": 200,
+    "headers": { "Content-Type": "application/json" },
+    "bodyFileName": "trendyol/product/unapproved-filter-response.json"
+  }
+}

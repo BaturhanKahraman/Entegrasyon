@@ -29,11 +29,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <!-- Temporarily excluded: pre-existing compile errors unrelated to this task -->
-    <Compile Remove="Business/TrendyolProductServiceUpdateDispatchTests.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\..\Application\Entegrasyon.Business\Entegrasyon.Business.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.DataAccess\Entegrasyon.DataAccess.csproj" />
     <ProjectReference Include="..\..\Application\Entegrasyon.ApplicationBootstrap\Entegrasyon.ApplicationBootstrap.csproj" />

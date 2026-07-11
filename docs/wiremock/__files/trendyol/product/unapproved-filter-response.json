@@ -1,0 +1,34 @@
+{
+  "totalElements": 1,
+  "totalPages": 1,
+  "page": 0,
+  "size": 1,
+  "content": [
+    {
+      "supplierId": 1,
+      "productMainId": "MODEL-DEV-002",
+      "createDateTime": 1710000000000,
+      "lastUpdateDate": 1710500000000,
+      "brand": "Zeki Bebe",
+      "category": "Bebek Tulumu",
+      "barcode": "DEV-UNAPPROVED-0002",
+      "title": "Dev Onaysız Ürün — Bebek Tulumu",
+      "description": "Dev ortamı onay bekleyen/red ürün örnek kaydı.",
+      "quantity": 10,
+      "listPrice": 249.90,
+      "salePrice": 199.90,
+      "vatRate": 10,
+      "stockCode": "DEV-SC-0002",
+      "media": [ { "url": "https://cdn.dsmcdn.com/dev/unapproved-002.jpg" } ],
+      "attributes": [],
+      "rejectReasonDetails": [
+        {
+          "reason": "Görsel standartları",
+          "detailedReason": "Ürün görseli Trendyol görsel standartlarına uymuyor."
+        }
+      ],
+      "locationBasedDelivery": false,
+      "lotNumber": null
+    }
+  ]
+}

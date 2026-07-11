@@ -233,18 +233,21 @@ public sealed class StatusPollingPersistRegressionTests : IntegrationTestBase
         var pmId = await SeedProductMarketplaceAsync(productId, TrendyolMarketPlaceId,
             MarketplaceProductStatus.Published, batchRequestId: null, isApproved: false);
 
-        var json = JsonSerializer.Serialize(new TrendyolProductStatusResponse(
-            Page: 0, Size: 1, TotalElements: 1, TotalPages: 1,
+        // Barkod onaylı listede bulunur → ONAYLI (unapproved endpoint'e düşmez).
+        var json = JsonSerializer.Serialize(new TrendyolApprovedProductsResponse(
+            TotalElements: 1, TotalPages: 1, Page: 0, Size: 1,
             Content:
             [
-                new TrendyolProductContent(barcode, Approved: true, Archived: false, OnSale: true,
-                    Rejected: false, ContentId: 123, ListingId: null, Title: "t", ProductMainId: null,
-                    StockCode: null, SalePrice: null, ListPrice: null, Quantity: null,
-                    RejectReasonDetails: null)
+                new TrendyolApprovedProduct(
+                    ContentId: 123, ProductMainId: null, Title: "t",
+                    Variants:
+                    [
+                        new TrendyolApprovedVariant(Barcode: barcode, Archived: false, StockCode: null)
+                    ])
             ]));
 
         var apiClient = new Mock<ITrendyolApiClient>();
-        apiClient.Setup(c => c.GetAsync(It.IsAny<string>()))
+        apiClient.Setup(c => c.GetAsync(It.Is<string>(u => u.Contains("/products/approved"))))
             .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK)
             {
                 Content = new StringContent(json, Encoding.UTF8, "application/json")
@@ -263,6 +266,63 @@ public sealed class StatusPollingPersistRegressionTests : IntegrationTestBase
 
         (await ReadPmAsync(pmId)).IsApproved.Should().BeTrue(
             "Trendyol ürün onayı (Approved=true) ProductMarketplace.IsApproved olarak DB'ye yazılmalı");
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Trendyol product status sync — onaylı'da yok, onaysız'da rejectReasonDetails dolu →
+    // Rejected + StatusMessage persist olmalı (iki adımlı akış: approved boş → unapproved)
+    // ─────────────────────────────────────────────────────────────────────────
+    [Fact]
+    public async Task TrendyolProductStatusSync_rejected_persists_status_and_message()
+    {
+        const string barcode = "BC-TSS-REJ";
+        var (productId, _) = await SeedProductAsync("TSSREJ", barcode: barcode);
+        await SeedMarketPlaceAsync(TrendyolMarketPlaceId, "Trendyol");
+        var pmId = await SeedProductMarketplaceAsync(productId, TrendyolMarketPlaceId,
+            MarketplaceProductStatus.Published, batchRequestId: null, isApproved: false);
+
+        var approvedJson = JsonSerializer.Serialize(new TrendyolApprovedProductsResponse(
+            TotalElements: 0, TotalPages: 0, Page: 0, Size: 0, Content: []));
+        var unapprovedJson = JsonSerializer.Serialize(new TrendyolUnapprovedProductsResponse(
+            TotalElements: 1, TotalPages: 1, Page: 0, Size: 1,
+            Content:
+            [
+                new TrendyolUnapprovedProduct(
+                    Barcode: barcode, ProductMainId: null, StockCode: null, Title: "t",
+                    RejectReasonDetails:
+                    [
+                        new TrendyolRejectReason("Görsel hatası", "Ürün görseli standartlara uymuyor")
+                    ])
+            ]));
+
+        var apiClient = new Mock<ITrendyolApiClient>();
+        apiClient.Setup(c => c.GetAsync(It.Is<string>(u => u.Contains("/products/approved"))))
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(approvedJson, Encoding.UTF8, "application/json")
+            });
+        apiClient.Setup(c => c.GetAsync(It.Is<string>(u => u.Contains("/products/unapproved"))))
+            .ReturnsAsync(() => new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(unapprovedJson, Encoding.UTF8, "application/json")
+            });
+
+        await using var ctx = CreateDbContext();
+        var sut = new TrendyolProductStatusSyncService(
+            ScopeFactoryStub(), TenantRegistryStub(),
+            NullLogger<TrendyolProductStatusSyncService>.Instance,
+            Options.Create(new NotificationFeatureFlags()));
+
+        await InvokePollAsync(sut, BuildProvider(
+            (typeof(IntegrationDbContext), ctx),
+            (typeof(ITrendyolApiClient), apiClient.Object),
+            (typeof(IProductActivityLogger), ActivityLoggerStub())));
+
+        var pm = await ReadPmAsync(pmId);
+        pm.Status.Should().Be(MarketplaceProductStatus.Rejected,
+            "onaysız listede rejectReasonDetails dolu → Status Rejected DB'ye yazılmalı");
+        pm.StatusMessage.Should().Be("Ürün görseli standartlara uymuyor",
+            "StatusMessage = rejectReasonDetails[0].detailedReason");
     }
 
     // ─────────────────────────────────────────────────────────────────────────
