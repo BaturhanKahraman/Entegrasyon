@@ -2,7 +2,7 @@ using System.Net;
 using System.Text.Json;
 using Entegrasyon.Business.Abstract;
 using Entegrasyon.Business.Concrete.Trendyol;
-using Entegrasyon.Business.Utility.Constants;
+using Entegrasyon.Entity;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Dtos.Marketplace;
 using Entegrasyon.Entity.Matches;
@@ -27,23 +27,52 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     private readonly Mock<ILogger<TrendyolMarketplaceSearchService>> _loggerMock = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactoryMock = new();
     private readonly Mock<ITrendyolAttributeCatalog> _attributeCatalogMock = new();
+    private readonly Mock<IMasterBrandSearchProvider> _masterBrandMock = new();
+    private readonly Mock<ILogger<TrendyolApiClient>> _apiClientLoggerMock = new();
 
     public TrendyolMarketplaceSearchServiceTests(WireMockFixture wm)
     {
         _wm = wm;
         _wm.ResetAll();
 
+        // Gerçek TrendyolApiClient kullanılır: BaseAddress'i DB'deki MarketPlace.BaseUrl'den
+        // alır (WireMock'a işaret eder). Factory yalnızca çıplak HttpClient verir —
+        // hard-coded named-client BaseAddress'i maskelemesin diye burada set ETMİYORUZ.
         _httpClientFactoryMock
-            .Setup(f => f.CreateClient(StringConstants.TrendyolApi))
-            .Returns(() => new HttpClient { BaseAddress = new Uri(_wm.BaseUrl) });
+            .Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient());
+
+        // Fallback default: boş master sonuç — testler gerektiğinde override eder.
+        _masterBrandMock
+            .Setup(m => m.SearchBrandsAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SuccessDataResult<List<MarketplaceBrandSearchResult>>([]));
     }
 
     private TrendyolMarketplaceSearchService CreateSut() => new(
         mockContextFactory.Object,
         _categoryImportMock.Object,
-        _httpClientFactoryMock.Object,
+        new TrendyolApiClient(mockContextFactory.Object, _httpClientFactoryMock.Object, _apiClientLoggerMock.Object),
+        _masterBrandMock.Object,
         _attributeCatalogMock.Object,
         _loggerMock.Object);
+
+    /// <summary>
+    /// DB'de BaseUrl'i WireMock'a işaret eden Trendyol marketplace kaydı kurar.
+    /// </summary>
+    private void SetupTrendyolMarketPlace()
+    {
+        mockIntegrationDbContext
+            .Setup(x => x.MarketPlaces)
+            .ReturnsDbSet(new List<MarketPlace>
+            {
+                new()
+                {
+                    Id = 1, Name = "Trendyol",
+                    ApiKey = "test-api-key", ApiSecret = "test-api-secret",
+                    SellerId = "12345", BaseUrl = _wm.BaseUrl
+                }
+            });
+    }
 
     /// <summary>
     /// Brand search endpoint stub'u — Trendyol API'nin brand search cevabini taklit eder.
@@ -240,6 +269,7 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     public async Task SearchBrandsAsync_Trendyol_ReturnsMatchingBrands()
     {
         // Arrange
+        SetupTrendyolMarketPlace();
         var trendyolResponse = new
         {
             brands = new[] { new { id = 111, name = "Nike" } }
@@ -259,9 +289,76 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
     }
 
     [Fact]
-    public async Task SearchBrandsAsync_WhenApiThrows_ReturnsError()
+    public async Task SearchBrandsAsync_Trendyol_CallsApiThroughMarketplaceBaseUrl()
     {
-        // Arrange
+        // Arrange — kök sebep regresyonu (T-selectbox-boş): istek DB'deki BaseUrl'e
+        // (WireMock) auth header'la gitmeli; hard-coded gateway'e değil.
+        SetupTrendyolMarketPlace();
+        StubBrandSearch(200, JsonSerializer.Serialize(new { brands = Array.Empty<object>() }));
+
+        var sut = CreateSut();
+
+        // Act
+        await sut.SearchBrandsAsync(1, "Nike");
+
+        // Assert — WireMock isteği gördü + Basic Auth taşıyor
+        var log = _wm.Server.LogEntries.Single();
+        log.RequestMessage!.Path.Should().Contain("/product/brands/by-name");
+        log.RequestMessage!.Headers.Should().ContainKey("Authorization");
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_ApiEmpty_FallsBackToMasterCatalog()
+    {
+        // Arrange — API başarılı ama boş → master katalog fallback devreye girer
+        SetupTrendyolMarketPlace();
+        StubBrandSearch(200, JsonSerializer.Serialize(new { brands = Array.Empty<object>() }));
+
+        _masterBrandMock
+            .Setup(m => m.SearchBrandsAsync(1, "Nike", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SuccessDataResult<List<MarketplaceBrandSearchResult>>(
+                [new(555, "Nike (Master)")]));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchBrandsAsync(1, "Nike");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().ContainSingle();
+        result.Data[0].Id.Should().Be(555);
+        result.Data[0].Name.Should().Be("Nike (Master)");
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_ApiError_FallsBackToMasterCatalog()
+    {
+        // Arrange — API 500 → fallback sonuçları dönmeli
+        SetupTrendyolMarketPlace();
+        StubBrandSearch((int)HttpStatusCode.InternalServerError, "");
+
+        _masterBrandMock
+            .Setup(m => m.SearchBrandsAsync(1, "Nike", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new SuccessDataResult<List<MarketplaceBrandSearchResult>>(
+                [new(777, "Adidas (Master)")]));
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchBrandsAsync(1, "Nike");
+
+        // Assert
+        result.Success.Should().BeTrue();
+        result.Data.Should().ContainSingle();
+        result.Data[0].Id.Should().Be(777);
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_ApiErrorAndMasterEmpty_ReturnsError()
+    {
+        // Arrange — API 500 + master boş → hata sinyali korunur
+        SetupTrendyolMarketPlace();
         StubBrandSearch((int)HttpStatusCode.InternalServerError, "");
 
         var sut = CreateSut();
@@ -271,6 +368,50 @@ public class TrendyolMarketplaceSearchServiceTests : Entegrasyon.UnitTest.BaseTe
 
         // Assert
         result.Success.Should().BeFalse();
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_EmptyQueryApiError_DoesNotFallBackToMaster()
+    {
+        // Arrange — BrandAutoMatchService "tüm markalar" için boş query kullanır
+        // (BrandAutoMatchService.cs:32). Master fallback OrderBy'sız Take(20) döndüğü için
+        // nondeterministik bir alt küme — bunu "tüm katalog" sanıp otomatik eşleştirme/kayıt
+        // yapmak yanlış marka eşleşmelerini sessizce DB'ye yazar. Boş query'de fallback'e
+        // hiç düşülmemeli; API hatası ErrorDataResult olarak yukarı taşınmalı.
+        SetupTrendyolMarketPlace();
+        StubBrandSearch((int)HttpStatusCode.InternalServerError, "");
+
+        var sut = CreateSut();
+
+        // Act
+        var result = await sut.SearchBrandsAsync(1, "");
+
+        // Assert
+        result.Success.Should().BeFalse();
+        _masterBrandMock.Verify(
+            m => m.SearchBrandsAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task SearchBrandsAsync_ApiHasResults_DoesNotCallMasterCatalog()
+    {
+        // Arrange
+        SetupTrendyolMarketPlace();
+        StubBrandSearch(200, JsonSerializer.Serialize(new
+        {
+            brands = new[] { new { id = 111, name = "Nike" } }
+        }));
+
+        var sut = CreateSut();
+
+        // Act
+        await sut.SearchBrandsAsync(1, "Nike");
+
+        // Assert
+        _masterBrandMock.Verify(
+            m => m.SearchBrandsAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
     }
 
     [Fact]

@@ -6,6 +6,17 @@
 }
 
 <div data-wizard-step="3">
+@if (ViewData.ModelState.ErrorCount > 0)
+{
+    <div class="alert alert-danger">
+        <ul class="mb-0 ps-3">
+            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@err.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
 <form id="step3-form" hx-post="/products/add/step3" hx-target="#wizard-content" hx-swap="innerHTML">
     @Html.AntiForgeryToken()
 
@@ -63,14 +74,27 @@
                             <input type="hidden" name="VariantAttributeSelections[@i].IsVarianter" value="@attr.IsVarianter" />
                             <input type="hidden" name="VariantAttributeSelections[@i].IsSlicer" value="@attr.IsSlicer" />
 
-                            <!-- Searchable multi-select (Tom Select) -->
-                            <select multiple class="form-select variant-tomselect" data-attr-index="@i"
-                                    data-placeholder="Ara ve sec...">
-                                @foreach (var val in attr.CategoryAttributeValues)
-                                {
-                                    <option value="@val.Id" data-name="@val.Name">@val.Name</option>
-                                }
-                            </select>
+                            <!-- Searchable multi-select (Tom Select) + hızlı değer ekleme -->
+                            <div class="input-group">
+                                <select multiple class="form-select variant-tomselect" data-attr-index="@i"
+                                        data-placeholder="Ara ve seç...">
+                                    @foreach (var val in attr.CategoryAttributeValues)
+                                    {
+                                        <option value="@val.Id" data-name="@val.Name">@val.Name</option>
+                                    }
+                                </select>
+                                <button type="button" class="btn btn-outline-primary btn-icon variant-value-add-btn"
+                                        data-attr-index="@i"
+                                        data-attribute-id="@attr.Id"
+                                        data-attribute-name="@attr.CategoriyAttributeHumanized"
+                                        title="Yeni değer ekle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
+                                </button>
+                            </div>
+                            @if (attr.CategoryAttributeValues.Count == 0)
+                            {
+                                <small class="text-muted">Bu özelliğin tanımlı değeri yok — "+" ile ekleyebilirsiniz.</small>
+                            }
                             <div class="multiselect-hidden-fields" data-attr-index="@i"></div>
                         </div>
                     }
@@ -145,11 +169,35 @@
         </button>
     </div>
 </form>
+
+<partial name="Partials/_AttrValueQuickAddModal" />
 </div>
 
 <script>
 (function () {
     'use strict';
+
+    // KDV guard'ı ("Devam: Görseller" submit): sunucu tarafı ValidateVatRates başarısız
+    // olursa htmx innerHTML swap'ı, JS ile doldurulan #variant-table-container'ı boş
+    // placeholder'a döndürür — kullanıcının girdiği tüm stok/fiyat verisi kaybolur. Bu
+    // yüzden geçersiz bir varyant KDV'si sunucuya hiç gönderilmez (Step1'deki capture-fazlı
+    // engelleme deseniyle aynı: htmx submit handler'ından önce durdurulur).
+    var step3Form = document.getElementById('step3-form');
+    step3Form.addEventListener('submit', function (e) {
+        var invalid = Array.from(step3Form.querySelectorAll('[name$=".VatRate"]')).find(function (input) {
+            var v = parseFloat(input.value);
+            return isNaN(v) || v < 0 || v > 100;
+        });
+        if (invalid) {
+            e.preventDefault();
+            e.stopPropagation();
+            invalid.classList.add('is-invalid');
+            if (typeof window.showNotify === 'function') {
+                window.showNotify('KDV oranı 0-100 arasında olmalıdır.', 'error');
+            }
+            invalid.focus();
+        }
+    }, true); // capture: htmx'ten önce çalış
 
     // --- Tom Select Multi-Select Init ---
     document.querySelectorAll('.variant-tomselect').forEach(function(sel) {
@@ -161,6 +209,21 @@
             onChange: function() {
                 syncTomSelectHiddenFields(attrIndex);
             }
+        });
+    });
+
+    // "+" butonları → ortak hızlı-ekle modal'ı; eklenen değer seçili gelir.
+    document.querySelectorAll('.variant-value-add-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var attrIndex = btn.getAttribute('data-attr-index');
+            var attrId = btn.getAttribute('data-attribute-id');
+            var attrName = btn.getAttribute('data-attribute-name');
+            window.openAttrValueQuickAdd(attrId, attrName, function (id, name) {
+                var sel = document.querySelector('.variant-tomselect[data-attr-index="' + attrIndex + '"]');
+                if (!sel || !sel.tomselect) return;
+                sel.tomselect.addOption({ value: String(id), text: name });
+                sel.tomselect.addItem(String(id)); // onChange → hidden field sync
+            });
         });
     });
 
@@ -198,6 +261,20 @@
             // Loading state'i elle uyguluyoruz — aynı görsel desen: Tabler
             // .btn-loading (spinner, label gizli ama genişlik sabit) + disabled.
             if (generateBtn.disabled) return; // çoklu tıklamaya karşı erken çık
+
+            // KDV yüzde guard'ı: raw fetch native form validasyonunu atladığı için elle.
+            var vatInput = document.querySelector('[name="DefaultValues.VatRate"]');
+            var vat = parseFloat(vatInput.value);
+            if (isNaN(vat) || vat < 0 || vat > 100) {
+                vatInput.classList.add('is-invalid');
+                if (typeof window.showNotify === 'function') {
+                    window.showNotify('KDV oranı 0-100 arasında olmalıdır.', 'error');
+                }
+                vatInput.focus();
+                return;
+            }
+            vatInput.classList.remove('is-invalid');
+
             generateBtn.disabled = true;
             generateBtn.classList.add('btn-loading');
 

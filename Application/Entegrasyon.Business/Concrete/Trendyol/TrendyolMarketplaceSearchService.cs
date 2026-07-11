@@ -1,7 +1,6 @@
 using System.Net.Http.Json;
 using System.Text.Json.Serialization;
 using Entegrasyon.Business.Abstract;
-using Entegrasyon.Business.Utility.Constants;
 using Entegrasyon.DataAccess.Concrete.EntityFrameworkCore.Contexts;
 using Entegrasyon.Entity.Dtos.Category.Import.TrendyolImport;
 using Entegrasyon.Entity.Dtos.Marketplace;
@@ -13,12 +12,15 @@ namespace Entegrasyon.Business.Concrete.Trendyol;
 
 /// <summary>
 /// Trendyol API üzerinden marketplace arama yapan servis.
-/// Markalar için Trendyol API'ye istek atar; diğer marketplace'ler için DB fallback kullanır.
+/// Markalar için Trendyol API'ye istek atar (credential-aware ITrendyolApiClient —
+/// BaseUrl DB'den gelir, dev'de WireMock'a işaret eder); API boş/hatalıysa master
+/// katalog (AdminPanelDb) fallback'i devreye girer. Diğer marketplace'ler DB'den arar.
 /// </summary>
 public sealed class TrendyolMarketplaceSearchService(
     IDbContextFactory<IntegrationDbContext> dbContextFactory,
     ITrendyolCategoryImportService categoryImportService,
-    IHttpClientFactory httpClientFactory,
+    ITrendyolApiClient trendyolApiClient,
+    IMasterBrandSearchProvider masterBrandSearchProvider,
     ITrendyolAttributeCatalog attributeCatalog,
     ILogger<TrendyolMarketplaceSearchService> logger) : IMarketplaceSearchService
 {
@@ -122,23 +124,51 @@ public sealed class TrendyolMarketplaceSearchService(
     private async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsTrendyolAsync(
         string query, CancellationToken ct)
     {
+        var brands = new List<MarketplaceBrandSearchResult>();
+        var apiFailed = false;
+
         try
         {
-            var client = httpClientFactory.CreateClient(StringConstants.TrendyolApi);
             var url = $"product/brands/by-name?name={Uri.EscapeDataString(query)}&size=20";
+            using var response = await trendyolApiClient.GetAsync(url);
 
-            var response = await client.GetFromJsonAsync<TrendyolBrandsResponse>(url, ct);
-            var brands = response?.Brands
-                .Select(b => new MarketplaceBrandSearchResult(b.Id, b.Name))
-                .ToList() ?? [];
-
-            return new SuccessDataResult<List<MarketplaceBrandSearchResult>>(brands);
+            if (response.IsSuccessStatusCode)
+            {
+                var payload = await response.Content.ReadFromJsonAsync<TrendyolBrandsResponse>(cancellationToken: ct);
+                brands = payload?.Brands
+                    .Select(b => new MarketplaceBrandSearchResult(b.Id, b.Name))
+                    .ToList() ?? [];
+            }
+            else
+            {
+                apiFailed = true;
+                logger.LogWarning("Trendyol marka arama {StatusCode} döndü. Query={Query}",
+                    response.StatusCode, query);
+            }
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Trendyol marka arama hatasi");
-            return new ErrorDataResult<List<MarketplaceBrandSearchResult>>([], "Marka arama sirasinda hata olustu.");
+            apiFailed = true;
+            logger.LogError(ex, "Trendyol marka arama hatası. Query={Query}", query);
         }
+
+        if (brands.Count > 0)
+            return new SuccessDataResult<List<MarketplaceBrandSearchResult>>(brands);
+
+        // Master katalog (AdminPanelDb) fallback'i yalnızca gerçek arama terimlerinde devreye
+        // girer. Boş query "tüm markalar" anlamına gelir (BrandAutoMatchService.cs:32) — master'ın
+        // OrderBy'sız Take(20)'si nondeterministik bir alt kümedir; bunu "tüm katalog" sanıp
+        // otomatik eşleştirme yapmak yanlış BrandMarketPlaceMatch kayıtlarını sessizce DB'ye yazar.
+        if (!string.IsNullOrWhiteSpace(query))
+        {
+            var master = await masterBrandSearchProvider.SearchBrandsAsync(TrendyolMarketPlaceId, query, ct);
+            if (master.Data is { Count: > 0 })
+                return new SuccessDataResult<List<MarketplaceBrandSearchResult>>(master.Data);
+        }
+
+        return apiFailed
+            ? new ErrorDataResult<List<MarketplaceBrandSearchResult>>([], "Marka arama sırasında hata oluştu.")
+            : new SuccessDataResult<List<MarketplaceBrandSearchResult>>([]);
     }
 
     private async Task<IDataResult<List<MarketplaceBrandSearchResult>>> SearchBrandsFromDbAsync(

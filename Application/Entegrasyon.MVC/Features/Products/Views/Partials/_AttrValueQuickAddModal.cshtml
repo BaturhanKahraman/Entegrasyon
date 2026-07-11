@@ -1,0 +1,100 @@
+@* Özellik değeri hızlı-ekle modal'ı — wizard adım 2 (kategori özellikleri) ve adım 3
+   (varyant özellikleri) tarafından ortak kullanılır. Marka quick-add (adım 1) deseniyle birebir.
+   Açmak için: window.openAttrValueQuickAdd(attributeId, attributeName, onAdded) *@
+
+<div class="modal modal-blur fade" id="attr-value-add-modal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Yeni Değer: <span id="attr-value-add-attr-name"></span></h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Değer</label>
+                    <input type="text" id="attr-value-add-input" class="form-control" placeholder="Değer girin..." />
+                </div>
+                <div id="attr-value-add-error" class="alert alert-danger d-none"></div>
+                <div id="attr-value-add-success" class="alert alert-info d-none">
+                    Değer eklendi. Bu değer yeni eklendiği için pazaryerleriyle eşleştirilmemiş olacak.
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-ghost-secondary" data-bs-dismiss="modal">Kapat</button>
+                <button type="button" class="btn btn-primary" id="attr-value-add-confirm">Ekle</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    'use strict';
+
+    var modalEl = document.getElementById('attr-value-add-modal');
+    var nameEl = document.getElementById('attr-value-add-attr-name');
+    var input = document.getElementById('attr-value-add-input');
+    var errorEl = document.getElementById('attr-value-add-error');
+    var successEl = document.getElementById('attr-value-add-success');
+    var confirmBtn = document.getElementById('attr-value-add-confirm');
+
+    var currentAttrId = null;
+    var onAddedCb = null;
+
+    // Her HTMX swap'ta partial (ve bu script) yeniden yüklenir; closure yeni DOM'u yakalar.
+    window.openAttrValueQuickAdd = function (attributeId, attributeName, onAdded) {
+        currentAttrId = attributeId;
+        onAddedCb = onAdded;
+        nameEl.textContent = attributeName || '';
+        input.value = '';
+        errorEl.classList.add('d-none');
+        successEl.classList.add('d-none');
+        confirmBtn.disabled = false;
+        var modal = new bootstrap.Modal(modalEl);
+        modal.show();
+        setTimeout(function () { input.focus(); }, 300);
+    };
+
+    confirmBtn.addEventListener('click', function () {
+        var name = input.value.trim();
+        if (!name) { input.focus(); return; }
+
+        confirmBtn.disabled = true;
+        confirmBtn.classList.add('btn-loading');
+        errorEl.classList.add('d-none');
+        successEl.classList.add('d-none');
+
+        var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
+        fetch('/attributes/values/create', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: new URLSearchParams({
+                categoryAttributeId: currentAttrId,
+                name: name,
+                __RequestVerificationToken: token
+            })
+        })
+        .then(function (res) {
+            if (!res.ok) return res.text().then(function (t) { throw new Error(t || 'Değer eklenemedi.'); });
+            return res.json();
+        })
+        .then(function (data) {
+            confirmBtn.classList.remove('btn-loading');
+            successEl.classList.remove('d-none');
+            input.value = '';
+            if (typeof onAddedCb === 'function') onAddedCb(data.id, data.name);
+            // Başarıda buton kilitli kalır (çift eklemeyi önler); modal yeniden açılınca sıfırlanır.
+        })
+        .catch(function (err) {
+            confirmBtn.classList.remove('btn-loading');
+            confirmBtn.disabled = false;
+            errorEl.textContent = err.message || 'Değer eklenemedi. Lütfen tekrar deneyin.';
+            errorEl.classList.remove('d-none');
+        });
+    });
+
+    input.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') { e.preventDefault(); confirmBtn.click(); }
+    });
+})();
+</script>

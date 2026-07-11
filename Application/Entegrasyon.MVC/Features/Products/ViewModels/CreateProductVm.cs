@@ -97,6 +97,29 @@ public class CreateProductVm
             VatRate = defaults.VatRate
         }).ToList();
     }
+
+    // KDV yüzdedir; input min/max'ı raw-fetch akışlarında (Varyantları Oluştur) çalışmadığı
+    // için sunucu tarafı tek doğrulama noktası burasıdır (GenerateVariants + CreateStep3).
+    public static List<string> ValidateVatRates(
+        DefaultVariantValuesVm? defaults,
+        IEnumerable<CreateVariantVm>? variants)
+    {
+        const string range = "KDV oranı 0-100 arasında olmalıdır.";
+        var errors = new List<string>();
+
+        if (defaults is not null && (defaults.VatRate < 0 || defaults.VatRate > 100))
+            errors.Add($"Varsayılan değerler: {range}");
+
+        var i = 0;
+        foreach (var v in variants ?? [])
+        {
+            i++;
+            if (v.VatRate < 0 || v.VatRate > 100)
+                errors.Add($"{i}. varyant: {range}");
+        }
+
+        return errors;
+    }
 }
 
 public class CreateVariantVm

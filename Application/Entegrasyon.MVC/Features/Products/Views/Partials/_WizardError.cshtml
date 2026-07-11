@@ -1,0 +1,10 @@
+@model List<string>
+
+<div class="alert alert-danger">
+    <ul class="mb-0 ps-3">
+        @foreach (var err in Model)
+        {
+            <li>@err</li>
+        }
+    </ul>
+</div>

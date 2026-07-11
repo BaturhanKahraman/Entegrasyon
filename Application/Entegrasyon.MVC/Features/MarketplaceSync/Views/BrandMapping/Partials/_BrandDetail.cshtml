@@ -78,6 +78,9 @@
                         loadThrottle: 500,
                         preload: false,
                         load: function (query, callback) {
+                            // Boş/tek karakterli query'yi gerçek API'ye göndermeyiz — Trendyol
+                            // brands/by-name endpoint'i boş name'de hata döner ve her odaklanışta
+                            // gereksiz istek/rate-limit tüketimine yol açar.
                             if (query.length < 2) { callback(); return; }
                             fetch('/marketplace/sync/suggestions/brands?mp=@Model.MarketPlaceId&q=' + encodeURIComponent(query))
                                 .then(function (r) { return r.json(); })

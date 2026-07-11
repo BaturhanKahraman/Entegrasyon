@@ -165,6 +165,8 @@ namespace Entegrasyon.ApplicationBootstrap
             services.AddScoped<IMarketplaceSearchService, TrendyolMarketplaceSearchService>();
             services.AddScoped<IMarketplaceCategoryAttributeProvider, TrendyolCategoryAttributeProvider>();
             services.AddScoped<ITrendyolAttributeCatalog, TrendyolAttributeCatalog>();
+            // Marka arama fallback'i: Trendyol API boş/hatalıysa AdminPanelDb master kataloğu
+            services.AddScoped<IMasterBrandSearchProvider, MasterBrandSearchProvider>();
 
             // Hepsiburada servisleri — UseMock flag kaldirildi, WireMock.Net testlerde
             // HTTP mock saglar (bkz. Test/Entegrasyon.IntegrationTest/Fixtures/WireMockStubs/).

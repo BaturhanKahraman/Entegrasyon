@@ -110,4 +110,36 @@ public class ProductWizardViewModelTests
 
         variants.Should().BeEmpty();
     }
+
+    // ── KDV (VatRate) aralık doğrulaması ──
+
+    [Fact]
+    public void ValidateVatRates_DefaultsOutOfRange_ReturnsError()
+    {
+        var errors = CreateProductVm.ValidateVatRates(
+            new DefaultVariantValuesVm { VatRate = 150 }, []);
+
+        errors.Should().ContainSingle().Which.Should().Contain("0-100");
+    }
+
+    [Fact]
+    public void ValidateVatRates_NegativeVariantVat_ReturnsErrorWithVariantNumber()
+    {
+        var variants = new List<CreateVariantVm> { new() { VatRate = 20 }, new() { VatRate = -5 } };
+
+        var errors = CreateProductVm.ValidateVatRates(null, variants);
+
+        errors.Should().ContainSingle().Which.Should().Contain("2.");
+    }
+
+    [Fact]
+    public void ValidateVatRates_BoundaryValues_ReturnsEmpty()
+    {
+        var variants = new List<CreateVariantVm> { new() { VatRate = 0 }, new() { VatRate = 100 } };
+
+        var errors = CreateProductVm.ValidateVatRates(
+            new DefaultVariantValuesVm { VatRate = 20 }, variants);
+
+        errors.Should().BeEmpty();
+    }
 }

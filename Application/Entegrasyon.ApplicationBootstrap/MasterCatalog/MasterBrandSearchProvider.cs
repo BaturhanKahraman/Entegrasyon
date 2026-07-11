@@ -44,7 +44,7 @@ public sealed class MasterBrandSearchProvider(
         catch (Exception ex)
         {
             logger.LogWarning(ex, "Master DB marka arama hatası, marketPlaceId={MarketPlaceId}", marketPlaceId);
-            return new SuccessDataResult<List<MarketplaceBrandSearchResult>>([]);
+            return new ErrorDataResult<List<MarketplaceBrandSearchResult>>([], "Master katalog erişilemedi.");
         }
     }
 }

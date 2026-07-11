@@ -292,6 +292,10 @@ public class ProductController(
     [HttpPost("/products/add/generate-variants")]
     public async Task<IActionResult> GenerateVariants([FromForm] CreateProductVm vm)
     {
+        var vatErrors = CreateProductVm.ValidateVatRates(vm.DefaultValues, null);
+        if (vatErrors.Count > 0)
+            return PartialView("Partials/_WizardError", vatErrors);
+
         vm.Variants = CreateProductVm.GenerateVariants(vm.VariantAttributeSelections, vm.DefaultValues);
 
         // Load branch offices for stock inputs
@@ -313,9 +317,14 @@ public class ProductController(
         state.Variants = vm.Variants ?? [];
         SaveWizardState(state);
 
+        var step3Errors = CreateProductVm.ValidateVatRates(state.DefaultValues, state.Variants);
         if (state.Variants.Count == 0)
+            step3Errors.Insert(0, "En az bir varyant oluşturulmalıdır.");
+
+        if (step3Errors.Count > 0)
         {
-            ModelState.AddModelError(string.Empty, "En az bir varyant oluşturulmalıdır.");
+            foreach (var err in step3Errors)
+                ModelState.AddModelError(string.Empty, err);
 
             var allAttrs = await categoryAttributeManager.GetCategoryAttributesByCategory(state.CategoryId);
             ViewBag.VariantAttributes = (allAttrs.Success ? allAttrs.Data! : [])

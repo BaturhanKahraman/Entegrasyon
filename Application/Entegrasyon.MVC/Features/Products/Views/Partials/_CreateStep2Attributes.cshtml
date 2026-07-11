@@ -7,6 +7,17 @@
 }
 
 <div data-wizard-step="2">
+@if (ViewData.ModelState.ErrorCount > 0)
+{
+    <div class="alert alert-danger">
+        <ul class="mb-0 ps-3">
+            @foreach (var err in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+            {
+                <li>@err.ErrorMessage</li>
+            }
+        </ul>
+    </div>
+}
 <form hx-post="/products/add/step2" hx-target="#wizard-content" hx-swap="innerHTML">
     @Html.AntiForgeryToken()
     <input type="hidden" name="Title" value="@Model.Title" />
@@ -45,16 +56,24 @@
                             <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
                             <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@attr.IsRequired" />
 
-                            <select name="CategoryAttributes[@i].ValueId"
-                                    class="form-select attr-value-select"
-                                    data-attribute-id="@attr.Id"
-                                    @(attr.IsRequired ? "required" : "")>
-                                <option value="">Seçin...</option>
-                                @foreach (var val in attr.CategoryAttributeValues)
-                                {
-                                    <option value="@val.Id" selected="@(saved?.ValueId == val.Id)">@val.Name</option>
-                                }
-                            </select>
+                            <div class="input-group">
+                                <select name="CategoryAttributes[@i].ValueId"
+                                        class="form-select attr-value-select"
+                                        data-attribute-id="@attr.Id"
+                                        @(attr.IsRequired ? "required" : "")>
+                                    <option value="">Seçin...</option>
+                                    @foreach (var val in attr.CategoryAttributeValues)
+                                    {
+                                        <option value="@val.Id" selected="@(saved?.ValueId == val.Id)">@val.Name</option>
+                                    }
+                                </select>
+                                <button type="button" class="btn btn-outline-primary btn-icon attr-value-add-btn"
+                                        data-attribute-id="@attr.Id"
+                                        data-attribute-name="@attr.CategoriyAttributeHumanized"
+                                        title="Yeni değer ekle">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="icon" width="24" height="24" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" fill="none"><path d="M12 5l0 14" /><path d="M5 12l14 0" /></svg>
+                                </button>
+                            </div>
                         </div>
                     }
                 </div>
@@ -66,6 +85,8 @@
         </div>
     </div>
 </form>
+
+<partial name="Partials/_AttrValueQuickAddModal" />
 </div>
 
 <script>
@@ -82,41 +103,29 @@
             // Skip already-initialized elements (HTMX re-swap guard)
             if (el.tomselect) return;
 
-            var attributeId = el.getAttribute('data-attribute-id');
-
+            // Yeni değer ekleme "+" butonu → ortak quick-add modal'ı ile yapılır (marka
+            // ekleme deseniyle aynı). TomSelect'in inline create: callback'i bilerek YOK —
+            // aynı endpoint'e giden iki paralel mekanizma tutarsız UX/bakım riski taşırdı.
             new TomSelect(el, {
                 allowEmptyOption: true,
-                create: function (input, callback) {
-                    // Antiforgery token'ı istek anında oku (HTMX swap sonrası tazelenmiş olabilir).
-                    var token = document.querySelector('[name="__RequestVerificationToken"]')?.value || '';
-                    fetch('/attributes/values/create', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                        body: new URLSearchParams({
-                            categoryAttributeId: attributeId,
-                            name: input,
-                            __RequestVerificationToken: token
-                        })
-                    })
-                    .then(function (res) {
-                        if (!res.ok) throw new Error('Değer eklenemedi.');
-                        return res.json();
-                    })
-                    .then(function (data) {
-                        callback({ value: data.id, text: data.name });
-                    })
-                    .catch(function () {
-                        if (typeof window.showNotify === 'function') {
-                            window.showNotify('Değer eklenemedi. Lütfen tekrar deneyin.', 'error');
-                        }
-                        callback();
-                    });
-                },
-                createFilter: function (input) {
-                    return input.trim().length > 0;
-                },
-                placeholder: 'Seçin veya yeni değer yazın...',
+                placeholder: 'Seçin...',
                 maxOptions: null
+            });
+        });
+
+        // "+" butonları → ortak hızlı-ekle modal'ı (marka quick-add deseni)
+        document.querySelectorAll('.attr-value-add-btn').forEach(function (btn) {
+            if (btn.dataset.qaBound) return; // HTMX re-swap guard
+            btn.dataset.qaBound = '1';
+            btn.addEventListener('click', function () {
+                var attrId = btn.getAttribute('data-attribute-id');
+                var attrName = btn.getAttribute('data-attribute-name');
+                window.openAttrValueQuickAdd(attrId, attrName, function (id, name) {
+                    var sel = document.querySelector('.attr-value-select[data-attribute-id="' + attrId + '"]');
+                    if (!sel || !sel.tomselect) return;
+                    sel.tomselect.addOption({ value: String(id), text: name });
+                    sel.tomselect.setValue(String(id));
+                });
             });
         });
     }

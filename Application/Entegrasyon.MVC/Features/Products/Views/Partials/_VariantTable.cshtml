@@ -88,10 +88,11 @@ else
                                    class="form-control form-control-sm" step="1" min="0" max="100" style="width:80px" />
                         </td>
                         <td>
-                            <button type="button" class="btn btn-sm btn-outline-primary btn-open-stock-modal"
-                                    data-variant-index="@i">
+                            <button type="button" class="btn btn-sm btn-outline-secondary btn-open-stock-modal"
+                                    data-variant-index="@i" title="Ofis bazlı stok gir">
                                 <i class="ti ti-building-warehouse icon me-1"></i>
-                                <span class="variant-stock-total">0</span> adet
+                                Stok Gir
+                                <span class="badge bg-red-lt ms-2 variant-stock-badge"><span class="variant-stock-total">0</span> adet</span>
                             </button>
                             @for (int b = 0; b < branches.Count; b++)
                             {
@@ -205,6 +206,11 @@ else
                 if (hidden) hidden.value = val;
             });
             tableRow.querySelector('.variant-stock-total').textContent = total;
+            var badge = tableRow.querySelector('.variant-stock-badge');
+            if (badge) {
+                badge.classList.toggle('bg-green-lt', total > 0);
+                badge.classList.toggle('bg-red-lt', total === 0);
+            }
             closeStockModal();
         }
 
