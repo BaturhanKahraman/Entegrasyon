@@ -3,5 +3,8 @@
     { "id": 1001, "name": "Mock Brand A" },
     { "id": 1002, "name": "Mock Brand B" },
     { "id": 1003, "name": "Test Brand" }
+    {{#if request.query.name}}
+    ,{ "id": {{Random Type="INTEGER" Min=9000 Max=9999}}, "name": "{{request.query.name}}" }
+    {{/if}}
   ]
 }

@@ -54,7 +54,7 @@
                             </label>
                             <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@attr.Id" />
                             <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
-                            <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@attr.IsRequired" />
+                            <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@attr.IsRequired.ToString()" />
 
                             <div class="input-group">
                                 <select name="CategoryAttributes[@i].ValueId"
@@ -100,8 +100,12 @@
         }
 
         document.querySelectorAll('.attr-value-select').forEach(function (el) {
-            // Skip already-initialized elements (HTMX re-swap guard)
-            if (el.tomselect) return;
+            // TomSelect kendi ürettiği .ts-wrapper div'ine orijinal select'in class
+            // listesini de kopyalar — bu yüzden aynı selector wrapper'ı da yakalar.
+            // tagName kontrolü olmadan wrapper'a new TomSelect() çağrısı atılırsa
+            // TomSelect içinde "Cannot read properties of undefined (reading 'trim')"
+            // ile çöker ve forEach o noktada durur (kalan select'ler biçimsiz kalır).
+            if (el.tagName !== 'SELECT' || el.tomselect) return;
 
             // Yeni değer ekleme "+" butonu → ortak quick-add modal'ı ile yapılır (marka
             // ekleme deseniyle aynı). TomSelect'in inline create: callback'i bilerek YOK —
@@ -133,9 +137,17 @@
     // Run on direct load
     initStep2TomSelects();
 
-    // Re-run after HTMX swaps this partial back in (wizard navigation)
-    document.addEventListener('htmx:afterSwap', function () {
-        initStep2TomSelects();
-    });
+    // Re-run after HTMX swaps this partial back in (wizard navigation). Bu <script>
+    // her swap'ta yeniden çalıştığı için document'a listener eklemek çoğullaşır
+    // (her swap bir öncekini ekler, hiçbiri kaldırılmaz) — window bayrağıyla TEK
+    // sefer kaydediyoruz. Ayrıca htmx bazı durumlarda AYNI swap için hem bu script'i
+    // çalıştırıp hem afterSwap'ı tetikleyebiliyor; yukarıdaki tagName/tomselect
+    // guard'ı bu çifte-çağrıyı da zararsız hale getiriyor.
+    if (!window.__step2AfterSwapBound) {
+        window.__step2AfterSwapBound = true;
+        document.addEventListener('htmx:afterSwap', function () {
+            if (document.querySelector('[data-wizard-step="2"]')) initStep2TomSelects();
+        });
+    }
 })();
 </script>

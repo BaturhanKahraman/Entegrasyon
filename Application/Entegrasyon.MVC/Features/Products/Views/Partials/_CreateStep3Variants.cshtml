@@ -37,7 +37,7 @@
         <input type="hidden" name="CategoryAttributes[@i].CategoryAttributeId" value="@Model.CategoryAttributes[i].CategoryAttributeId" />
         <input type="hidden" name="CategoryAttributes[@i].AttributeName" value="@Model.CategoryAttributes[i].AttributeName" />
         <input type="hidden" name="CategoryAttributes[@i].ValueId" value="@Model.CategoryAttributes[i].ValueId" />
-        <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired" />
+        <input type="hidden" name="CategoryAttributes[@i].IsRequired" value="@Model.CategoryAttributes[i].IsRequired.ToString()" />
     }
 
     <!-- Variant Attribute Selectors -->
@@ -71,8 +71,8 @@
                             </label>
                             <input type="hidden" name="VariantAttributeSelections[@i].CategoryAttributeId" value="@attr.Id" />
                             <input type="hidden" name="VariantAttributeSelections[@i].AttributeName" value="@attr.CategoriyAttributeHumanized" />
-                            <input type="hidden" name="VariantAttributeSelections[@i].IsVarianter" value="@attr.IsVarianter" />
-                            <input type="hidden" name="VariantAttributeSelections[@i].IsSlicer" value="@attr.IsSlicer" />
+                            <input type="hidden" name="VariantAttributeSelections[@i].IsVarianter" value="@attr.IsVarianter.ToString()" />
+                            <input type="hidden" name="VariantAttributeSelections[@i].IsSlicer" value="@attr.IsSlicer.ToString()" />
 
                             <!-- Searchable multi-select (Tom Select) + hızlı değer ekleme -->
                             <div class="input-group">
@@ -201,6 +201,10 @@
 
     // --- Tom Select Multi-Select Init ---
     document.querySelectorAll('.variant-tomselect').forEach(function(sel) {
+        // TomSelect'in ürettiği .ts-wrapper div'i orijinal select'in class'ını da taşır —
+        // tagName/tomselect guard'ı olmadan wrapper'a tekrar init atılırsa çöker (bkz.
+        // _CreateStep2Attributes.cshtml'deki aynı desen).
+        if (sel.tagName !== 'SELECT' || sel.tomselect) return;
         var attrIndex = sel.getAttribute('data-attr-index');
         var ts = new TomSelect(sel, {
             plugins: ['checkbox_options', 'remove_button'],

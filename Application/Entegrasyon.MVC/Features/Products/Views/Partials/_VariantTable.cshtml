@@ -52,9 +52,9 @@ else
                                 <input type="hidden" name="Variants[@i].VariantAttributes[@j].AttributeName" value="@attr.AttributeName" />
                                 <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueId" value="@attr.ValueId" />
                                 <input type="hidden" name="Variants[@i].VariantAttributes[@j].ValueName" value="@attr.ValueName" />
-                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsCustom" value="@attr.IsCustom" />
-                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsVarianter" value="@attr.IsVarianter" />
-                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsSlicer" value="@attr.IsSlicer" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsCustom" value="@attr.IsCustom.ToString()" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsVarianter" value="@attr.IsVarianter.ToString()" />
+                                <input type="hidden" name="Variants[@i].VariantAttributes[@j].IsSlicer" value="@attr.IsSlicer.ToString()" />
                             }
                         </td>
                         <td>
