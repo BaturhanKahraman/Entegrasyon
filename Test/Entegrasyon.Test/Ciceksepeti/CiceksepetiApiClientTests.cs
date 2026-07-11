@@ -89,8 +89,8 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Headers.Should().ContainKey("x-api-key");
-        log.RequestMessage.Headers!["x-api-key"].ToString().Should().Be("my-secret-key");
+        log.RequestMessage!.Headers.Should().ContainKey("x-api-key");
+        log.RequestMessage!.Headers!["x-api-key"].ToString().Should().Be("my-secret-key");
     }
 
     // ── Test 2: POST sends JSON body with api key ──
@@ -111,11 +111,11 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("POST");
-        log.RequestMessage.Headers.Should().ContainKey("x-api-key");
-        log.RequestMessage.Headers!["x-api-key"].ToString().Should().Be("post-api-key");
-        log.RequestMessage.Headers.Should().ContainKey("Content-Type");
-        log.RequestMessage.Headers["Content-Type"].ToString().Should().Contain("application/json");
+        log.RequestMessage!.Method.Should().Be("POST");
+        log.RequestMessage!.Headers.Should().ContainKey("x-api-key");
+        log.RequestMessage!.Headers!["x-api-key"].ToString().Should().Be("post-api-key");
+        log.RequestMessage!.Headers.Should().ContainKey("Content-Type");
+        log.RequestMessage!.Headers["Content-Type"].ToString().Should().Contain("application/json");
     }
 
     // ── Test 3: SendRawAsync uses absolute path, no /api/v1/ prefix ──
@@ -134,11 +134,11 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Path.Should().Be("/Branch/SendInvoiceMail");
-        log.RequestMessage.Path.Should().NotContain("/api/v1/");
+        log.RequestMessage!.Path.Should().Be("/Branch/SendInvoiceMail");
+        log.RequestMessage!.Path.Should().NotContain("/api/v1/");
 
-        log.RequestMessage.Headers.Should().ContainKey("x-api-key");
-        log.RequestMessage.Headers!["x-api-key"].ToString().Should().Be("raw-api-key");
+        log.RequestMessage!.Headers.Should().ContainKey("x-api-key");
+        log.RequestMessage!.Headers!["x-api-key"].ToString().Should().Be("raw-api-key");
     }
 
     // ── Test 4: Missing marketplace throws ──
@@ -172,7 +172,7 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
+        log.RequestMessage!.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
     // ── Test 6: Missing ApiKey throws ──
@@ -207,6 +207,6 @@ public class CiceksepetiApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Path.Should().Contain("/api/v1/");
+        log.RequestMessage!.Path.Should().Contain("/api/v1/");
     }
 }

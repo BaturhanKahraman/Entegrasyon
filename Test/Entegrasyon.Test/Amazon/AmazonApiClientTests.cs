@@ -88,8 +88,8 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Headers.Should().ContainKey("x-amz-access-token");
-        log.RequestMessage.Headers!["x-amz-access-token"].ToString().Should().Be("test-access-token");
+        log.RequestMessage!.Headers.Should().ContainKey("x-amz-access-token");
+        log.RequestMessage!.Headers!["x-amz-access-token"].ToString().Should().Be("test-access-token");
     }
 
     // ── Test 2: POST sends JSON body ──
@@ -109,8 +109,8 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("POST");
-        log.RequestMessage.Headers!["Content-Type"].ToString().Should().Contain("application/json");
+        log.RequestMessage!.Method.Should().Be("POST");
+        log.RequestMessage!.Headers!["Content-Type"].ToString().Should().Contain("application/json");
     }
 
     // ── Test 3: PUT sends JSON body ──
@@ -128,8 +128,8 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("PUT");
-        log.RequestMessage.Headers!["Content-Type"].ToString().Should().Contain("application/json");
+        log.RequestMessage!.Method.Should().Be("PUT");
+        log.RequestMessage!.Headers!["Content-Type"].ToString().Should().Contain("application/json");
     }
 
     // ── Test 4: PATCH sends JSON body ──
@@ -147,7 +147,7 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("PATCH");
+        log.RequestMessage!.Method.Should().Be("PATCH");
     }
 
     // ── Test 5: DELETE sends request ──
@@ -165,7 +165,7 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("DELETE");
+        log.RequestMessage!.Method.Should().Be("DELETE");
     }
 
     // ── Test 6: Retry on 401 — Scenarios state machine ──
@@ -240,7 +240,7 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
+        log.RequestMessage!.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
     // ── Test 9: Upload to presigned URL, no token header ──
@@ -262,8 +262,8 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("PUT");
-        log.RequestMessage.Headers.Should().NotContainKey("x-amz-access-token");
+        log.RequestMessage!.Method.Should().Be("PUT");
+        log.RequestMessage!.Headers.Should().NotContainKey("x-amz-access-token");
     }
 
     // ── Test 10: User-Agent from MarketPlace ──
@@ -281,7 +281,7 @@ public class AmazonApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Headers.Should().ContainKey("User-Agent");
-        log.RequestMessage.Headers!["User-Agent"].ToString().Should().Contain("MyApp/2.0");
+        log.RequestMessage!.Headers.Should().ContainKey("User-Agent");
+        log.RequestMessage!.Headers!["User-Agent"].ToString().Should().Contain("MyApp/2.0");
     }
 }

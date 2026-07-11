@@ -162,8 +162,8 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Method.Should().Be("POST");
-        log.RequestMessage.Path.Should().Be("/openapi/router");
+        log.RequestMessage!.Method.Should().Be("POST");
+        log.RequestMessage!.Path.Should().Be("/openapi/router");
     }
 
     [Fact]
@@ -180,8 +180,8 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Body.Should().NotBeNull();
-        log.RequestMessage.Body.Should().Contain("bg.goods.cats.get");
+        log.RequestMessage!.Body.Should().NotBeNull();
+        log.RequestMessage!.Body.Should().Contain("bg.goods.cats.get");
     }
 
     [Fact]
@@ -198,8 +198,8 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.Body.Should().NotBeNull();
-        log.RequestMessage.Body.Should().Contain("sign");
+        log.RequestMessage!.Body.Should().NotBeNull();
+        log.RequestMessage!.Body.Should().Contain("sign");
     }
 
     // ── Test 3: Credential resolution ────────────────────────────────────────────
@@ -261,7 +261,7 @@ public class TemuApiClientTests : Entegrasyon.UnitTest.BaseTest
 
         // Assert
         var log = _wm.Server.LogEntries.Single();
-        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
+        log.RequestMessage!.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
     // ── Test 5: Response deserialization ─────────────────────────────────────────

@@ -102,8 +102,8 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test/endpoint").UsingGet()).Single();
 
-        log.RequestMessage.Headers.Should().ContainKey("Authorization");
-        var authHeader = log.RequestMessage.Headers!["Authorization"].ToString();
+        log.RequestMessage!.Headers.Should().ContainKey("Authorization");
+        var authHeader = log.RequestMessage!.Headers!["Authorization"].ToString();
         authHeader.Should().StartWith("Basic ");
 
         var expectedCredentials = Convert.ToBase64String(Encoding.UTF8.GetBytes("myKey:mySecret"));
@@ -130,10 +130,10 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test/products").UsingPost()).Single();
 
-        log.RequestMessage.Method.Should().Be("POST");
-        log.RequestMessage.Headers.Should().ContainKey("Content-Type");
-        log.RequestMessage.Headers!["Content-Type"].ToString().Should().Contain("application/json");
-        log.RequestMessage.Headers.Should().ContainKey("Authorization");
+        log.RequestMessage!.Method.Should().Be("POST");
+        log.RequestMessage!.Headers.Should().ContainKey("Content-Type");
+        log.RequestMessage!.Headers!["Content-Type"].ToString().Should().Contain("application/json");
+        log.RequestMessage!.Headers.Should().ContainKey("Authorization");
     }
 
     // ── Test 3: PUT sends JSON body ──
@@ -154,8 +154,8 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test/update").UsingPut()).Single();
 
-        log.RequestMessage.Method.Should().Be("PUT");
-        log.RequestMessage.Headers!["Content-Type"].ToString().Should().Contain("application/json");
+        log.RequestMessage!.Method.Should().Be("PUT");
+        log.RequestMessage!.Headers!["Content-Type"].ToString().Should().Contain("application/json");
     }
 
     // ── Test 4: DELETE sends request ──
@@ -176,7 +176,7 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test/delete/123").UsingDelete()).Single();
 
-        log.RequestMessage.Method.Should().Be("DELETE");
+        log.RequestMessage!.Method.Should().Be("DELETE");
     }
 
     // ── Test 5: Missing marketplace throws ──
@@ -213,7 +213,7 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test/endpoint").UsingGet()).Single();
 
-        log.RequestMessage.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
+        log.RequestMessage!.AbsoluteUrl.Should().StartWith(_wm.BaseUrl);
     }
 
     // ── Test 7: User-Agent from UserAgentPrefix ──
@@ -234,8 +234,8 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test").UsingGet()).Single();
 
-        log.RequestMessage.Headers.Should().ContainKey("User-Agent");
-        log.RequestMessage.Headers!["User-Agent"].ToString()
+        log.RequestMessage!.Headers.Should().ContainKey("User-Agent");
+        log.RequestMessage!.Headers!["User-Agent"].ToString()
             .Should().Contain("MySeller - SelfIntegration");
     }
 
@@ -257,7 +257,7 @@ public class TrendyolApiClientTests : Entegrasyon.UnitTest.BaseTest
         var log = _wm.Server.FindLogEntries(
             Request.Create().WithPath("/test").UsingGet()).Single();
 
-        var userAgent = log.RequestMessage.Headers!["User-Agent"].ToString();
+        var userAgent = log.RequestMessage!.Headers!["User-Agent"].ToString();
         userAgent.Should().Contain("99999");
         userAgent.Should().Contain("SelfIntegration");
     }

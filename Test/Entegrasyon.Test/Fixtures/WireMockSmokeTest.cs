@@ -50,13 +50,13 @@ public sealed class WireMockSmokeTest(WireMockFixture wm)
         var log = wm.Server.FindLogEntries(
             Request.Create().WithPath("/ping").UsingGet()).Single();
 
-        log.RequestMessage.Method.Should().Be("GET");
-        log.RequestMessage.Path.Should().Be("/ping");
+        log.RequestMessage!.Method.Should().Be("GET");
+        log.RequestMessage!.Path.Should().Be("/ping");
 
         // Assert 3: Header injection dogrulama — Faz 1'de Basic Auth, x-api-key,
         // x-amz-access-token gibi header'lar ayni pattern ile dogrulanacak
-        log.RequestMessage.Headers.Should().ContainKey("Authorization");
-        log.RequestMessage.Headers!["Authorization"]
+        log.RequestMessage!.Headers.Should().ContainKey("Authorization");
+        log.RequestMessage!.Headers!["Authorization"]
             .ToString().Should().Contain("Basic smoke-token");
     }
 }
