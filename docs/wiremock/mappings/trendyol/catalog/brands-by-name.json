@@ -7,7 +7,6 @@
   "response": {
     "status": 200,
     "headers": { "Content-Type": "application/json" },
-    "bodyFileName": "trendyol/catalog/brands-by-name.json",
-    "transformers": ["response-template"]
+    "bodyFileName": "trendyol/catalog/brands-by-name.json"
   }
 }
