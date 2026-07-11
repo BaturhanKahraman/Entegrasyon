@@ -2,7 +2,7 @@
   "priority": 5,
   "scenarioName": "batch-lifecycle",
   "requiredScenarioState": "Started",
-  "newScenarioState": "batch-polled",
+  "newScenarioState": "batch-polled-1",
   "request": {
     "method": "GET",
     "urlPathPattern": "/integration/product/sellers/[0-9]+/products/batch-requests/[^/]+$"
